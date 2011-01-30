@@ -1,0 +1,36 @@
+LuaFAR, building and installation
+==================================
+
+Prerequisites for building
+---------------------------
+   *  MinGW (Minimalist GNU for Windows)
+   *  Lua 5.1 interpreter: lua.exe
+   *  FAR 2.0 PluginSDK include files (plugin.hpp, ...)
+   *  Lua 5.1 include files (lua.h, ...), or Lua 5.1 source directory
+   *  Lua 5.1 DLL (either lua5.1.dll or lua51.dll)
+
+
+Make targets
+-------------
+The following make targets exist: lib, auxil, all.
+
+What the target names mean:
+
+   lib    :  luafarw.dll is built and moved to win32_bin (or win64_bin)
+             directory
+
+   auxil  :  farcolors.lua and farkeys.lua are built in the auxil directory
+
+   all    :  All of the above targets are built
+
+
+Steps required to build
+------------------------
+1. Edit user's settings in the file "config.mak".
+2. Run: make [<target>]. See the description of available targets above.
+   For 64-bit builds, run: make lib ARCH=-m64
+
+Installation
+-------------
+1. luafarw.dll should be placed anywhere on Windows' PATH.
+2. farcolor.lua and farkeys.lua should be placed anywhere on package.path.

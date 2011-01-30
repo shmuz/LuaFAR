@@ -1,0 +1,11 @@
+﻿.Language=English,English (English)
+.PluginContents=Hello, World!
+
+@Contents
+$ #Hello, World!#
+  This plugin is intended for anyone wanting to write plugins
+for FAR Manager in Lua.
+
+  The plugin uses #Lua# and #LuaFAR# libraries (lua5.1.dll and luafar.dll).
+These files should be either in some directory listed in PATH, or in the
+directory of FAR itself.
