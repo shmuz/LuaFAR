@@ -8,5 +8,5 @@ else
 endif
 
 LUADLLNAME = lua5.1
-LUAFARDLL  = luafarw.dll
+LUAFARDLL  = luafar3.dll
 LUAEXE     = c:\exe\lua.exe

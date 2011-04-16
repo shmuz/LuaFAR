@@ -1,7 +1,7 @@
 # ---- user's settings -------------------------------------------------------
 
 TARGET      = helloworld.dll
-FAR_EXPORTS = OPENPLUGINW
+FAR_EXPORTS = OPEN
 PATH_LUAFAR = ..\..
 
 # ---- end of user's settings ------------------------------------------------

@@ -4,15 +4,22 @@
 #include "util.h"
 #include "ustring.h"
 
+typedef unsigned __int64 UINT64;
+extern int push64(lua_State *L, UINT64 v);
+extern void PutFlagsToTable (lua_State *L, const char* key, UINT64 flags);
+extern UINT64 GetFlagCombination (lua_State *L, int pos, int *success);
+extern UINT64 GetFlagsFromTable (lua_State *L, int pos, const char* key);
+
 extern const char* VirtualKeyStrings[256];
 extern void LF_Error(lua_State *L, const wchar_t* aMsg);
+extern int pushInputRecord(lua_State *L, const INPUT_RECORD* ir);
 
 // "Collector" is a Lua table referenced from the Plugin Object table by name.
 // Collector contains an array of lightuserdata which are pointers to new[]'ed
 // chars.
 const char COLLECTOR_FD[]  = "Collector_FindData";
 const char COLLECTOR_FVD[] = "Collector_FindVirtualData";
-const char COLLECTOR_OPI[] = "Collector_OpenPluginInfo";
+const char COLLECTOR_OPI[] = "Collector_OpenPanelInfo";
 const char COLLECTOR_PI[]  = "Collector_PluginInfo";
 const char KEY_OBJECT[]    = "Object";
 
@@ -49,9 +56,9 @@ int docall (lua_State *L, int narg, int nret) {
 
 // if the function is successfully retrieved, it's on the stack top; 1 is returned
 // else 0 returned (and the stack is unchanged)
-int GetLuaFarFunction(lua_State* L, const char* FuncName)
+int GetExportFunction(lua_State* L, const char* FuncName)
 {
-  lua_getglobal(L, "far");
+  lua_getglobal(L, "export");
   lua_getfield(L, -1, FuncName);
   if (lua_isfunction(L, -1))
     return lua_remove(L,-2), 1;
@@ -65,7 +72,7 @@ int pcall_msg (lua_State* L, int narg, int nret)
   int status = docall (L, narg, nret);
   if (status != 0) {
     int status2 = 1;
-    if (GetLuaFarFunction(L, "OnError")) {
+    if (GetExportFunction(L, "OnError")) {
       lua_insert(L,-2);
       status2 = lua_pcall(L,1,0,0);
     }
@@ -77,7 +84,7 @@ int pcall_msg (lua_State* L, int narg, int nret)
   return status;
 }
 
-inline void PushPluginTable (lua_State* L, HANDLE hPlugin)
+void PushPluginTable (lua_State* L, HANDLE hPlugin)
 {
   lua_rawgeti(L, LUA_REGISTRYINDEX, (INT_PTR)hPlugin);
 }
@@ -90,15 +97,10 @@ void PushPluginPair (lua_State* L, HANDLE hPlugin)
   lua_pushinteger(L, (INT_PTR)hPlugin);
 }
 
-void CreatePluginInfoCollector (lua_State* L)
+void ReplacePluginInfoCollector (lua_State* L)
 {
   lua_newtable(L);
-  lua_setfield(L, LUA_REGISTRYINDEX, COLLECTOR_PI);
-}
-
-void DestroyPluginInfoCollector(lua_State* L)
-{
-  lua_pushnil(L);
+  lua_pushvalue(L, -1);
   lua_setfield(L, LUA_REGISTRYINDEX, COLLECTOR_PI);
 }
 
@@ -177,20 +179,16 @@ const wchar_t** CreateStringsArray(lua_State* L, int cpos, const char* field,
 // collector table is one under the top (-2)
 void FillPluginPanelItem (lua_State *L, struct PluginPanelItem *pi)
 {
-  lua_getfield(L, -1, "FindData");
-  if (lua_istable (L, -1)) {
-    pi->FindData.dwFileAttributes = GetAttrFromTable(L);
-    pi->FindData.ftCreationTime   = GetFileTimeFromTable(L, "CreationTime");
-    pi->FindData.ftLastAccessTime = GetFileTimeFromTable(L, "LastAccessTime");
-    pi->FindData.ftLastWriteTime  = GetFileTimeFromTable(L, "LastWriteTime");
-    pi->FindData.nFileSize = GetFileSizeFromTable(L, "FileSize");
-    pi->FindData.nPackSize = GetFileSizeFromTable(L, "PackSize");
-    pi->FindData.lpwszFileName = (wchar_t*)AddStringToCollectorField(L,-2,"FileName");
-    pi->FindData.lpwszAlternateFileName = (wchar_t*)AddStringToCollectorField(L,-2,"AlternateFileName");
-  }
-  lua_pop (L, 1);
+  pi->FileAttributes = GetAttrFromTable(L);
+  pi->CreationTime   = GetFileTimeFromTable(L, "CreationTime");
+  pi->LastAccessTime = GetFileTimeFromTable(L, "LastAccessTime");
+  pi->LastWriteTime  = GetFileTimeFromTable(L, "LastWriteTime");
+  pi->FileSize = GetFileSizeFromTable(L, "FileSize");
+  pi->PackSize = GetFileSizeFromTable(L, "PackSize");
+  pi->FileName = (wchar_t*)AddStringToCollectorField(L,-2,"FileName");
+  pi->AlternateFileName = (wchar_t*)AddStringToCollectorField(L,-2,"AlternateFileName");
 
-  pi->Flags = GetOptIntFromTable(L, "Flags", 0);
+  pi->Flags = GetFlagsFromTable(L, -1, "Flags");
   pi->Flags &= ~PPIF_USERDATA; // prevent far.exe from treating UserData as pointer,
                                // and from copying the data being pointed to.
   pi->NumberOfLinks = GetOptIntFromTable(L, "NumberOfLinks", 0);
@@ -226,17 +224,17 @@ void FillFindData(lua_State* L, struct PluginPanelItem **pPanelItems,
   *pPanelItems = ppi;
 }
 
-int LF_GetFindDataW(lua_State* L, HANDLE hPlugin, struct PluginPanelItem **pPanelItem,
-                   int *pItemsNumber, int OpMode)
+int LF_GetFindData(lua_State* L, struct GetFindDataInfo *Info)
 {
-  if (GetLuaFarFunction(L, "GetFindData")) {   //+1: Func
-    PushPluginPair(L, hPlugin);                //+3: Func,Pair
-    lua_pushinteger(L, OpMode);                //+4: Func,Pair,OpMode
+  if (GetExportFunction(L, "GetFindData")) {   //+1: Func
+    Info->StructSize = sizeof(*Info);
+    PushPluginPair(L, Info->hPanel);           //+3: Func,Pair
+    push64(L, Info->OpMode);                   //+4: Func,Pair,OpMode
     if (!pcall_msg(L, 3, 1)) {                 //+1: FindData
       if (lua_istable(L, -1)) {
-        PushPluginTable(L, hPlugin);           //+2: FindData,Tbl
+        PushPluginTable(L, Info->hPanel);      //+2: FindData,Tbl
         lua_insert(L, -2);                     //+2: Tbl,FindData
-        FillFindData(L, pPanelItem, pItemsNumber, COLLECTOR_FD);
+        FillFindData(L, &Info->PanelItem, &Info->ItemsNumber, COLLECTOR_FD);
         return TRUE;
       }
       lua_pop(L,1);
@@ -245,26 +243,24 @@ int LF_GetFindDataW(lua_State* L, HANDLE hPlugin, struct PluginPanelItem **pPane
   return FALSE;
 }
 
-void LF_FreeFindDataW(lua_State* L, HANDLE hPlugin, struct PluginPanelItem *PanelItems,
-                     int ItemsNumber)
+void LF_FreeFindData(lua_State* L, const struct FreeFindDataInfo *Info)
 {
-  (void)ItemsNumber;
-  DestroyCollector(L, hPlugin, COLLECTOR_FD);
-  free(PanelItems);
+  DestroyCollector(L, Info->hPanel, COLLECTOR_FD);
+  free(Info->PanelItem);
 }
 //---------------------------------------------------------------------------
 
-int LF_GetVirtualFindDataW (lua_State* L, HANDLE hPlugin,
-  struct PluginPanelItem **pPanelItem, int *pItemsNumber, const wchar_t *Path)
+int LF_GetVirtualFindData (lua_State* L, struct GetVirtualFindDataInfo *Info)
 {
-  if (GetLuaFarFunction(L, "GetVirtualFindData")) {      //+1: Func
-    PushPluginPair(L, hPlugin);                          //+3: Func,Pair
-    push_utf8_string(L, Path, -1);                       //+4: Func,Pair,Path
+  if (GetExportFunction(L, "GetVirtualFindData")) {      //+1: Func
+    Info->StructSize = sizeof(*Info);
+    PushPluginPair(L, Info->hPanel);                     //+3: Func,Pair
+    push_utf8_string(L, Info->Path, -1);                 //+4: Func,Pair,Path
     if (!pcall_msg(L, 3, 1)) {                           //+1: FindData
       if (lua_istable(L, -1)) {
-        PushPluginTable(L, hPlugin);                     //+2: FindData,Tbl
+        PushPluginTable(L, Info->hPanel);                //+2: FindData,Tbl
         lua_insert(L, -2);                               //+2: Tbl,FindData
-        FillFindData(L, pPanelItem, pItemsNumber, COLLECTOR_FVD);
+        FillFindData(L, &Info->PanelItem, &Info->ItemsNumber, COLLECTOR_FVD);
         return TRUE;
       }
       lua_pop(L,1);
@@ -273,12 +269,10 @@ int LF_GetVirtualFindDataW (lua_State* L, HANDLE hPlugin,
   return FALSE;
 }
 
-void LF_FreeVirtualFindDataW(lua_State* L, HANDLE hPlugin,
-  struct PluginPanelItem *PanelItem, int ItemsNumber)
+void LF_FreeVirtualFindData(lua_State* L, const struct FreeFindDataInfo *Info)
 {
-  (void)ItemsNumber;
-  DestroyCollector(L, hPlugin, COLLECTOR_FVD);
-  free(PanelItem);
+  DestroyCollector(L, Info->hPanel, COLLECTOR_FVD);
+  free(Info->PanelItem);
 }
 
 // PanelItem table should be on Lua stack top
@@ -305,28 +299,28 @@ void UpdateFileSelection(lua_State* L, struct PluginPanelItem *PanelItem,
 }
 //---------------------------------------------------------------------------
 
-int LF_GetFilesW (lua_State* L, HANDLE hPlugin, struct PluginPanelItem *PanelItem,
-  int ItemsNumber, int Move, const wchar_t **DestPath, int OpMode)
+int LF_GetFiles (lua_State* L, struct GetFilesInfo *Info)
 {
-  if (GetLuaFarFunction(L, "GetFiles")) {      //+1: Func
-    PushPanelItems(L, PanelItem, ItemsNumber); //+2: Func,Item
-    lua_insert(L,-2);                          //+2: Item,Func
-    PushPluginPair(L, hPlugin);                //+4: Item,Func,Pair
-    lua_pushvalue(L,-4);                       //+5: Item,Func,Pair,Item
-    lua_pushboolean(L, Move);
-    push_utf8_string(L, *DestPath, -1);
-    lua_pushinteger(L, OpMode);        //+8: Item,Func,Pair,Item,Move,Dest,OpMode
+  if (GetExportFunction(L, "GetFiles")) {      //+1: Func
+    Info->StructSize = sizeof(*Info);
+    PushPanelItems(L, Info->PanelItem, Info->ItemsNumber); //+2: Func,Item
+    lua_insert(L,-2);                  //+2: Item,Func
+    PushPluginPair(L, Info->hPanel);   //+4: Item,Func,Pair
+    lua_pushvalue(L,-4);               //+5: Item,Func,Pair,Item
+    lua_pushboolean(L, Info->Move);
+    push_utf8_string(L, Info->DestPath, -1);
+    push64(L, Info->OpMode);           //+8: Item,Func,Pair,Item,Move,Dest,OpMode
     int ret = pcall_msg(L, 6, 2);      //+3: Item,Res,Dest
     if (ret == 0) {
       if (lua_isstring(L,-1)) {
-        *DestPath = check_utf8_string(L,-1,NULL);
+        Info->DestPath = check_utf8_string(L,-1,NULL);
         lua_setfield(L, LUA_REGISTRYINDEX, "GetFiles.DestPath"); // protect from GC
       }
       else
         lua_pop(L,1);                  //+2: Item,Res
       ret = lua_tointeger(L,-1);
       lua_pop(L,1);                    //+1: Item
-      UpdateFileSelection(L, PanelItem, ItemsNumber);
+      UpdateFileSelection(L, Info->PanelItem, Info->ItemsNumber);
       return lua_pop(L,1), ret;
     }
     return lua_pop(L,1), 0;
@@ -360,65 +354,53 @@ INT_PTR RegisterObject (lua_State* L)
   return ref;
 }
 
-HANDLE LF_OpenFilePluginW(lua_State* L, const wchar_t *aName,
-  const unsigned char *aData, int aDataSize, int OpMode)
+int LF_Analyse(lua_State* L, const struct AnalyseInfo *Info)
 {
-  if (!CheckReloadDefaultScript(L))
-    return INVALID_HANDLE_VALUE;
-
-  if (GetLuaFarFunction(L, "OpenFilePlugin")) {           //+1
-    if(aName) {
-      push_utf8_string(L, aName, -1);                     //+2
-      lua_pushlstring(L, (const char*)aData, aDataSize);  //+3
-    }
-    else {
-      lua_pushnil(L); lua_pushnil(L);
-    }
-    lua_pushinteger(L, OpMode);
-    if (!pcall_msg(L, 3, 1)) {
-      if (lua_type(L,-1) == LUA_TNUMBER && lua_tointeger(L,-1) == -2) {
-        lua_pop(L,1);
-        return (HANDLE)(-2);
-      }
-      if (lua_toboolean(L, -1))                           //+1
-        return (HANDLE)RegisterObject(L);                 //+0
-      lua_pop (L, 1);                                     //+0
+  int result = FALSE;
+  if (GetExportFunction(L, "Analyse")) {           //+1
+    lua_createtable(L, 0, 4);                      //+2
+    PutIntToTable(L, "StructSize", Info->StructSize);
+    PutWStrToTable(L, "FileName", Info->FileName, -1);
+    PutLStrToTable(L, "Buffer", Info->Buffer, Info->BufferSize);
+    PutFlagsToTable(L, "OpMode", Info->OpMode);
+    if (!pcall_msg(L, 1, 1)) {                     //+1
+      result = lua_toboolean(L, -1);
+      lua_pop (L, 1);                              //+0
     }
   }
-  return INVALID_HANDLE_VALUE;
+  return result;
 }
 //---------------------------------------------------------------------------
 
-void LF_GetOpenPluginInfoW(lua_State* L, HANDLE hPlugin, struct OpenPluginInfo *aInfo)
+void LF_GetOpenPanelInfo(lua_State* L, struct OpenPanelInfo *aInfo)
 {
-  aInfo->StructSize = sizeof (struct OpenPluginInfo);
-  if (!GetLuaFarFunction(L, "GetOpenPluginInfo"))    //+1
+  aInfo->StructSize = sizeof (struct OpenPanelInfo);
+  if (!GetExportFunction(L, "GetOpenPanelInfo"))    //+1
     return;
-
-  PushPluginPair(L, hPlugin);                        //+3
+  PushPluginPair(L, aInfo->hPanel);                 //+3
   if(pcall_msg(L, 2, 1) != 0)
     return;
 
   if(lua_isstring(L,-1) && !strcmp("reuse", lua_tostring(L,-1))) {
-    PushPluginTable(L, hPlugin);                     //+2: reuse,Tbl
+    PushPluginTable(L, aInfo->hPanel);               //+2: reuse,Tbl
     lua_getfield(L, -1, COLLECTOR_OPI);              //+3: reuse,Tbl,Coll
     if (!lua_istable(L,-1)) {    // collector either not set, or destroyed
       lua_pop(L,3);
       return;
     }
     lua_rawgeti(L,-1,1);                             //+4: reuse,Tbl,Coll,OPI
-    struct OpenPluginInfo *Info = (struct OpenPluginInfo*)lua_touserdata(L,-1);
+    struct OpenPanelInfo *Info = (struct OpenPanelInfo*)lua_touserdata(L,-1);
     *aInfo = *Info;
     lua_pop(L,4);
     return;
   }
   if(!lua_istable(L, -1)) {                          //+1: Info
     lua_pop(L, 1);
-    LF_Error(L, L"GetOpenPluginInfo should return a table");
+    LF_Error(L, L"GetOpenPanelInfo should return a table");
     return;
   }
-  DestroyCollector(L, hPlugin, COLLECTOR_OPI);
-  PushPluginTable(L, hPlugin);                       //+2: Info,Tbl
+  DestroyCollector(L, aInfo->hPanel, COLLECTOR_OPI);
+  PushPluginTable(L, aInfo->hPanel);                 //+2: Info,Tbl
   lua_newtable(L);                                   //+3: Info,Tbl,Coll
   int cpos = lua_gettop (L);  // collector stack position
   lua_pushvalue(L,-1);                               //+4: Info,Tbl,Coll,Coll
@@ -426,11 +408,12 @@ void LF_GetOpenPluginInfoW(lua_State* L, HANDLE hPlugin, struct OpenPluginInfo *
   lua_pushvalue(L,-3);                               //+4: Info,Tbl,Coll,Info
   //---------------------------------------------------------------------------
   // First element in the collector; can be retrieved on later calls;
-  struct OpenPluginInfo *Info =
-    (struct OpenPluginInfo*) AddBufToCollector(L, cpos, sizeof(struct OpenPluginInfo));
+  struct OpenPanelInfo *Info =
+    (struct OpenPanelInfo*) AddBufToCollector(L, cpos, sizeof(struct OpenPanelInfo));
   //---------------------------------------------------------------------------
-  Info->StructSize = sizeof (struct OpenPluginInfo);
-  Info->Flags      = GetOptIntFromTable(L, "Flags", 0);
+  Info->StructSize = sizeof (struct OpenPanelInfo);
+  Info->FreeSize   = GetOptNumFromTable(L, "FreeSize", 0);
+  Info->Flags      = GetFlagsFromTable(L, -1, "Flags");
   Info->HostFile   = AddStringToCollectorField(L, cpos, "HostFile");
   Info->CurDir     = AddStringToCollectorField(L, cpos, "CurDir");
   Info->Format     = AddStringToCollectorField(L, cpos, "Format");
@@ -461,7 +444,9 @@ void LF_GetOpenPluginInfoW(lua_State* L, HANDLE hPlugin, struct OpenPluginInfo *
   }
   else lua_pop(L, 2);
   //---------------------------------------------------------------------------
-  Info->DescrFiles = CreateStringsArray(L, cpos, "DescrFiles", &Info->DescrFilesNumber);
+  int dfn;
+  Info->DescrFiles = CreateStringsArray(L, cpos, "DescrFiles", &dfn);
+  Info->DescrFilesNumber = dfn;
   //---------------------------------------------------------------------------
   lua_getfield(L, -1, "PanelModesArray");
   lua_getfield(L, -2, "PanelModesNumber");
@@ -478,15 +463,13 @@ void LF_GetOpenPluginInfoW(lua_State* L, HANDLE hPlugin, struct OpenPluginInfo *
         lua_pushinteger(L, i+1);
         lua_gettable(L, -2);
         if(lua_istable(L, -1)) {                //+6: Info,Tbl,Coll,Info,Modes,Mode
+          pm->StructSize = sizeof(*pm);
           pm->ColumnTypes  = (wchar_t*)AddStringToCollectorField(L, cpos, "ColumnTypes");
           pm->ColumnWidths = (wchar_t*)AddStringToCollectorField(L, cpos, "ColumnWidths");
-          pm->FullScreen   = (int)GetOptBoolFromTable(L, "FullScreen", FALSE);
-          pm->DetailedStatus  = GetOptIntFromTable(L, "DetailedStatus", 0);
-          pm->AlignExtensions = GetOptIntFromTable(L, "AlignExtensions", 0);
-          pm->CaseConversion  = (int)GetOptBoolFromTable(L, "CaseConversion", FALSE);
           pm->StatusColumnTypes  = (wchar_t*)AddStringToCollectorField(L, cpos, "StatusColumnTypes");
           pm->StatusColumnWidths = (wchar_t*)AddStringToCollectorField(L, cpos, "StatusColumnWidths");
           pm->ColumnTitles = (const wchar_t* const*)CreateStringsArray(L, cpos, "ColumnTitles", NULL);
+          pm->Flags = GetFlagsFromTable(L, -1, "Flags");
         }
       }
     }
@@ -500,30 +483,30 @@ void LF_GetOpenPluginInfoW(lua_State* L, HANDLE hPlugin, struct OpenPluginInfo *
   //---------------------------------------------------------------------------
   lua_getfield (L, -1, "KeyBar");
   if (lua_istable(L, -1)) {
-    size_t i;
-    int j;
-    struct KeyBarTitles *kbt = (struct KeyBarTitles*)
-      AddBufToCollector(L, cpos, sizeof(struct KeyBarTitles));
+    int size, i;
+    struct KeyBarTitles *kbt = (struct KeyBarTitles*)AddBufToCollector(L, cpos, sizeof(struct KeyBarTitles));
     Info->KeyBar = kbt;
-    struct { const char* key; wchar_t** trg; } pairs[] = {
-      {"Titles",          kbt->Titles},
-      {"CtrlTitles",      kbt->CtrlTitles},
-      {"AltTitles",       kbt->AltTitles},
-      {"ShiftTitles",     kbt->ShiftTitles},
-      {"CtrlShiftTitles", kbt->CtrlShiftTitles},
-      {"AltShiftTitles",  kbt->AltShiftTitles},
-      {"CtrlAltTitles",   kbt->CtrlAltTitles},
-    };
-    for (i=0; i < sizeof(pairs)/sizeof(pairs[0]); i++) {
-      lua_getfield (L, -1, pairs[i].key);
-      if (lua_istable (L, -1)) {
-        for (j=0; j<12; j++)
-          pairs[i].trg[j] = (wchar_t*)AddStringToCollectorSlot(L, cpos, j+1);
+    kbt->CountLabels = lua_objlen(L, -1);
+    size = kbt->CountLabels * sizeof(struct KeyBarLabel);
+    kbt->Labels = (struct KeyBarLabel*)AddBufToCollector(L, cpos, size);
+    memset(kbt->Labels, 0, size);
+    for (i=0; i < (int)kbt->CountLabels; i++) {
+      lua_rawgeti(L, -1, i+1);
+      if (!lua_istable(L, -1)) {
+        kbt->CountLabels = i;
+        lua_pop(L, 1);
+        break;
       }
-      lua_pop (L, 1);
+      kbt->Labels[i].Key.VirtualKeyCode = GetOptIntFromTable(L, "VirtualKeyCode", 0);
+      lua_getfield(L, -1, "ControlKeyState");
+      kbt->Labels[i].Key.ControlKeyState = GetFlagCombination(L, -1, NULL);
+      lua_pop(L, 1);
+      kbt->Labels[i].Text = AddStringToCollectorField(L, cpos, "Text");
+      kbt->Labels[i].LongText = AddStringToCollectorField(L, cpos, "LongText");
+      lua_pop(L, 1);
     }
   }
-  lua_pop(L,1);
+  lua_pop(L, 1);
   //---------------------------------------------------------------------------
   Info->ShortcutData = AddStringToCollectorField (L, cpos, "ShortcutData");
   //---------------------------------------------------------------------------
@@ -532,37 +515,37 @@ void LF_GetOpenPluginInfoW(lua_State* L, HANDLE hPlugin, struct OpenPluginInfo *
 }
 //---------------------------------------------------------------------------
 
-HANDLE LF_OpenPluginW (lua_State* L, int OpenFrom, INT_PTR Item)
+HANDLE LF_Open (lua_State* L, const struct OpenInfo *Info)
 {
-  if (!CheckReloadDefaultScript(L) || !GetLuaFarFunction(L, "OpenPlugin"))
+  if (!CheckReloadDefaultScript(L) || !GetExportFunction(L, "Open"))
     return INVALID_HANDLE_VALUE;
 
-  lua_pushinteger(L, OpenFrom);
+  lua_pushinteger(L, Info->OpenFrom);
+  lua_pushlstring(L, (const char*)Info->Guid, sizeof(GUID));
 
-  if (OpenFrom & OPEN_FROMMACRO) {
-    int op_macro = OpenFrom & OPEN_FROMMACRO_MASK & ~OPEN_FROMMACRO;
+  if (Info->OpenFrom & OPEN_FROMMACRO) {
+    int op_macro = Info->OpenFrom & OPEN_FROMMACRO_MASK & ~OPEN_FROMMACRO;
     if (op_macro == 0)
-      lua_pushinteger(L, Item);
+      lua_pushinteger(L, Info->Data);
     else if (op_macro == OPEN_FROMMACROSTRING)
-      push_utf8_string(L, (const wchar_t*)Item, -1);
+      push_utf8_string(L, (const wchar_t*)Info->Data, -1);
     else
-      lua_pushinteger(L, Item);
+      lua_pushinteger(L, Info->Data);
   }
   else {
-    if (OpenFrom==OPEN_SHORTCUT || OpenFrom==OPEN_COMMANDLINE)
-      push_utf8_string(L, (const wchar_t*)Item, -1);
-    else if (OpenFrom==OPEN_DIALOG) {
-      struct OpenDlgPluginData *data = (struct OpenDlgPluginData*)Item;
-      lua_createtable(L, 0, 2);
-      PutIntToTable(L, "ItemNumber", data->ItemNumber);
+    if (Info->OpenFrom==OPEN_SHORTCUT || Info->OpenFrom==OPEN_COMMANDLINE)
+      push_utf8_string(L, (const wchar_t*)Info->Data, -1);
+    else if (Info->OpenFrom==OPEN_DIALOG) {
+      struct OpenDlgPluginData *data = (struct OpenDlgPluginData*)Info->Data;
+      lua_createtable(L, 0, 1);
       NewDialogData(L, NULL, data->hDlg, FALSE);
       lua_setfield(L, -2, "hDlg");
     }
     else
-      lua_pushinteger(L, Item);
+      lua_pushinteger(L, Info->Data);
   }
 
-  if (pcall_msg(L, 2, 1) == 0) {
+  if (pcall_msg(L, 3, 1) == 0) {
     if (lua_type(L,-1) == LUA_TNUMBER && lua_tointeger(L,-1) == 0) {
       lua_pop(L,1);
       return (HANDLE) 0; // unload plugin
@@ -574,25 +557,24 @@ HANDLE LF_OpenPluginW (lua_State* L, int OpenFrom, INT_PTR Item)
   return INVALID_HANDLE_VALUE;
 }
 
-void LF_ClosePluginW(lua_State* L, HANDLE hPlugin)
+void LF_ClosePanel(lua_State* L, HANDLE hPlugin)
 {
-  if (GetLuaFarFunction(L, "ClosePlugin")) { //+1: Func
-    PushPluginPair(L, hPlugin);              //+3: Func,Pair
+  if (GetExportFunction(L, "ClosePanel")) { //+1: Func
+    PushPluginPair(L, hPlugin);             //+3: Func,Pair
     pcall_msg(L, 2, 0);
   }
   DestroyCollector(L, hPlugin, COLLECTOR_OPI);
   luaL_unref(L, LUA_REGISTRYINDEX, (INT_PTR)hPlugin);
 }
 
-int LF_CompareW(lua_State* L, HANDLE hPlugin, const struct PluginPanelItem *Item1,
-               const struct PluginPanelItem *Item2, unsigned int Mode)
+int LF_Compare(lua_State* L, const struct CompareInfo *Info)
 {
   int res = -2; // default FAR compare function should be used
-  if (GetLuaFarFunction(L, "Compare")) { //+1: Func
-    PushPluginPair(L, hPlugin);          //+3: Func,Pair
-    PushPanelItem(L, Item1);             //+4
-    PushPanelItem(L, Item2);             //+5
-    lua_pushinteger(L, Mode);            //+6
+  if (GetExportFunction(L, "Compare")) { //+1: Func
+    PushPluginPair(L, Info->hPanel);     //+3: Func,Pair
+    PushPanelItem(L, Info->Item1);       //+4
+    PushPanelItem(L, Info->Item2);       //+5
+    lua_pushinteger(L, Info->Mode);      //+6
     if (0 == pcall_msg(L, 5, 1)) {       //+1
       res = lua_tointeger(L,-1);
       lua_pop(L,1);
@@ -601,11 +583,11 @@ int LF_CompareW(lua_State* L, HANDLE hPlugin, const struct PluginPanelItem *Item
   return res;
 }
 
-int LF_ConfigureW(lua_State* L, int ItemNumber)
+int LF_Configure(lua_State* L, const GUID* Guid)
 {
   int res = FALSE;
-  if (GetLuaFarFunction(L, "Configure")) { //+1: Func
-    lua_pushinteger(L, ItemNumber);
+  if (GetExportFunction(L, "Configure")) { //+1: Func
+    lua_pushlstring(L, (const char*)Guid, sizeof(GUID));
     if(0 == pcall_msg(L, 1, 1)) {        //+1
       res = lua_toboolean(L,-1);
       lua_pop(L,1);
@@ -614,14 +596,13 @@ int LF_ConfigureW(lua_State* L, int ItemNumber)
   return res;
 }
 
-int LF_DeleteFilesW(lua_State* L, HANDLE hPlugin, struct PluginPanelItem *PanelItem,
-  int ItemsNumber, int OpMode)
+int LF_DeleteFiles(lua_State* L, const struct DeleteFilesInfo *Info)
 {
   int res = FALSE;
-  if (GetLuaFarFunction(L, "DeleteFiles")) {   //+1: Func
-    PushPluginPair(L, hPlugin);                //+3: Func,Pair
-    PushPanelItems(L, PanelItem, ItemsNumber); //+4
-    lua_pushinteger(L, OpMode);                //+5
+  if (GetExportFunction(L, "DeleteFiles")) {   //+1: Func
+    PushPluginPair(L, Info->hPanel);           //+3: Func,Pair
+    PushPanelItems(L, Info->PanelItem, Info->ItemsNumber); //+4
+    push64(L, Info->OpMode);                   //+5
     if(0 == pcall_msg(L, 4, 1))    {           //+1
       res = lua_toboolean(L,-1);
       lua_pop(L,1);
@@ -633,17 +614,18 @@ int LF_DeleteFilesW(lua_State* L, HANDLE hPlugin, struct PluginPanelItem *PanelI
 // far.MakeDirectory returns 2 values:
 //    a) status (an integer; in accordance to FAR API), and
 //    b) new directory name (a string; optional)
-int LF_MakeDirectoryW (lua_State* L, HANDLE hPlugin, const wchar_t **Name, int OpMode)
+int LF_MakeDirectory (lua_State* L, struct MakeDirectoryInfo *Info)
 {
   int res = 0;
-  if (GetLuaFarFunction(L, "MakeDirectory")) { //+1: Func
-    PushPluginPair(L, hPlugin);                //+3: Func,Pair
-    push_utf8_string(L, *Name, -1);            //+4
-    lua_pushinteger(L, OpMode);                //+5
+  if (GetExportFunction(L, "MakeDirectory")) { //+1: Func
+    Info->StructSize = sizeof(*Info);
+    PushPluginPair(L, Info->hPanel);           //+3: Func,Pair
+    push_utf8_string(L, Info->Name, -1);       //+4
+    push64(L, Info->OpMode);                   //+5
     if(0 == pcall_msg(L, 4, 2)) {              //+2
       res = lua_tointeger(L,-2);
       if (res == 1 && lua_isstring(L,-1)) {
-        *Name = check_utf8_string(L,-1,NULL);
+        Info->Name = check_utf8_string(L,-1,NULL);
         lua_pushvalue(L, -1);
         lua_setfield(L, LUA_REGISTRYINDEX, "MakeDirectory.Name"); // protect from GC
       }
@@ -655,16 +637,14 @@ int LF_MakeDirectoryW (lua_State* L, HANDLE hPlugin, const wchar_t **Name, int O
   return res;
 }
 
-int LF_ProcessEventW(lua_State* L, HANDLE hPlugin, int Event, void *Param)
+int LF_ProcessEvent(lua_State* L, HANDLE hPlugin, int Event, void *Param)
 {
+  (void) Param;
   int res = FALSE;
-  if (GetLuaFarFunction(L, "ProcessEvent")) { //+1: Func
+  if (GetExportFunction(L, "ProcessEvent")) { //+1: Func
     PushPluginPair(L, hPlugin);        //+3
     lua_pushinteger(L, Event);         //+4
-    if (Event == FE_CHANGEVIEWMODE || Event == FE_COMMAND)
-      push_utf8_string(L, (wchar_t*)Param, -1); //+5
-    else
-      lua_pushnil(L);                  //+5
+    lua_pushnil(L);                    //+5
     if(0 == pcall_msg(L, 4, 1))  {     //+1
       res = lua_toboolean(L,-1);
       lua_pop(L,1);                    //+0
@@ -673,20 +653,19 @@ int LF_ProcessEventW(lua_State* L, HANDLE hPlugin, int Event, void *Param)
   return res;
 }
 
-int LF_ProcessHostFileW(lua_State* L, HANDLE hPlugin, struct PluginPanelItem *PanelItem,
-  int ItemsNumber, int OpMode)
+int LF_ProcessHostFile(lua_State* L, const struct ProcessHostFileInfo *Info)
 {
-  if (GetLuaFarFunction(L, "ProcessHostFile")) {   //+1: Func
-    PushPanelItems(L, PanelItem, ItemsNumber); //+2: Func,Item
+  if (GetExportFunction(L, "ProcessHostFile")) {   //+1: Func
+    PushPanelItems(L, Info->PanelItem, Info->ItemsNumber); //+2: Func,Item
     lua_insert(L,-2);                  //+2: Item,Func
-    PushPluginPair(L, hPlugin);        //+4: Item,Func,Pair
+    PushPluginPair(L, Info->hPanel);   //+4: Item,Func,Pair
     lua_pushvalue(L,-4);               //+5: Item,Func,Pair,Item
-    lua_pushinteger(L, OpMode);        //+6: Item,Func,Pair,Item,OpMode
+    push64(L, Info->OpMode);           //+6: Item,Func,Pair,Item,OpMode
     int ret = pcall_msg(L, 4, 1);      //+2: Item,Res
     if (ret == 0) {
       ret = lua_toboolean(L,-1);
       lua_pop(L,1);                    //+1: Item
-      UpdateFileSelection(L, PanelItem, ItemsNumber);
+      UpdateFileSelection(L, Info->PanelItem, Info->ItemsNumber);
       return lua_pop(L,1), ret;
     }
     lua_pop(L,1);
@@ -694,14 +673,12 @@ int LF_ProcessHostFileW(lua_State* L, HANDLE hPlugin, struct PluginPanelItem *Pa
   return FALSE;
 }
 
-int LF_ProcessKeyW(lua_State* L, HANDLE hPlugin, int Key,
-  unsigned int ControlState)
+int LF_ProcessKey(lua_State* L, HANDLE hPlugin, const INPUT_RECORD *Rec)
 {
-  if (GetLuaFarFunction(L, "ProcessKey")) {   //+1: Func
+  if (GetExportFunction(L, "ProcessKey")) {   //+1: Func
     PushPluginPair(L, hPlugin);        //+3: Func,Pair
-    lua_pushinteger(L, Key);           //+4
-    lua_pushinteger(L, ControlState);  //+5
-    if (pcall_msg(L, 4, 1) == 0)    {  //+1: Res
+    pushInputRecord(L, Rec);           //+4
+    if (pcall_msg(L, 3, 1) == 0)    {  //+1: Res
       int ret = lua_toboolean(L,-1);
       return lua_pop(L,1), ret;
     }
@@ -709,21 +686,21 @@ int LF_ProcessKeyW(lua_State* L, HANDLE hPlugin, int Key,
   return FALSE;
 }
 
-int LF_PutFilesW(lua_State* L, HANDLE hPlugin, struct PluginPanelItem *PanelItems,
-  int ItemsNumber, int Move, int OpMode)
+int LF_PutFiles(lua_State* L, const struct PutFilesInfo *Info)
 {
-  if (GetLuaFarFunction(L, "PutFiles")) {   //+1: Func
-    PushPanelItems(L, PanelItems, ItemsNumber); //+2: Func,Items
-    lua_insert(L,-2);                  //+2: Items,Func
-    PushPluginPair(L, hPlugin);        //+4: Items,Func,Pair
-    lua_pushvalue(L,-4);               //+5: Items,Func,Pair,Item
-    lua_pushboolean(L, Move);          //+6: Items,Func,Pair,Item,Move
-    lua_pushinteger(L, OpMode);        //+7: Items,Func,Pair,Item,Move,OpMode
-    int ret = pcall_msg(L, 5, 1);      //+2: Items,Res
+  if (GetExportFunction(L, "PutFiles")) {    //+1: Func
+    PushPanelItems(L, Info->PanelItem, Info->ItemsNumber); //+2: Func,Items
+    lua_insert(L,-2);                        //+2: Items,Func
+    PushPluginPair(L, Info->hPanel);         //+4: Items,Func,Pair
+    lua_pushvalue(L,-4);                     //+5: Items,Func,Pair,Items
+    lua_pushboolean(L, Info->Move);          //+6: Items,Func,Pair,Items,Move
+    push_utf8_string(L, Info->SrcPath, -1);  //+7: Items,Func,Pair,Items,Move,SrcPath
+    push64(L, Info->OpMode);                 //+8: Items,Func,Pair,Items,Move,SrcPath,OpMode
+    int ret = pcall_msg(L, 6, 1);            //+2: Items,Res
     if (ret == 0) {
       ret = lua_tointeger(L,-1);
       lua_pop(L,1);                    //+1: Items
-      UpdateFileSelection(L, PanelItems, ItemsNumber);
+      UpdateFileSelection(L, Info->PanelItem, Info->ItemsNumber);
       return lua_pop(L,1), ret;
     }
     lua_pop(L,1);
@@ -731,13 +708,13 @@ int LF_PutFilesW(lua_State* L, HANDLE hPlugin, struct PluginPanelItem *PanelItem
   return 0;
 }
 
-int LF_SetDirectoryW(lua_State* L, HANDLE hPlugin, const wchar_t *Dir, int OpMode)
+int LF_SetDirectory(lua_State* L, const struct SetDirectoryInfo *Info) //TODO: Info->UserData
 {
-  if (GetLuaFarFunction(L, "SetDirectory")) {   //+1: Func
-    PushPluginPair(L, hPlugin);        //+3: Func,Pair
-    push_utf8_string(L, Dir, -1);      //+4: Func,Pair,Dir
-    lua_pushinteger(L, OpMode);        //+5: Func,Pair,Dir,OpMode
-    int ret = pcall_msg(L, 4, 1);      //+1: Res
+  if (GetExportFunction(L, "SetDirectory")) {   //+1: Func
+    PushPluginPair(L, Info->hPanel);     //+3: Func,Pair
+    push_utf8_string(L, Info->Dir, -1);  //+4: Func,Pair,Dir
+    push64(L, Info->OpMode);             //+5: Func,Pair,Dir,OpMode
+    int ret = pcall_msg(L, 4, 1);        //+1: Res
     if (ret == 0) {
       ret = lua_toboolean(L,-1);
       return lua_pop(L,1), ret;
@@ -746,13 +723,12 @@ int LF_SetDirectoryW(lua_State* L, HANDLE hPlugin, const wchar_t *Dir, int OpMod
   return FALSE;
 }
 
-int LF_SetFindListW(lua_State* L, HANDLE hPlugin, const struct PluginPanelItem *PanelItems,
-  int ItemsNumber)
+int LF_SetFindList(lua_State* L, const struct SetFindListInfo *Info)
 {
-  if (GetLuaFarFunction(L, "SetFindList")) {    //+1: Func
-    PushPluginPair(L, hPlugin);                 //+3: Func,Pair
-    PushPanelItems(L, PanelItems, ItemsNumber); //+4: Func,Pair,Items
-    int ret = pcall_msg(L, 3, 1);               //+1: Res
+  if (GetExportFunction(L, "SetFindList")) {               //+1: Func
+    PushPluginPair(L, Info->hPanel);                       //+3: Func,Pair
+    PushPanelItems(L, Info->PanelItem, Info->ItemsNumber); //+4: Func,Pair,Items
+    int ret = pcall_msg(L, 3, 1);                          //+1: Res
     if (ret == 0) {
       ret = lua_toboolean(L,-1);
       return lua_pop(L,1), ret;
@@ -761,23 +737,32 @@ int LF_SetFindListW(lua_State* L, HANDLE hPlugin, const struct PluginPanelItem *
   return FALSE;
 }
 
-void LF_LuaClose(lua_State* L)
+void LF_ExitFAR(lua_State* L)
 {
-  DestroyPluginInfoCollector(L);
-  lua_close(L);
-}
-
-void LF_ExitFARW(lua_State* L)
-{
-  DestroyPluginInfoCollector(L);
-  if (GetLuaFarFunction(L, "ExitFAR"))   //+1: Func
+  if (GetExportFunction(L, "ExitFAR"))   //+1: Func
     pcall_msg(L, 0, 0);                  //+0
 }
 
-void LF_GetPluginInfoW(lua_State* L, struct PluginInfo *aPI)
+void getPluginMenuItems(lua_State* L, struct PluginMenuItem *pmi, const char* namestrings,
+                        const char* nameguids, int cpos)
 {
-  aPI->StructSize = sizeof (struct PluginInfo);
-  if (!GetLuaFarFunction(L, "GetPluginInfo"))    //+1
+  int count = 0;
+  pmi->Strings = CreateStringsArray (L, cpos, namestrings, &pmi->Count);
+  lua_getfield(L, -1, nameguids);
+  if (lua_type(L, -1) == LUA_TSTRING) {
+    pmi->Guids = (GUID*)lua_tostring(L,-1);
+    count = lua_objlen(L, -1) / sizeof(GUID);
+    lua_rawseti(L, cpos, lua_objlen(L, cpos) + 1);
+  }
+  else
+    lua_pop(L, 1);
+  if (pmi->Count > count)
+    pmi->Count = count;
+}
+
+void LF_GetPluginInfo(lua_State* L, struct PluginInfo *PI)
+{
+  if (!GetExportFunction(L, "GetPluginInfo"))    //+1
     return;
   if (pcall_msg(L, 0, 1) != 0)
     return;
@@ -785,32 +770,24 @@ void LF_GetPluginInfoW(lua_State* L, struct PluginInfo *aPI)
     lua_pop(L,1);
     return;
   }
-  //--------------------------------------------------------------------------
-  DestroyPluginInfoCollector (L);
-  CreatePluginInfoCollector (L);
-  lua_getfield(L, LUA_REGISTRYINDEX, COLLECTOR_PI);  //+2: Info,Coll
+  ReplacePluginInfoCollector(L);                     //+2: Info,Coll
   int cpos = lua_gettop(L);  // collector position
   lua_pushvalue(L, -2);                              //+3: Info,Coll,Info
   //--------------------------------------------------------------------------
-  struct PluginInfo *PI = (struct PluginInfo*)
-    AddBufToCollector (L, cpos, sizeof(struct PluginInfo));
-  PI->StructSize = sizeof (struct PluginInfo);
-  //--------------------------------------------------------------------------
-  PI->Flags = GetOptIntFromTable (L, "Flags", 0);
-  PI->Reserved = GetOptIntFromTable (L, "SysId", 0);
-  //--------------------------------------------------------------------------
-  PI->DiskMenuStrings = CreateStringsArray (L, cpos, "DiskMenuStrings", &PI->DiskMenuStringsNumber);
-  PI->PluginMenuStrings = CreateStringsArray (L, cpos, "PluginMenuStrings", &PI->PluginMenuStringsNumber);
-  PI->PluginConfigStrings = CreateStringsArray (L, cpos, "PluginConfigStrings", &PI->PluginConfigStringsNumber);
+  PI->StructSize = sizeof(*PI);
+  PI->Flags = GetFlagsFromTable(L, -1, "Flags");
   PI->CommandPrefix = AddStringToCollectorField(L, cpos, "CommandPrefix");
   //--------------------------------------------------------------------------
+  getPluginMenuItems(L, &PI->DiskMenu, "DiskMenuStrings", "DiskMenuGuids", cpos);
+  getPluginMenuItems(L, &PI->PluginMenu, "PluginMenuStrings", "PluginMenuGuids", cpos);
+  getPluginMenuItems(L, &PI->PluginConfig, "PluginConfigStrings", "PluginConfigGuids", cpos);
+  //--------------------------------------------------------------------------
   lua_pop(L, 3);
-  *aPI = *PI;
 }
 
-int LF_ProcessEditorInputW (lua_State* L, const INPUT_RECORD *Rec)
+int LF_ProcessEditorInput (lua_State* L, const INPUT_RECORD *Rec)
 {
-  if (!GetLuaFarFunction(L, "ProcessEditorInput"))   //+1: Func
+  if (!GetExportFunction(L, "ProcessEditorInput"))   //+1: Func
     return 0;
   lua_newtable(L);                   //+2: Func,Tbl
   PutNumToTable(L, "EventType", Rec->EventType);
@@ -848,10 +825,10 @@ int LF_ProcessEditorInputW (lua_State* L, const INPUT_RECORD *Rec)
   return 0;
 }
 
-int LF_ProcessEditorEventW (lua_State* L, int Event, void *Param)
+int LF_ProcessEditorEvent (lua_State* L, int Event, void *Param)
 {
   int ret = 0;
-  if (GetLuaFarFunction(L, "ProcessEditorEvent"))  { //+1: Func
+  if (GetExportFunction(L, "ProcessEditorEvent"))  { //+1: Func
     lua_pushinteger(L, Event);  //+2;
     switch(Event) {
       case EE_CLOSE:
@@ -871,10 +848,10 @@ int LF_ProcessEditorEventW (lua_State* L, int Event, void *Param)
   return ret;
 }
 
-int LF_ProcessViewerEventW (lua_State* L, int Event, void* Param)
+int LF_ProcessViewerEvent (lua_State* L, int Event, void* Param)
 {
   int ret = 0;
-  if (GetLuaFarFunction(L, "ProcessViewerEvent"))  { //+1: Func
+  if (GetExportFunction(L, "ProcessViewerEvent"))  { //+1: Func
     lua_pushinteger(L, Event);
     switch(Event) {
       case VE_GOTFOCUS:
@@ -890,10 +867,10 @@ int LF_ProcessViewerEventW (lua_State* L, int Event, void* Param)
   return ret;
 }
 
-int LF_ProcessDialogEventW (lua_State* L, int Event, void *Param)
+int LF_ProcessDialogEvent (lua_State* L, int Event, void *Param)
 {
   int ret = 0;
-  if (GetLuaFarFunction(L, "ProcessDialogEvent"))  { //+1: Func
+  if (GetExportFunction(L, "ProcessDialogEvent"))  { //+1: Func
     struct FarDialogEvent *fde = (struct FarDialogEvent*) Param;
     lua_pushinteger(L, Event); //+2
     lua_createtable(L, 0, 5);  //+3
@@ -913,7 +890,7 @@ int LF_ProcessDialogEventW (lua_State* L, int Event, void *Param)
   return ret;
 }
 
-int LF_ProcessSynchroEventW (lua_State* L, int Event, void *Param)
+int LF_ProcessSynchroEvent (lua_State* L, int Event, void *Param)
 {
   int ret = 0;
   if (Event == SE_COMMONSYNCHRO) {
@@ -937,7 +914,7 @@ int LF_ProcessSynchroEventW (lua_State* L, int Event, void *Param)
         luaL_unref(L, LUA_REGISTRYINDEX, sd.funcRef);
       }
     }
-    else if (GetLuaFarFunction(L, "ProcessSynchroEvent"))  { //+1: Func
+    else if (GetExportFunction(L, "ProcessSynchroEvent"))  { //+1: Func
       lua_pushinteger(L, Event); //+2
       lua_pushinteger(L, sd.data); //+3
       if (pcall_msg(L, 2, 1) == 0) {  //+1
@@ -949,9 +926,9 @@ int LF_ProcessSynchroEventW (lua_State* L, int Event, void *Param)
   return ret;
 }
 
-int LF_GetCustomDataW(lua_State* L, const wchar_t *FilePath, wchar_t **CustomData)
+int LF_GetCustomData(lua_State* L, const wchar_t *FilePath, wchar_t **CustomData)
 {
-  if (GetLuaFarFunction(L, "GetCustomData"))  { //+1: Func
+  if (GetExportFunction(L, "GetCustomData"))  { //+1: Func
     push_utf8_string(L, FilePath, -1);  //+2
     if (pcall_msg(L, 1, 1) == 0) {  //+1
       if (lua_isstring(L, -1)) {
@@ -968,9 +945,65 @@ int LF_GetCustomDataW(lua_State* L, const wchar_t *FilePath, wchar_t **CustomDat
   return FALSE;
 }
 
-void  LF_FreeCustomDataW(lua_State* L, wchar_t *CustomData)
+void LF_FreeCustomData(lua_State* L, wchar_t *CustomData)
 {
   (void) L;
   if (CustomData) free(CustomData);
+}
+
+int LF_GetGlobalInfo (lua_State* L, struct GlobalInfo *Info, const wchar_t *PluginDir)
+{
+  wchar_t buf[512];
+  lua_getglobal(L, "require");
+  lua_pushliteral(L, "<_globalinfo");
+  int status = lua_pcall(L,1,1,0);
+  if (status) {
+    lua_pop(L, 1);
+    wcscpy(buf, PluginDir);
+    wcscat(buf, L"_globalinfo.lua");
+    if (LF_LoadFile(L, buf)) {
+      lua_pop(L, 1);
+      return FALSE;
+    }
+  }
+  //--------------------------------------------------------------------------
+  if (lua_pcall(L, 0, 0, 0)) {
+    lua_pop(L, 1);
+    return FALSE;
+  }
+  if (!GetExportFunction(L, "GetGlobalInfo"))
+    return FALSE;
+  if (lua_pcall(L, 0, 1, 0) || !lua_istable(L, -1)) { //+1
+    lua_pop(L,1);
+    return FALSE;
+  }
+  //--------------------------------------------------------------------------
+  ReplacePluginInfoCollector(L);                     //+2: Info,Coll
+  int cpos = lua_gettop(L);  // collector position
+  lua_pushvalue(L, -2);                              //+3: Info,Coll,Info
+  //--------------------------------------------------------------------------
+  Info->StructSize = sizeof(*Info);
+  //--------------------------------------------------------------------------
+  lua_getfield(L, -1, "MinFarVersion");
+  if (lua_istable(L, -1))
+    Info->MinFarVersion = MAKEFARVERSION(GetOptIntFromArray(L,1,0),GetOptIntFromArray(L,2,0),
+                                         GetOptIntFromArray(L,3,0),GetOptIntFromArray(L,4,0));
+  lua_pop(L, 1);
+  lua_getfield(L, -1, "Version");
+  if (lua_istable(L, -1))
+    Info->Version = MAKEFARVERSION(GetOptIntFromArray(L,1,0),GetOptIntFromArray(L,2,0),
+                                   GetOptIntFromArray(L,3,0),GetOptIntFromArray(L,4,0));
+  lua_pop(L, 1);
+  //--------------------------------------------------------------------------
+  lua_getfield(L, -1, "Guid");
+  if (lua_type(L,-1) == LUA_TSTRING) Info->Guid = *(GUID*)lua_tostring(L,-1);
+  lua_pop(L, 1);
+  //--------------------------------------------------------------------------
+  Info->Title = AddStringToCollectorField(L, cpos, "Title");
+  Info->Description = AddStringToCollectorField(L, cpos, "Description");
+  Info->Author = AddStringToCollectorField(L, cpos, "Author");
+  //--------------------------------------------------------------------------
+  lua_pop(L, 3);
+  return TRUE;
 }
 

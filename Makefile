@@ -24,7 +24,7 @@ auxil:
 
 clean:
 	-cd auxil && del farcolor.lua farkeys.lua
-	-cd $(TARGETDIR) && del luafarw.dll
+	-cd $(TARGETDIR) && del $(LUAFARDLL)
 	$(MAKE) cleansrc
 
 cleansrc:

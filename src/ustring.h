@@ -36,17 +36,28 @@ wchar_t* oem_to_utf16 (lua_State *L, int pos, int* pTrgSize);
 char* push_utf8_string (lua_State* L, const wchar_t* str, int numchars);
 char* push_oem_string (lua_State* L, const wchar_t* str, int numchars);
 
+int  DecodeAttributes(const char* str);
+void PushAttrString(lua_State *L, int attr);
+void PutAttrToTable(lua_State *L, int attr);
+int  SetAttr(lua_State *L, const wchar_t* fname, unsigned attr);
+
 int ustring_EnumSystemCodePages (lua_State *L);
 int ustring_GetACP (lua_State* L);
 int ustring_GetCPInfo (lua_State *L);
 int ustring_GetDriveType (lua_State *L);
+int ustring_GetFileAttr(lua_State *L);
 int ustring_GetLogicalDriveStrings (lua_State *L);
 int ustring_GetOEMCP (lua_State* L);
+int ustring_GlobalMemoryStatus (lua_State *L);
 int ustring_MultiByteToWideChar (lua_State *L);
 int ustring_OemToUtf8 (lua_State *L);
+int ustring_SearchPath (lua_State *L);
+int ustring_SetFileAttr(lua_State *L);
+int ustring_Sleep (lua_State *L);
 int ustring_Utf16ToUtf8 (lua_State *L);
 int ustring_Utf8ToOem (lua_State *L);
 int ustring_Utf8ToUtf16 (lua_State *L);
+int ustring_Uuid (lua_State* L);
 
 #ifdef __cplusplus
 }

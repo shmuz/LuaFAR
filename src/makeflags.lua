@@ -1,30 +1,53 @@
--- This script is intended to generate the "flags.cpp" file
+-- This script is intended to generate the "flags.c" file
 
-local function add_defines (src, trg)
-  for c in src:gmatch("#define%s+([A-Z][A-Z0-9_]*)%s") do
-    table.insert(trg, c)
-  end
-end
-
-local function add_enums (src, trg)
-  for enum in src:gmatch("%senum%s*[%w_]*%s*(%b{})") do
-    for c in enum:gmatch("\n%s*([%w_]+)") do
-      table.insert(trg, c)
+local function add_defines (src, trg_keys, trg_vals)
+  local cast1 = "%(HANDLE%)" -- suppress compiler warnings
+  local cast2 = "%(void%*%)" -- suppress compiler warnings
+  for k,v in src:gmatch("#define%s+([A-Z][A-Z0-9_]*)%s([^\n]+)") do
+    if k ~= "FARMANAGERVERSION" then
+      table.insert(trg_keys, k)
+      if     v:find(cast1) then v = v:gsub(cast1, "(INT_PTR)"):gsub("^%s+", "")
+      elseif v:find(cast2) then v = v:gsub(cast2, "(INT_PTR)"):gsub("^%s+", "")
+      else v = k
+      end
+      table.insert(trg_vals, v)
     end
   end
 end
 
-local function write_target (trg)
-  io.write [[
-const flag_pair flags[] = {
-]]
-  table.sort(trg) -- sort the table: this will allow for binary search
-  for k,v in ipairs(trg) do
-    local len = math.max(1, 32 - #v)
-    local space = (" "):rep(len)
-    io.write(string.format('  {"%s",%s(INT_PTR) %s },\n', v, space, v))
+local function add_enums (src, trg_keys, trg_vals)
+  for enum in src:gmatch("%senum%s*[%w_]*%s*(%b{})") do
+    for c in enum:gmatch("\n%s*([%w_]+)") do
+      if not c:find("^[EFM]CTL_") then
+        table.insert(trg_keys, c)
+        table.insert(trg_vals, c)
+      end
+    end
   end
-  io.write("};\n\n")
+end
+
+local function add_static  (src, trg_keys, trg_vals)
+  for chunk in src:gmatch("static%s+const%s+[^;]-;") do
+    for k,v in chunk:gmatch("\n%s*([%w_]+)%s*=%s*(%w+)") do
+      table.insert(trg_keys, k)
+      table.insert(trg_vals, v)
+    end
+  end
+end
+
+local function write_target  (trg_keys, trg_vals)
+  print "const char* Keys[] = {"
+  for k,v in ipairs(trg_keys) do
+    print(string.format('  "%s",', v))
+  end
+  print("};\n")
+
+  --print "const unsigned __int64 Vals[] = {"
+  print "const unsigned __int64 Vals[] = {"
+  for k,v in ipairs(trg_vals) do
+    print(string.format('  %s,', v))
+  end
+  print("};\n")
 end
 
 -- Windows API constants
@@ -34,8 +57,8 @@ local t_winapi = {
   "BACKGROUND_RED", "BACKGROUND_INTENSITY", "CTRL_C_EVENT", "CTRL_BREAK_EVENT",
   "CTRL_CLOSE_EVENT", "CTRL_LOGOFF_EVENT", "CTRL_SHUTDOWN_EVENT",
   "ENABLE_LINE_INPUT", "ENABLE_ECHO_INPUT", "ENABLE_PROCESSED_INPUT",
-  "ENABLE_WINDOW_INPUT", "ENABLE_MOUSE_INPUT", --[["ENABLE_INSERT_MODE",
-  "ENABLE_QUICK_EDIT_MODE", "ENABLE_EXTENDED_FLAGS", "ENABLE_AUTO_POSITION",]]
+  "ENABLE_WINDOW_INPUT", "ENABLE_MOUSE_INPUT", "ENABLE_INSERT_MODE",
+  "ENABLE_QUICK_EDIT_MODE", "ENABLE_EXTENDED_FLAGS", "ENABLE_AUTO_POSITION",
   "ENABLE_PROCESSED_OUTPUT", "ENABLE_WRAP_AT_EOL_OUTPUT", "KEY_EVENT",
   "MOUSE_EVENT", "WINDOW_BUFFER_SIZE_EVENT", "MENU_EVENT", "FOCUS_EVENT",
   "CAPSLOCK_ON", "ENHANCED_KEY", "RIGHT_ALT_PRESSED", "LEFT_ALT_PRESSED",
@@ -47,24 +70,13 @@ local t_winapi = {
 
 
 local file_top = [[
-// flags.cpp
+// flags.c
 // DON'T EDIT: THIS FILE IS AUTO-GENERATED.
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 #include "lua.h"
-#ifdef __cplusplus
-}
-#endif
-
 #include "plugin.hpp"
 
-typedef struct {
-  const char* key;
-  INT_PTR val;
-} flag_pair;
-
+extern int push64(lua_State *L, unsigned __int64 v);
 ]]
 
 
@@ -73,14 +85,13 @@ local file_bottom = [[
 void push_flags_table (lua_State *L)
 {
   int i;
-  const int nelem = sizeof(flags) / sizeof(flags[0]);
+  const int nelem = sizeof(Keys) / sizeof(Keys[0]);
   lua_createtable (L, 0, nelem);
   for (i=0; i<nelem; ++i) {
-    lua_pushinteger(L, flags[i].val);
-    lua_setfield(L, -2, flags[i].key);
+    push64(L, Vals[i]);
+    lua_setfield(L, -2, Keys[i]);
   }
 }
-
 ]]
 
 local function write_common_flags_file (fname)
@@ -89,14 +100,19 @@ local function write_common_flags_file (fname)
   local src = fp:read ("*all")
   fp:close()
 
-  local collector = {}
-  add_defines(src, collector)
-  add_enums(src, collector)
-  for _,v in ipairs(t_winapi) do table.insert(collector, v) end
+  local tb_keys, tb_vals = {}, {}
+  add_defines(src, tb_keys, tb_vals)
+  add_enums(src, tb_keys, tb_vals)
+  add_static(src, tb_keys, tb_vals)
+  for _,v in ipairs(t_winapi) do
+    table.insert(tb_keys, v)
+    table.insert(tb_vals, v)
+  end
 
-  io.write(file_top)
-  write_target(collector)
-  io.write(file_bottom)
+  print(file_top)
+  write_target(tb_keys, tb_vals)
+  print(file_bottom)
 end
 
-return write_common_flags_file
+local fname = assert((...))
+write_common_flags_file(fname)

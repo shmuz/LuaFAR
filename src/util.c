@@ -66,23 +66,6 @@ void PutFileTimeToTable(lua_State *L, const char* key, FILETIME ft)
   PutNumToTable(L, key, li.QuadPart/10000); // convert 100ns units to 1ms ones
 }
 
-int DecodeAttributes(const char* str)
-{
-  int attr = 0;
-  const char* p;
-  for(p=str; *p; p++) {
-    if      (*p == 'a' || *p == 'A') attr |= FILE_ATTRIBUTE_ARCHIVE;
-    else if (*p == 'r' || *p == 'R') attr |= FILE_ATTRIBUTE_READONLY;
-    else if (*p == 'h' || *p == 'H') attr |= FILE_ATTRIBUTE_HIDDEN;
-    else if (*p == 's' || *p == 'S') attr |= FILE_ATTRIBUTE_SYSTEM;
-    else if (*p == 'd' || *p == 'D') attr |= FILE_ATTRIBUTE_DIRECTORY;
-    else if (*p == 'c' || *p == 'C') attr |= FILE_ATTRIBUTE_COMPRESSED;
-    else if (*p == 'o' || *p == 'O') attr |= FILE_ATTRIBUTE_OFFLINE;
-    else if (*p == 't' || *p == 'T') attr |= FILE_ATTRIBUTE_TEMPORARY;
-  }
-  return attr;
-}
-
 int GetAttrFromTable(lua_State *L)
 {
   int attr = 0;
@@ -91,27 +74,6 @@ int GetAttrFromTable(lua_State *L)
     attr = DecodeAttributes(lua_tostring(L, -1));
   lua_pop(L, 1);
   return attr;
-}
-
-void PushAttrString(lua_State *L, int attr)
-{
-  char buf[16], *p = buf;
-  if(attr & FILE_ATTRIBUTE_ARCHIVE)    *p++ = 'a';
-  if(attr & FILE_ATTRIBUTE_READONLY)   *p++ = 'r';
-  if(attr & FILE_ATTRIBUTE_HIDDEN)     *p++ = 'h';
-  if(attr & FILE_ATTRIBUTE_SYSTEM)     *p++ = 's';
-  if(attr & FILE_ATTRIBUTE_DIRECTORY)  *p++ = 'd';
-  if(attr & FILE_ATTRIBUTE_COMPRESSED) *p++ = 'c';
-  if(attr & FILE_ATTRIBUTE_OFFLINE)    *p++ = 'o';
-  if(attr & FILE_ATTRIBUTE_TEMPORARY)  *p++ = 't';
-  *p = '\0';
-  lua_pushstring(L, buf);
-}
-
-void PutAttrToTable(lua_State *L, int attr)
-{
-  PushAttrString(L, attr);
-  lua_setfield(L, -2, "FileAttributes");
 }
 
 void InitSynchroData (TSynchroData* SD, int a, int b, int c, int d)

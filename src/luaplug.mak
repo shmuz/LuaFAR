@@ -9,9 +9,6 @@ endif
 ifdef FAR_EXPORTS
     EXPORTS = $(addprefix -DEXPORT_,$(FAR_EXPORTS)) 
 endif
-ifdef MINFARVERSION
-    FARVERSION = -DMINFARVERSION=MAKEFARVERSION($(MINFARVERSION))
-endif
 
 PATH_LUAFARSRC = $(PATH_LUAFAR)\src
 
@@ -21,7 +18,7 @@ ARCH= -m32
 CC= gcc
 
 OBJ       = luaplug.o
-CFLAGS    = -O2 -Wall -I$(INC_FAR) -I$(INC_LUA) $(EXPORTS) $(FARVERSION) \
+CFLAGS    = -O2 -Wall -I$(INC_FAR) -I$(INC_LUA) $(EXPORTS) \
             $(ARCH) -D_export=
 MYLDFLAGS = -Wl,--kill-at -shared -s $(ARCH)
 

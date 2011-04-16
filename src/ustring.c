@@ -194,6 +194,8 @@ wchar_t* oem_to_utf16 (lua_State *L, int pos, int* pTrgSize)
 char* push_multibyte_string (lua_State* L, UINT CodePage, const wchar_t* str,
   int numchars)
 {
+  if (str == NULL) { lua_pushnil(L); return NULL; }
+
   int targetSize = WideCharToMultiByte(
     CodePage, // UINT CodePage,
     0,        // DWORD dwFlags,
@@ -369,6 +371,147 @@ int ustring_GetDriveType (lua_State *L)
     case DRIVE_RAMDISK:   out = "ramdisk";           break;
   }
   lua_pushstring(L, out);
+  return 1;
+}
+
+int ustring_Uuid (lua_State* L)
+{
+  UUID uuid;
+  if (lua_gettop(L) == 0 || !lua_toboolean(L, 1)) {
+    // generate new UUID
+    if (UuidCreate(&uuid) == RPC_S_OK) {
+      lua_pushlstring(L, (const char*)&uuid, sizeof(UUID));
+      return 1;
+    }
+  }
+  else {
+    size_t len;
+    const char* arg1 = luaL_checklstring(L, 1, &len);
+    if (len == sizeof(UUID)) {
+      // convert given UUID to string
+      unsigned char* p;
+      if (UuidToString((UUID*)arg1, &p) == RPC_S_OK) {
+        lua_pushstring(L, (char*)p);
+        RpcStringFree(&p);
+        return 1;
+      }
+    }
+    else {
+      // convert string UUID representation to UUID
+      if (UuidFromString((unsigned char*)arg1, &uuid) == RPC_S_OK) {
+        lua_pushlstring(L, (const char*)&uuid, sizeof(UUID));
+        return 1;
+      }
+    }
+  }
+  lua_pushnil(L);
+  return 1;
+}
+
+int ustring_SearchPath (lua_State *L)
+{
+  const wchar_t* lpPath = opt_utf8_string (L, 1, NULL);
+  const wchar_t* lpFileName = check_utf8_string (L, 2, NULL);
+  const wchar_t* lpExtension = opt_utf8_string (L, 3, NULL);
+
+  wchar_t buf[2048];
+  wchar_t* lpFilePart;
+  DWORD result = SearchPathW(
+    lpPath,         // address of search path
+    lpFileName,	    // address of filename
+    lpExtension,	  // address of extension
+    sizeof(buf)/sizeof(wchar_t),	  // size, in characters, of buffer
+    buf,	          // address of buffer for found filename
+    &lpFilePart 	  // address of pointer to file component
+   );
+  if (result > 0) {
+    push_utf8_string (L, buf, -1);
+    push_utf8_string (L, lpFilePart, -1);
+    return 2;
+  }
+  return 0;
+}
+
+int ustring_GlobalMemoryStatus (lua_State *L)
+{
+  MEMORYSTATUSEX ms;
+  ms.dwLength = sizeof(ms);
+  if (0 == GlobalMemoryStatusEx(&ms))
+    return SysErrorReturn(L);
+  lua_createtable(L, 0, 8);
+  PutNumToTable(L, "MemoryLoad",           ms.dwMemoryLoad);
+  PutNumToTable(L, "TotalPhys",            ms.ullTotalPhys);
+  PutNumToTable(L, "AvailPhys",            ms.ullAvailPhys);
+  PutNumToTable(L, "TotalPageFile",        ms.ullTotalPageFile);
+  PutNumToTable(L, "AvailPageFile",        ms.ullAvailPageFile);
+  PutNumToTable(L, "TotalVirtual",         ms.ullTotalVirtual);
+  PutNumToTable(L, "AvailVirtual",         ms.ullAvailVirtual);
+  PutNumToTable(L, "AvailExtendedVirtual", ms.ullAvailExtendedVirtual);
+  return 1;
+}
+
+int ustring_Sleep (lua_State *L)
+{
+  Sleep( (DWORD)luaL_checknumber(L, 1) );
+  return 0;
+}
+
+void PushAttrString(lua_State *L, int attr)
+{
+  char buf[16], *p = buf;
+  if(attr & FILE_ATTRIBUTE_ARCHIVE)    *p++ = 'a';
+  if(attr & FILE_ATTRIBUTE_READONLY)   *p++ = 'r';
+  if(attr & FILE_ATTRIBUTE_HIDDEN)     *p++ = 'h';
+  if(attr & FILE_ATTRIBUTE_SYSTEM)     *p++ = 's';
+  if(attr & FILE_ATTRIBUTE_DIRECTORY)  *p++ = 'd';
+  if(attr & FILE_ATTRIBUTE_COMPRESSED) *p++ = 'c';
+  if(attr & FILE_ATTRIBUTE_OFFLINE)    *p++ = 'o';
+  if(attr & FILE_ATTRIBUTE_TEMPORARY)  *p++ = 't';
+  *p = '\0';
+  lua_pushstring(L, buf);
+}
+
+void PutAttrToTable(lua_State *L, int attr)
+{
+  PushAttrString(L, attr);
+  lua_setfield(L, -2, "FileAttributes");
+}
+
+int DecodeAttributes(const char* str)
+{
+  int attr = 0;
+  for (; *str; str++) {
+    char c = *str;
+    if      (c == 'a' || c == 'A') attr |= FILE_ATTRIBUTE_ARCHIVE;
+    else if (c == 'r' || c == 'R') attr |= FILE_ATTRIBUTE_READONLY;
+    else if (c == 'h' || c == 'H') attr |= FILE_ATTRIBUTE_HIDDEN;
+    else if (c == 's' || c == 'S') attr |= FILE_ATTRIBUTE_SYSTEM;
+    else if (c == 'd' || c == 'D') attr |= FILE_ATTRIBUTE_DIRECTORY;
+    else if (c == 'c' || c == 'C') attr |= FILE_ATTRIBUTE_COMPRESSED;
+    else if (c == 'o' || c == 'O') attr |= FILE_ATTRIBUTE_OFFLINE;
+    else if (c == 't' || c == 'T') attr |= FILE_ATTRIBUTE_TEMPORARY;
+  }
+  return attr;
+}
+
+// for reusing code
+int SetAttr(lua_State *L, const wchar_t* fname, unsigned attr)
+{
+  if (SetFileAttributesW(fname, attr))
+    return lua_pushboolean(L, 1), 1;
+  return SysErrorReturn(L);
+}
+
+int ustring_SetFileAttr(lua_State *L)
+{
+  return SetAttr(L, check_utf8_string(L,1,NULL), DecodeAttributes(luaL_checkstring(L,2)));
+}
+
+int ustring_GetFileAttr(lua_State *L)
+{
+  DWORD attr = GetFileAttributesW(check_utf8_string(L,1,NULL));
+  if(attr == 0xFFFFFFFF) lua_pushnil(L);
+  else PushAttrString(L, attr);
   return 1;
 }
 

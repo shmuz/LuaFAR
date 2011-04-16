@@ -4,8 +4,9 @@ include ../config.mak
 
 ARCH= -m32
 CC= gcc
-CFLAGS= -O2 -Wall -I$(INC_FAR) -I$(INC_LUA) -DBUILD_DLL $(ARCH) -D_export=
-MYLDFLAGS= -L$(LUADLLPATH) -l$(LUADLLNAME) -shared $(ARCH) -s
+CFLAGS= -O2 -W -Wall -I$(INC_FAR) -I$(INC_LUA) -DBUILD_DLL -DWINVER=0x500 \
+        $(ARCH)
+MYLDFLAGS= -L$(LUADLLPATH) -l$(LUADLLNAME) -shared $(ARCH) -s -lrpcrt4
 
 ifeq ($(ARCH),-m64)
   RESTARGET= -F pe-x86-64
@@ -14,18 +15,19 @@ else
 endif
 
 OBJ = \
-  bit.o         \
-  exported.o    \
-  flags.o       \
-  lflua.o       \
-  lregex.o      \
-  luafar.o      \
-  reg.o         \
-  service.o     \
-  slnunico.o    \
-  uliolib.o     \
-  uloadlib.o    \
-  ustring.o     \
+  bit64.o          \
+  exported.o       \
+  flags.o          \
+  keysandcolors.o  \
+  lflua.o          \
+  lregex.o         \
+  luafar.o         \
+  reg.o            \
+  service.o        \
+  slnunico.o       \
+  uliolib.o        \
+  uloadlib.o       \
+  ustring.o        \
   util.o
 
 $(LUAFARDLL): $(OBJ)
@@ -44,7 +46,13 @@ util.o     : util.h ustring.h
 lflua.o    : luafar.h util.h ustring.h
 luafar.o   : version.h
 
-flags.c: $(INC_FAR)\plugin.hpp
-	lua -erequire('makeflags')([[$<]]) > $@
+flags.c: $(INC_FAR)\plugin.hpp makeflags.lua
+	lua makeflags.lua $< > $@
+
+keysandcolors.c: $(INC_FAR)/farkeys.hpp $(INC_FAR)/farcolor.hpp makefarkeys.lua
+	lua makefarkeys.lua $(INC_FAR) $@
+
+clean:
+	del *.o flags.c keysandcolors.c luafar3.dll
 
 # (end of Makefile)
