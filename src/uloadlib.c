@@ -88,7 +88,7 @@ const wchar_t* LF_Gsub (lua_State *L, const wchar_t *s, const wchar_t *p,
 #define setprogdir(L)		((void)0)
 
 
-//static void ll_unloadlib (void *lib);
+static void ll_unloadlib (void *lib);
 static void *ll_load (lua_State *L, const wchar_t *path);
 static lua_CFunction ll_sym (lua_State *L, void *lib, const char *sym);
 
@@ -155,11 +155,10 @@ static void setprogdir (lua_State *L) {
 }
 
 
-#if 0
+
 static void ll_unloadlib (void *lib) {
   FreeLibrary((HINSTANCE)lib);
 }
-#endif
 
 
 static void *ll_load (lua_State *L, const wchar_t *path) {
@@ -318,7 +317,6 @@ static void **ll_register (lua_State *L, const wchar_t *wpath) {
 }
 
 
-#if 0
 /*
 ** __gc tag method: calls library's `ll_unloadlib' function with the lib
 ** handle
@@ -329,7 +327,6 @@ static int gctm (lua_State *L) {
   *lib = NULL;  /* mark library as closed */
   return 0;
 }
-#endif
 
 
 static int ll_loadfunc (lua_State *L, const wchar_t *path, const char *sym) {
@@ -511,9 +508,9 @@ static int ll_require (lua_State *L) {
     return 1;  /* package is already loaded */
   }
   /* else must load it; iterate over available loaders */
-  lua_getfield(L, LUA_ENVIRONINDEX, "uloaders");
+  lua_getfield(L, LUA_ENVIRONINDEX, "loaders");
   if (!lua_istable(L, -1))
-    luaL_error(L, LUA_QL("package.uloaders") " must be a table");
+    luaL_error(L, LUA_QL("package.loaders") " must be a table");
   lua_pushliteral(L, "");  /* error message accumulator */
   for (i=1; ; i++) {
     lua_rawgeti(L, -2, i);  /* get a loader */
@@ -547,7 +544,7 @@ static int ll_require (lua_State *L) {
 /* }====================================================== */
 
 
-#if 0
+
 /*
 ** {======================================================
 ** 'module' function
@@ -634,7 +631,6 @@ static int ll_seeall (lua_State *L) {
 
 
 /* }====================================================== */
-#endif
 
 
 
@@ -661,15 +657,15 @@ static void setpath (lua_State *L, const char *fieldname, const wchar_t *envname
 
 
 static const luaL_Reg pk_funcs[] = {
-  {"LoadLib", ll_loadlib},
-//{"seeall", ll_seeall},
+  {"loadlib", ll_loadlib},
+  {"seeall", ll_seeall},
   {NULL, NULL}
 };
 
 
 static const luaL_Reg ll_funcs[] = {
-//{"module", ll_module},
-  {"Require", ll_require},
+  {"module", ll_module},
+  {"require", ll_require},
   {NULL, NULL}
 };
 
@@ -680,48 +676,40 @@ static const lua_CFunction loaders[] =
 
 LUALIB_API int luaopen_upackage (lua_State *L) {
   int i;
-  const char *libname = luaL_checkstring(L, 1);
-  /* retrieve type _LOADLIB */
-  luaL_getmetatable(L, "_LOADLIB");
-
-//  lua_pushcfunction(L, gctm);
-//  lua_setfield(L, -2, "__gc");
-
-  /* register `package' functions */
-  luaL_register(L, libname, pk_funcs);
-
-// #if defined(LUA_COMPAT_LOADLIB)
-//   lua_getfield(L, -1, "loadlib");
-//   lua_setfield(L, LUA_GLOBALSINDEX, "loadlib");
-// #endif
-
-  lua_getglobal(L, "package");
+  /* create new type _LOADLIB */
+  luaL_newmetatable(L, "_LOADLIB");
+  lua_pushcfunction(L, gctm);
+  lua_setfield(L, -2, "__gc");
+  /* create `package' table */
+  luaL_register(L, LUA_LOADLIBNAME, pk_funcs);
+#if defined(LUA_COMPAT_LOADLIB) 
+  lua_getfield(L, -1, "loadlib");
+  lua_setfield(L, LUA_GLOBALSINDEX, "loadlib");
+#endif
   lua_pushvalue(L, -1);
   lua_replace(L, LUA_ENVIRONINDEX);
-  /* create `uloaders' table */
+  /* create `loaders' table */
   lua_createtable(L, sizeof(loaders)/sizeof(loaders[0]) - 1, 0);
   /* fill it with pre-defined loaders */
   for (i=0; loaders[i] != NULL; i++) {
     lua_pushcfunction(L, loaders[i]);
     lua_rawseti(L, -2, i+1);
   }
-  lua_setfield(L, -2, "uloaders");  /* put it in field `uloaders' */
+  lua_setfield(L, -2, "loaders");  /* put it in field `loaders' */
   setpath(L, "path", LUA_PATH, LUA_PATH_DEFAULT);  /* set field `path' */
   setpath(L, "cpath", LUA_CPATH, LUA_CPATH_DEFAULT); /* set field `cpath' */
   /* store config information */
   push_utf8_string(L, L"\\" L"\n" LUA_PATHSEP L"\n" LUA_PATH_MARK L"\n"
                    LUA_EXECDIR L"\n" LUA_IGMARK, -1);
-  lua_setfield(L, -2, "uconfig");
-
-//  /* set field `loaded' */
-//  luaL_findtable(L, LUA_REGISTRYINDEX, "_LOADED", 2);
-//  lua_setfield(L, -2, "loaded");
-//  /* set field `preload' */
-//  lua_newtable(L);
-//  lua_setfield(L, -2, "preload");
-//  lua_pushvalue(L, LUA_GLOBALSINDEX);
-
-  luaL_register(L, libname, ll_funcs);  /* open lib into the given table */
+  lua_setfield(L, -2, "config");
+  /* set field `loaded' */
+  luaL_findtable(L, LUA_REGISTRYINDEX, "_LOADED", 2);
+  lua_setfield(L, -2, "loaded");
+  /* set field `preload' */
+  lua_newtable(L);
+  lua_setfield(L, -2, "preload");
+  lua_pushvalue(L, LUA_GLOBALSINDEX);
+  luaL_register(L, NULL, ll_funcs);  /* open lib into global table */
   lua_pop(L, 1);
   return 1;  /* return 'package' table */
 }

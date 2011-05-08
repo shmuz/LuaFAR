@@ -1,6 +1,6 @@
 include ./config.mak
 
-.PHONY: all lib auxil clean cleansrc
+.PHONY: all install clean
 
 ARCH = -m32
 ifeq ($(ARCH),-m64)
@@ -9,23 +9,14 @@ else
   TARGETDIR = win32_bin
 endif
 
-all: lib auxil
+all: src/luafar.mak
+	cd src && $(MAKE) -f luafar.mak ARCH=$(ARCH)
+
+install: src/$(LUAFARDLL) $(TARGETDIR)
+	cd src && move /Y $(LUAFARDLL) ..\$(TARGETDIR)
 
 $(TARGETDIR):
 	if not exist $@ mkdir $@
 
-lib: src/luafar.mak $(TARGETDIR)
-	if exist src\$(LUAFARDLL) del /F src\$(LUAFARDLL)
-	cd src && $(MAKE) -f luafar.mak ARCH=$(ARCH)
-	cd src && move /Y $(LUAFARDLL) ..\$(TARGETDIR)
-
-auxil:
-	cd auxil && $(MAKE)
-
-clean:
-	-cd auxil && del farcolor.lua farkeys.lua
-	-cd $(TARGETDIR) && del $(LUAFARDLL)
-	$(MAKE) cleansrc
-
-cleansrc:
-	cd src && del *.o *.dll flags.cpp
+clean: src/luafar.mak
+	cd src && $(MAKE) -f luafar.mak clean

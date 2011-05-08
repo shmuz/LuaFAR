@@ -1,5 +1,5 @@
-License of LuaFAR-Unicode release 2.x
--------------------------------------
+License of LuaFAR 3.x
+----------------------
 
 Copyright (C) Shmuel Zeigerman 2007-2011
 

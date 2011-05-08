@@ -24,17 +24,20 @@ typedef struct {
   struct FarStandardFunctions *FSF;
   GUID *PluginId;
   FARWINDOWPROC DlgProc;
+  lua_Alloc origAlloc;
+  void *origUserdata;
 } TPluginData;
 TPluginData* GetPluginData(lua_State* L);
 
-DLLFUNC INT_PTR LF_DlgProc(lua_State *L, HANDLE hDlg, int Msg, int Param1, INT_PTR Param2);
+DLLFUNC INT_PTR LF_DlgProc(lua_State *L, HANDLE hDlg, int Msg, int Param1, void *Param2);
 DLLFUNC const wchar_t *LF_Gsub (lua_State *L, const wchar_t *s, const wchar_t *p, const wchar_t *r);
-DLLFUNC void    LF_InitLuaState1(lua_State *L, const wchar_t* PluginDir, lua_CFunction aOpenLibs, const wchar_t* aEnvPrefix);
+DLLFUNC void    LF_InitLuaState1(lua_State *L, lua_CFunction aOpenLibs);
 DLLFUNC void    LF_InitLuaState2 (lua_State *L, TPluginData *aData);
 DLLFUNC int     LF_LoadFile(lua_State *L, const wchar_t* filename);
 DLLFUNC void    LF_LuaClose(lua_State* L);
 DLLFUNC lua_State* LF_LuaOpen(void);
 DLLFUNC int     LF_Message(lua_State *L, const wchar_t* aMsg, const wchar_t* aTitle, const wchar_t* aButtons, const char* aFlags, const wchar_t* aHelpTopic);
+DLLFUNC void    LF_ProcessEnvVars (lua_State *L, const wchar_t* aEnvPrefix, const wchar_t* PluginDir);
 DLLFUNC BOOL    LF_RunDefaultScript(lua_State* L);
 
 DLLFUNC int     LF_Analyse (lua_State* L, const struct AnalyseInfo *Info);

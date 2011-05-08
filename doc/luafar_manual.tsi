@@ -7,7 +7,7 @@ id=91
 lv=0
 dt=Text
 nm=Manual of LuaFAR 3.0.0
-mtime=3512120598
+mtime=3512990572
 <article>
 #_<markdown>
 #_
@@ -17,7 +17,6 @@ mtime=3512120598
 #_[Incompatibilities with the Previous Version](119.html)<br>
 #_[LuaFAR `bit64` library](405.html)<br>
 #_[LuaFAR `far` library and exported functions](131.html)<br>
-#_[LuaFAR `uio` library](344.html)<br>
 #_[LuaFAR `win` library](430.html)<br>
 #_[LuaFAR C-interface](128.html)<br>
 #_[Selene Unicode library](250.html)<br>
@@ -63,7 +62,7 @@ lv=1
 dt=Text
 nm=Unicode support
 ctime=3480525243
-mtime=3500049628
+mtime=3512732895
 <article>
 #_<markdown>
 #_
@@ -74,27 +73,25 @@ mtime=3500049628
 #_encoding. (There are a few exceptions from this rule, mostly
 #_when strings are used to exchange binary data).
 #_
-#_### Unicode-capable analogs of some Lua libraries and functions
+#_### Unicode-capable Lua libraries and functions
 #_
-#_* [`uio`](344.html) - `io`
-#_* [`far.LoadFile`](338.html) - `loadfile`
-#_* [`far.LoadLib`](342.html) - `package.loadlib`
-#_* [`far.Require`](343.html) - `require`
+#_The following standard Lua libraries and functions were modified by LuaFAR
+#_in order to work with file names and paths in UTF-8 edncoding:
 #_
-#_Plugin authors may want to replace the original Lua functions with
-#_these analogs, e.g. at the plugin start up, do:
-#_        io, loadfile, require, package.loadlib =
-#_          uio, far.LoadFile, far.Require, far.LoadLib
+#_* `io`
+#_* `loadfile`
+#_* `require`
+#_* `package.loadlib`
 #_
 #_### Unicode-capable functions using Windows API
 #_
-#_* [`far.CopyFile`](360.html)
-#_* [`far.CreateDir`](372.html)
-#_* [`far.DeleteFile`](361.html)
-#_* [`far.GetEnv`](152.html)
-#_* [`far.MoveFile`](362.html)
-#_* [`far.RemoveDir`](373.html)
-#_* [`far.RenameFile`](363.html)
+#_* [`win.CopyFile`](360.html)
+#_* [`win.CreateDir`](372.html)
+#_* [`win.DeleteFile`](361.html)
+#_* [`win.GetEnv`](152.html)
+#_* [`win.MoveFile`](362.html)
+#_* [`win.RemoveDir`](373.html)
+#_* [`win.RenameFile`](363.html)
 #_
 #_
 </article>
@@ -104,7 +101,7 @@ id=126
 lv=0
 dt=Text
 nm=Introduction
-mtime=3510213318
+mtime=3512990908
 <article>
 #_<markdown>
 #_### Brief description of LuaFAR package
@@ -127,10 +124,10 @@ mtime=3510213318
 #_
 #_1. **`_globalinfo.lua`** (it should only contain the function
 #_   [`export.GetGlobalInfo`](402.html)).<br>
-#_   This script must not call functions that use Far API (e.g., `far.Message`), as they
-#_   are not yet available to LuaFAR when Far calls `GetGlobalInfoW`. Calling them will
-#_   crash Far.
-#_2. The starting (or "default") Lua script, that is searched in the following order (see [`LF_RunDefaultScript`](130.html) for details):
+#_   This script must not call functions from [`far`](131.html) library (e.g., `far.Message`),
+#_   as they are not yet available to LuaFAR when Far calls `GetGlobalInfoW`.
+#_
+#_1. The starting (or "default") Lua script, that is searched in the following order (see [`LF_RunDefaultScript`](130.html) for details):
 #_    1. The plugin name with the extension `.lua` is looked for, e.g.:
 #_       `luaplug.dll -> luaplug.lua`
 #_    1. If the plugin name contains a hyphen, then its part preceding the last
@@ -151,7 +148,7 @@ id=214
 lv=1
 dt=Text
 nm=Generic LuaFAR plugin
-mtime=3511542743
+mtime=3512990593
 <article>
 #_<markdown>
 #_
@@ -179,7 +176,8 @@ mtime=3511542743
 #_
 #_<a name="luaopen_luaplug"></a>
 #_### Extra exported function: `luaopen_luaplug`
-#_Some libraries (e.g. `rings`) can create additional `lua_State` instances from Lua scripts. To initialize those instances with libraries included in LuaFAR (`far`, `bit64`, `win`, `uio`, `unicode`), call `luaopen_luaplug`. The function must be loaded via `package.loadlib`. Internally, it calls [`LF_InitLuaState1`](385.html) and [`LF_InitLuaState2`](423.html).
+#_Some libraries (e.g. `rings`) can create additional `lua_State` instances from Lua scripts. To initialize those instances with libraries included in LuaFAR (`far`, `bit64`, `win`, `unicode`), call `luaopen_luaplug`. The function must be loaded via `package.loadlib`. Internally, it calls [`LF_InitLuaState1`](385.html), [`LF_InitLuaState2`](423.html) and
+#_[`LF_ProcessEnvVars`](441.html).
 #_
 #_**Example:**
 #_      local rings = require "rings"
@@ -243,7 +241,7 @@ id=149
 lv=0
 dt=Text
 nm=What's new in this version
-mtime=3512121127
+mtime=3512732330
 <article>
 #_<markdown>
 #_
@@ -260,13 +258,18 @@ mtime=3512121127
 #_1. [`win.GlobalMemoryStatus`](431.html)
 #_1. [`win.SearchPath`](429.html)
 #_1. [`win.SetFileAttr`](434.html)
+#_1. [`win.SHGetFolderPath`](440.html)
 #_1. [`win.ShellExecute`](428.html)
 #_1. [`win.Sleep`](432.html)
 #_1. [`win.Uuid`](399.html)
 #_
 #_###Removed functions
-#_1. `BitOp` library (replaced by [`bit64`](405.html)).
-#_1. `far.GetFlags` (replaced by [`far.Flags`](57.html)).
+#_1. `far.GetFlags` -- replaced by [`far.Flags`](57.html).
+#_1. `BitOp` library -- replaced by [`bit64`](405.html).
+#_1. `uio` library -- replaced by **`io`**.
+#_1. `far.LoadFile` -- replaced by **`loadfile`**.
+#_1. `far.LoadLib` -- replaced by **`package.loadlib`**.
+#_1. `far.Require` -- replaced by **`require`**.
 #_
 </article>
 </node>
@@ -2068,13 +2071,14 @@ id=153
 lv=3
 dt=Text
 nm=far.AdvControl
-mtime=3512067400
+mtime=3512809864
 <article>
-#_Result = far.AdvControl (Command, Param)
+#_Result = far.AdvControl (Command, Param1, Param2)
 #_
 #_**Parameters:**
 #_  Command:  flags
-#_  Param:    *(depends on Command)*
+#_  Param1:   (depends on Command); default=0
+#_  Param2:   (depends on Command); default=0
 #_
 #_**Returns:**
 #_  Result:   *(depends on Command)*
@@ -2094,37 +2098,34 @@ mtime=3512067400
 #_ACTL_PROGRESSNOTIFY,
 #_ACTL_QUIT,
 #_ACTL_REDRAWALL:
-#_    Param:   none
 #_    Result:  integer
 #_
 #_ACTL_GETCOLOR,
 #_ACTL_SETCURRENTWINDOW,
 #_ACTL_WAITKEY,
 #_ACTL_SYNCHRO:
-#_    Param:   integer
+#_    Param1:  integer
 #_    Result:  integer
 #_
 #_ACTL_GETSYSWORDDIV:
-#_    Param:   none
 #_    Result:  string
 #_    
 #_ACTL_EJECTMEDIA:
-#_    Param:   table (see its fields below)
+#_    Param2:  table (see its fields below)
 #_        Letter:  string (only the first character matters)
 #_        Flags:   flags
 #_    Result:  integer    
 #_
 #_ACTL_GETARRAYCOLOR:
-#_    Param:   none
 #_    Result:  table (array of integers)
 #_
 #_ACTL_GETFARMANAGERVERSION:
-#_    Param:   boolean (optional)
+#_    Param1:  boolean (optional)
 #_    Result:  string (e.g. "3.0.0.1907"), if Param==false;
 #_             4 numbers (e.g. 3,0,0,1907), if Param==true;
 #_
 #_ACTL_GETWINDOWINFO:
-#_    Param:   window number; 0-based integer (optional; default=-1)
+#_    Param1:  window number; 0-based integer (optional; default=-1)
 #_    Result:  table (see its fields below)
 #_        Pos:       integer
 #_        Type:      integer
@@ -2133,38 +2134,35 @@ mtime=3512067400
 #_        Name:      string
 #_
 #_ACTL_SETARRAYCOLOR:
-#_    Param:   table (see its fields below;
+#_    Param2:  table (see its fields below;
 #_             its array part contains integers)
 #_        Flags:       flags
 #_        StartIndex:  integer
 #_    Result:  integer    
 #_
 #_ACTL_SETPROGRESSSTATE:
-#_    Param:   flags
+#_    Param1:  flags
 #_    Result:  integer    
 #_
 #_ACTL_SETPROGRESSVALUE:
-#_    Param:   table (see its fields below)
+#_    Param2:  table (see its fields below)
 #_        Completed, Total:  numbers
 #_    Result:  integer    
 #_
 #_ACTL_GETFARRECT:
-#_    Param:   none
 #_    Result:  table (see its fields below), or nil
 #_        Left, Top, Right, Bottom: integers
 #_
 #_ACTL_GETCURSORPOS:
-#_    Param:   none
 #_    Result:  table (see its fields below), or nil
 #_        X, Y: integers
 #_
 #_ACTL_SETCURSORPOS:
-#_    Param:   table (see its fields below)
+#_    Param2:  table (see its fields below)
 #_        X, Y: integers
 #_    Result:  integer    
 #_
 #_ACTL_GETWINDOWTYPE:
-#_    Param:   none
 #_    Result:  table (see its fields below), or nil
 #_        Type: integer
 #_
@@ -3746,7 +3744,7 @@ id=31
 lv=3
 dt=Text
 nm=far.EditorGetString
-mtime=3507541813
+mtime=3512374210
 <article>
 #_**Note:**
 #_--This function is an extension over its prototype in Far API.
@@ -3755,9 +3753,9 @@ mtime=3507541813
 #_LineInfo = far.EditorGetString (EditorId, StringNumber, Mode)
 #_
 #_**Parameters:**
-#_  EditorId:     integer, or nil
-#_  StringNumber: integer, 0-based
-#_  Mode:         integer (0=normal; 1=fast; 2=fastest)
+#_  EditorId:     integer (default=-1)
+#_  StringNumber: integer, 0-based (default=-1)
+#_  Mode:         integer (0=normal; 1=fast; 2=fastest; default=0)
 #_
 #_**Returns:**
 #_  LineInfo: table (mode<2), or string (mode==2), or nil
@@ -5569,17 +5567,18 @@ lv=2
 dt=Text
 nm=Far Settings Control
 ctime=3507042743
-mtime=3507645205
+mtime=3513280592
 <article>
 #_<markdown>
 #_**Far Settings Control** contains one function [`far.CreateSettings`](416.html). When called, this function returns an object (userdata) that has a few methods:
 #_
+#_* [`CreateSubkey`](422.html)
 #_* [`Delete`](417.html)
 #_* [`Enum`](418.html)
 #_* [`Free`](419.html)
 #_* [`Get`](420.html)
+#_* [`OpenSubkey`](442.html)
 #_* [`Set`](421.html)
-#_* [`Subkey`](422.html)
 #_
 </article>
 </node>
@@ -5589,15 +5588,80 @@ lv=3
 dt=Text
 nm=far.CreateSettings
 ctime=3507637218
-mtime=3507642634
+mtime=3512813880
 <article>
-#_obj = far.CreateSettings ()
+#_obj = far.CreateSettings (PluginId)
+#_
+#_**Parameters:**
+#_  PluginId:  string (optional; defaults to calling Plugin ID)
+#_
+#_**Returns:**
+#_  obj:       userdata
+#_
+#_**Far API used:**
+#_  SettingsControl
+#_
+#_@@@
+#_
+</article>
+</node>
+<node>
+id=443
+lv=3
+dt=Text
+nm=far.FreeSettings
+ctime=3513437113
+mtime=3513437664
+<article>
+#_far.FreeSettings ()
 #_
 #_**Parameters:**
 #_  none
 #_
 #_**Returns:**
-#_  obj: userdata
+#_  nothing
+#_
+#_**Description:**
+#_  Frees all settings handles that might be open by previous calls
+#_  to far.CreateSettings and not freed. This function is also called
+#_  automatically by LuaFAR at the end of every exported function just
+#_  before returning control to Far.
+#_
+#_**Far API used:**
+#_  SettingsControl
+#_
+#_@@@
+#_<lua>
+#_  Links = {
+#_    ["far.CreateSettings"]="416.html",
+#_  }
+#_</lua>
+#_
+#_
+</article>
+</node>
+<node>
+id=422
+lv=3
+dt=Text
+nm=obj:CreateSubkey
+ctime=3507637684
+mtime=3513280434
+<article>
+#_subkey = obj:CreateSubkey (Root, Name [, Description])
+#_
+#_**Parameters:**
+#_  Root:        integer
+#_  Name:        string
+#_  Description: string, or nil
+#_
+#_**Returns:**
+#_  subkey:      integer, or nil
+#_
+#_**Notes:**
+#_  1. If the specified subkey does not exist, it is created.
+#_  2. If *Description* is nil, the description of the subkey
+#_     is neither created nor modified.
 #_
 #_**Far API used:**
 #_  SettingsControl
@@ -5613,16 +5677,19 @@ lv=3
 dt=Text
 nm=obj:Delete
 ctime=3507637642
-mtime=3507642811
+mtime=3512975378
 <article>
 #_result = obj:Delete (Root, Value)
 #_
 #_**Parameters:**
 #_  Root:   integer
-#_  Value:  string
+#_  Value:  string, or nil
 #_
 #_**Returns:**
 #_  result: boolean
+#_
+#_**Note:**
+#_  When *Value* is nil, *Root* is deleted.
 #_
 #_**Far API used:**
 #_  SettingsControl
@@ -5663,7 +5730,7 @@ lv=3
 dt=Text
 nm=obj:Free
 ctime=3507637668
-mtime=3507647114
+mtime=3513280678
 <article>
 #_obj:Free ()
 #_
@@ -5683,7 +5750,6 @@ mtime=3507647114
 #_
 #_@@@
 #_
-#_
 </article>
 </node>
 <node>
@@ -5692,7 +5758,7 @@ lv=3
 dt=Text
 nm=obj:Get
 ctime=3507637674
-mtime=3512121034
+mtime=3513106776
 <article>
 #_result = obj:Get (Root, Name, Type)
 #_
@@ -5702,8 +5768,7 @@ mtime=3512121034
 #_  Type:   flags
 #_
 #_**Returns:**
-#_  result: boolean, for Type == FST_SUBKEY
-#_          flags,   for Type == FST_QWORD
+#_  result: flags,   for Type == FST_QWORD
 #_          string,  for Type == FST_STRING (in UTF-8 encoding)
 #_          string,  for Type == FST_DATA
 #_          nil (SettingsControl failed, or Type is unknown)
@@ -5713,9 +5778,32 @@ mtime=3512121034
 #_
 #_@@@
 #_
-#_local F = far.Flags
-#_local obj = far.CreateSettings ()
-#_far.Message (obj:Get(0, "", "FST_SUBKEY"))
+</article>
+</node>
+<node>
+id=442
+lv=3
+dt=Text
+nm=obj:OpenSubkey
+ctime=3513150721
+mtime=3513280638
+<article>
+#_subkey = obj:OpenSubkey (Root, Name)
+#_
+#_**Parameters:**
+#_  Root:        integer
+#_  Name:        string
+#_
+#_**Returns:**
+#_  subkey:      integer, or nil
+#_
+#_**Note:**
+#_  If the specified subkey does not exist, nil is returned.
+#_
+#_**Far API used:**
+#_  SettingsControl
+#_
+#_@@@
 #_
 </article>
 </node>
@@ -5725,51 +5813,28 @@ lv=3
 dt=Text
 nm=obj:Set
 ctime=3507637679
-mtime=3509010261
+mtime=3513143858
 <article>
 #_result = obj:Set (Root, Name, Type, Data)
 #_
 #_**Parameters:**
 #_  Root:   integer
-#_  Name:   string
+#_  Name:   string, or nil
 #_  Type:   flags
-#_  Data:   ignored, for Type == FST_SUBKEY
-#_          flags,   for Type == FST_QWORD
+#_  Data:   flags,   for Type == FST_QWORD
 #_          string,  for Type == FST_STRING (in UTF-8 encoding)
 #_          string,  for Type == FST_DATA
 #_
 #_**Returns:**
 #_  result: boolean
 #_
-#_**Far API used:**
-#_  SettingsControl
-#_
-#_@@@
-#_
-</article>
-</node>
-<node>
-id=422
-lv=3
-dt=Text
-nm=obj:Subkey
-ctime=3507637684
-mtime=3507715886
-<article>
-#_result = obj:Subkey (Root, Value)
-#_
-#_**Parameters:**
-#_  Root:   integer
-#_  Value:  string
-#_
-#_**Returns:**
-#_  result: integer
+#_**Note:**
+#_  To set description for a key, pass *Name* as nil and *Type* as FST_STRING.
 #_
 #_**Far API used:**
 #_  SettingsControl
 #_
 #_@@@
-#_
 #_
 </article>
 </node>
@@ -6933,59 +6998,6 @@ nm=far.GetRegKey
 </article>
 </node>
 <node>
-id=338
-lv=3
-dt=Text
-nm=far.LoadFile
-ctime=3480675057
-mtime=3481115354
-<article>
-#_chunk = far.LoadFile ([filename])
-#_
-#_**Parameters:**
-#_  filename: string
-#_
-#_**Returns:**
-#_  chunk:    function (a compiled chunk).
-#_            In case of error, nil plus error message are returned.
-#_
-#_**Description:**
-#_  A replacement for Lua's *loadfile* function.
-#_  Properly deals with file names in UTF-8 encoding.
-#_
-#_@@@
-#_
-#_
-</article>
-</node>
-<node>
-id=342
-lv=3
-dt=Text
-nm=far.LoadLib
-ctime=3481112513
-mtime=3503846335
-<article>
-#_loader = far.LoadLib (libname, funcname)
-#_
-#_**Parameters:**
-#_  libname:  string
-#_  funcname: string
-#_
-#_**Returns:**
-#_  loader:   function.
-#_            In case of error, nil plus error message are returned.
-#_
-#_**Description:**
-#_  A replacement for Lua's *package.loadlib* function.
-#_  Properly deals with library names in UTF-8 encoding.
-#_
-#_@@@
-#_
-#_
-</article>
-</node>
-<node>
 id=191
 lv=3
 dt=Text
@@ -7075,42 +7087,6 @@ mtime=3507540816
 #_  function *SetStartupInfo*.
 #_
 #_@@@
-#_
-</article>
-</node>
-<node>
-id=343
-lv=3
-dt=Text
-nm=far.Require
-ctime=3481112525
-mtime=3481260904
-<article>
-#_ret = far.Require (modname)
-#_
-#_**Parameters:**
-#_  modname:  string
-#_
-#_**Returns:**
-#_  ret:      the final value of package.loaded[modname]
-#_
-#_**Description:**
-#_  A replacement for Lua's *require* function.
-#_
-#_  The following tables are shared with *require*:
-#_  package.path, package.cpath, package.loaded and package.preload.
-#_
-#_  package.path and package.cpath should be in UTF-8 encoding.
-#_
-#_  The table *package.uloaders* is used instead of package.loaders.
-#_  It contains loaders capable of proper handling Unicode (UTF-8)
-#_  names.
-#_
-#_  The string *package.uconfig* contains values of parameters used
-#_  by far.Require, like package.config does for require.
-#_
-#_@@@
-#_
 #_
 </article>
 </node>
@@ -7491,7 +7467,7 @@ lv=2
 dt=Text
 nm=FarDialogItem
 ctime=3477054110
-mtime=3511292333
+mtime=3512803401
 <article>
 #_<markdown>
 #_**`FarDialogItem`** is a table (array)
@@ -7515,7 +7491,7 @@ mtime=3511292333
 #_      [9]  Flags             flags
 #_      [10] Data:             string
 #_      [11] MaxLength:        integer
-#_      [12] UserData:         integer
+#_      [12] UserData:         light userdata
 #_
 #_
 </article>
@@ -7787,22 +7763,6 @@ mtime=3509708996
 #_* **`arshift`** - gets a flag and an integer, returns a flag
 #_
 #_These functions always return a number if the result fits into 32 bits.
-#_
-</article>
-</node>
-<node>
-id=344
-lv=0
-dt=Text
-nm=LuaFAR uio library
-ctime=3481290711
-mtime=3481291401
-<article>
-#_<markdown>
-#_**`uio`** library is a replication of the Lua standard **`io`**
-#_library, and differs from the original by that it can handle file
-#_names in UTF-8 encoding.
-#_The Lua-side API of **`uio`** is identical to that of **`io`**.
 #_
 </article>
 </node>
@@ -8567,6 +8527,30 @@ mtime=3511265301
 #_
 #_@@@
 #_<lua>Links = { FindData="90.html", }</lua>
+#_
+</article>
+</node>
+<node>
+id=440
+lv=1
+dt=Text
+nm=win.SHGetFolderPath
+ctime=3512504855
+mtime=3512540211
+<article>
+#_path = win.SHGetFolderPath (nFolder, dwFlags)
+#_
+#_**Parameters:**
+#_  nFolder:  integer
+#_  dwFlags:  integer (optional; default to 0)
+#_
+#_**Returns:**
+#_  path:     string, or nil
+#_
+#_**Windows API used:**
+#_  SHGetFolderPathW
+#_
+#_@@@
 #_
 </article>
 </node>
@@ -9734,41 +9718,25 @@ lv=2
 dt=Text
 nm=LF_InitLuaState1
 ctime=3497514263
-mtime=3509716076
+mtime=3512990165
 <article>
 #_<markdown>
-#_    void LF_InitLuaState1 (lua_State* L,
-#_                           const wchar_t* PluginDir,
-#_                           lua_CFunction OpenLibs,
-#_                           const wchar_t* EnvVarPrefix)
+#_    void LF_InitLuaState1 (lua_State* L, lua_CFunction OpenLibs)
 #_
 #_#### Parameters:
 #_      L:            Lua state.
 #_
-#_      PluginDir:    Full path to the plugin directory.
-#_
 #_      OpenLibs:     Pointer to a function that can open additional
 #_                    libraries. (NULL is allowed.)
 #_
-#_      EnvVarPrefix: Prefix for names of environment variables to be
-#_                    processed. (NULL is allowed.)
-#_
 #_#### Description:
 #_
-#_This function is called by the plugin during **`GetGlobalInfoW`** call. It performs the following actions, in the specified order (for simplicity, let's assume `EnvVarPrefix==L"LUAFAR"`):
-#_
-#_1. Open the standard Lua libraries, `far`, `win`, `bit64` and
-#_   `unicode` libraries.
-#_1. Call `OpenLibs` function.
-#_1. Process `LUAFAR_PATH` the same way the standard Lua
-#_   interpreter does with `LUA_PATH`.
-#_1. Prepend `<plugin directory>\?.lua;` to `package.path`.
-#_1. Process `LUAFAR_CPATH` the same way the standard Lua
-#_   interpreter does with `LUA_CPATH`.
-#_1. Process `LUAFAR_INIT` the same way the standard Lua
-#_   interpreter does with `LUA_INIT`.
+#_This function is called by the plugin during **`GetGlobalInfoW`** call.
+#_It opens the standard Lua libraries, [`win`](430.html), [`bit64`](405.html) and
+#_[`unicode`](250.html) libraries and calls `OpenLibs` function.
 #_
 #_@@@
+#_
 #_
 </article>
 </node>
@@ -9778,7 +9746,7 @@ lv=2
 dt=Text
 nm=LF_InitLuaState2
 ctime=3507652269
-mtime=3511601257
+mtime=3512990399
 <article>
 #_<markdown>
 #_    void LF_InitLuaState2 (lua_State *L, TPluginData *Data)
@@ -9790,10 +9758,47 @@ mtime=3511601257
 #_
 #_#### Description:
 #_
-#_This function is called by the plugin during **`SetStartupInfoW`** call. It stores pointer to the plugin's data within the Lua state, making them available to all LuaFAR functions.
+#_This function is called by the plugin during **`SetStartupInfoW`** call. It stores pointer to the plugin's data within the Lua state, making them available to all LuaFAR functions. Then it loads [`far`](131.html) library.
 #_
 #_@@@
 #_
+#_
+</article>
+</node>
+<node>
+id=441
+lv=2
+dt=Text
+nm=LF_ProcessEnvVars
+ctime=3512931631
+mtime=3512932244
+<article>
+#_<markdown>
+#_    void LF_ProcessEnvVars (lua_State* L,
+#_                            const wchar_t* EnvVarPrefix,
+#_                            const wchar_t* PluginDir)
+#_
+#_#### Parameters:
+#_      L:            Lua state.
+#_
+#_      EnvVarPrefix: Prefix for names of environment variables to be
+#_                    processed. (NULL is allowed.)
+#_
+#_      PluginDir:    Full path to the plugin directory.
+#_
+#_#### Description:
+#_
+#_This function is called by the plugin during **`SetStartupInfoW`** call. It performs the following actions, in the specified order (for simplicity, let's assume `EnvVarPrefix==L"LUAFAR"`):
+#_
+#_1. Process `LUAFAR_PATH` the same way the standard Lua
+#_   interpreter does with `LUA_PATH`.
+#_1. Prepend `<plugin directory>\?.lua;` to `package.path`.
+#_1. Process `LUAFAR_CPATH` the same way the standard Lua
+#_   interpreter does with `LUA_CPATH`.
+#_1. Process `LUAFAR_INIT` the same way the standard Lua
+#_   interpreter does with `LUA_INIT`.
+#_
+#_@@@
 #_
 </article>
 </node>
@@ -9945,17 +9950,9 @@ id=195
 lv=1
 dt=Text
 nm=Far Manager 3.0 Plugin SDK
-mtime=3511465369
+mtime=3513584627
 <article>
 #_<markdown>
-#_
-#_    /*
-#_      plugin.hpp
-#_
-#_      Plugin API for Far Manager 3.0 build 1950
-#_    */
-#_
-#_    /*
 #_    Copyright © 1996 Eugene Roshal
 #_    Copyright © 2000 Far Group
 #_    All rights reserved.
@@ -9971,7 +9968,7 @@ mtime=3511465369
 #_    3. The name of the authors may not be used to endorse or promote products
 #_       derived from this software without specific prior written permission.
 #_
-#_    THIS SOFTWARE IS PROVIDED BY THE AUTHOR `AS IS' AND ANY EXPRESS OR
+#_    THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
 #_    IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
 #_    OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
 #_    IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
@@ -9983,9 +9980,10 @@ mtime=3511465369
 #_    THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #_
 #_    EXCEPTION:
-#_    Far Manager plugins that use this header file can be distributed under any
-#_    other possible license with no implications from the above license on them.
-#_    */
+#_    Far Manager plugins that use only the following header files from this
+#_    distribution (none or any): farcolor.hpp, farkeys.hpp, plugin.hpp,
+#_    farcolorW.pas, farkeysW.pas and pluginW.pas; can be distributed under any other
+#_    possible license with no implications from the above license on them.
 #_
 </article>
 </node>

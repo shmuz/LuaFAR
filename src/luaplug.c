@@ -20,7 +20,7 @@ extern int FUNC_OPENLIBS (lua_State*);
 #endif
 
 lua_State* LS;
-INT_PTR WINAPI DlgProc(HANDLE hDlg, int Msg, int Param1, INT_PTR Param2)
+INT_PTR WINAPI DlgProc(HANDLE hDlg, int Msg, int Param1, void *Param2)
 {
   return LF_DlgProc(LS, hDlg, Msg, Param1, Param2);
 }
@@ -28,7 +28,7 @@ INT_PTR WINAPI DlgProc(HANDLE hDlg, int Msg, int Param1, INT_PTR Param2)
 struct PluginStartupInfo Info;
 struct FarStandardFunctions FSF;
 GUID PluginId;
-TPluginData PluginData = { &Info, &FSF, &PluginId, DlgProc };
+TPluginData PluginData = { &Info, &FSF, &PluginId, DlgProc, NULL, NULL };
 wchar_t PluginName[512], PluginDir[512];
 //---------------------------------------------------------------------------
 
@@ -54,8 +54,9 @@ BOOL WINAPI DllMain (HANDLE hDll, DWORD dwReason, LPVOID lpReserved)
 // This function must have __cdecl calling convention, it is not `LUAPLUG'.
 int __declspec(dllexport) luaopen_luaplug (lua_State *L)
 {
-  LF_InitLuaState1(L, PluginDir, FUNC_OPENLIBS, ENV_PREFIX);
+  LF_InitLuaState1(L, FUNC_OPENLIBS);
   LF_InitLuaState2(L, &PluginData);
+  LF_ProcessEnvVars(LS, ENV_PREFIX, PluginDir);
   return 0;
 }
 //---------------------------------------------------------------------------
@@ -63,7 +64,7 @@ int __declspec(dllexport) luaopen_luaplug (lua_State *L)
 void LUAPLUG GetGlobalInfoW(struct GlobalInfo *globalInfo)
 {
   if (LS) {
-    LF_InitLuaState1(LS, PluginDir, FUNC_OPENLIBS, ENV_PREFIX);
+    LF_InitLuaState1(LS, FUNC_OPENLIBS);
     if (LF_GetGlobalInfo(LS, globalInfo, PluginDir))
       PluginId = globalInfo->Guid;
     else {
@@ -81,6 +82,7 @@ void LUAPLUG SetStartupInfoW(const struct PluginStartupInfo *aInfo)
     FSF = *aInfo->FSF;
     Info.FSF = &FSF;
     LF_InitLuaState2(LS, &PluginData);
+    LF_ProcessEnvVars(LS, ENV_PREFIX, PluginDir);
     if (LF_RunDefaultScript(LS) == FALSE) {
       LF_LuaClose(LS);
       LS = NULL;

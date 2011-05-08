@@ -57,9 +57,9 @@ const wchar_t* check_regex_pattern (lua_State *L, int pos_pat, int pos_cflags)
 TFarRegex* push_far_regex (lua_State *L, FARAPIREGEXPCONTROL RegExpControl, const wchar_t* pat)
 {
   TFarRegex* fr = (TFarRegex*)lua_newuserdata(L, sizeof(TFarRegex));
-  if (!RegExpControl(NULL, RECTL_CREATE, 0, (INT_PTR)&fr->hnd))
+  if (!RegExpControl(NULL, RECTL_CREATE, 0, &fr->hnd))
     luaL_error(L, "RECTL_CREATE failed");
-  if (!RegExpControl(fr->hnd, RECTL_COMPILE, 0, (INT_PTR)pat))
+  if (!RegExpControl(fr->hnd, RECTL_COMPILE, 0, (void*)pat))
     luaL_error(L, "invalid regular expression");
 //(void)RegExpControl(fr->hnd, RECTL_OPTIMIZE, 0, 0); // very slow operation
   luaL_getmetatable(L, TYPE_REGEX);
@@ -73,7 +73,7 @@ int regex_gmatch_closure(lua_State *L)
   struct RegExpSearch* pData = (struct RegExpSearch*)lua_touserdata(L, lua_upvalueindex(2));
   FARAPIREGEXPCONTROL RegExpControl = GetRegExpControl(L);
   int prev_end = pData->Match[0].end;
-  while (RegExpControl(fr->hnd, RECTL_SEARCHEX, 0, (INT_PTR)pData)) {
+  while (RegExpControl(fr->hnd, RECTL_SEARCHEX, 0, pData)) {
     if (pData->Match[0].end == prev_end) {
       if (++pData->Position > pData->Length)
         break;
@@ -139,7 +139,7 @@ int rx_find_match(lua_State *L, int op_find, int is_function)
 
   data.Count = RegExpControl(fr->hnd, RECTL_BRACKETSCOUNT, 0, 0);
   data.Match = (struct RegExpMatch*)lua_newuserdata(L, data.Count*sizeof(struct RegExpMatch));
-  if (RegExpControl(fr->hnd, RECTL_SEARCHEX, 0, (INT_PTR)&data)) {
+  if (RegExpControl(fr->hnd, RECTL_SEARCHEX, 0, &data)) {
     if (op_find) {
       lua_pushinteger(L, data.Match[0].start+1);
       lua_pushinteger(L, data.Match[0].end);
@@ -224,7 +224,7 @@ int rx_gsub (lua_State *L, int is_function)
 
   while (n < 0 || reps < n) {
     int prev_end = data.Match[0].end;
-    if (!RegExpControl(fr->hnd, RECTL_SEARCHEX, 0, (INT_PTR)&data))
+    if (!RegExpControl(fr->hnd, RECTL_SEARCHEX, 0, &data))
       break;
     if (data.Match[0].end == prev_end) {
       if (data.Position < data.Length) {

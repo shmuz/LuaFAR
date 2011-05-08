@@ -1,3 +1,4 @@
+#include <shlobj.h>
 #include "ustring.h"
 
 #define DIM(buff) (sizeof(buff)/sizeof(buff[0]))
@@ -512,6 +513,24 @@ int ustring_GetFileAttr(lua_State *L)
   DWORD attr = GetFileAttributesW(check_utf8_string(L,1,NULL));
   if(attr == 0xFFFFFFFF) lua_pushnil(L);
   else PushAttrString(L, attr);
+  return 1;
+}
+
+int ustring_SHGetFolderPath(lua_State *L)
+{
+  wchar_t pszPath[MAX_PATH];
+  int nFolder = luaL_checkinteger(L, 1);
+  DWORD dwFlags = (DWORD)luaL_optnumber(L, 2, 0);
+  HRESULT result = SHGetFolderPathW(
+    NULL,         // __in   HWND hwndOwner,
+    nFolder,      // __in   int nFolder,
+    NULL,         // __in   HANDLE hToken,
+    dwFlags,      // __in   DWORD dwFlags,
+    pszPath);     // __out  LPTSTR pszPath);
+  if (result == S_OK)
+    push_utf8_string(L, pszPath, -1);
+  else
+    lua_pushnil(L);
   return 1;
 }
 

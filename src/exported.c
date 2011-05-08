@@ -13,6 +13,7 @@ extern UINT64 GetFlagsFromTable (lua_State *L, int pos, const char* key);
 extern const char* VirtualKeyStrings[256];
 extern void LF_Error(lua_State *L, const wchar_t* aMsg);
 extern int pushInputRecord(lua_State *L, const INPUT_RECORD* ir);
+extern int far_FreeSettings (lua_State *L);
 
 // "Collector" is a Lua table referenced from the Plugin Object table by name.
 // Collector contains an array of lightuserdata which are pointers to new[]'ed
@@ -81,6 +82,7 @@ int pcall_msg (lua_State* L, int narg, int nret)
       lua_pop (L, 1);
     }
   }
+  far_FreeSettings(L);
   return status;
 }
 
@@ -878,7 +880,7 @@ int LF_ProcessDialogEvent (lua_State* L, int Event, void *Param)
     lua_setfield(L, -2, "hDlg"); //+3
     PutIntToTable(L, "Msg", fde->Msg);
     PutIntToTable(L, "Param1", fde->Param1);
-    PutIntToTable(L, "Param2", fde->Param2);
+    PutIntToTable(L, "Param2", (INT_PTR)fde->Param2);
     PutIntToTable(L, "Result", fde->Result);
     if (pcall_msg(L, 2, 2) == 0) {  //+2
       ret = lua_isnumber(L,-2) ? lua_tointeger(L,-2) : lua_toboolean(L,-2);
@@ -953,12 +955,23 @@ void LF_FreeCustomData(lua_State* L, wchar_t *CustomData)
 
 int LF_GetGlobalInfo (lua_State* L, struct GlobalInfo *Info, const wchar_t *PluginDir)
 {
-  wchar_t buf[512];
-  lua_getglobal(L, "require");
-  lua_pushliteral(L, "<_globalinfo");
-  int status = lua_pcall(L,1,1,0);
-  if (status) {
-    lua_pop(L, 1);
+  // For speed, prevent calling require() on non-embedded plugins.
+  const char *name = "<_globalinfo";
+  lua_getglobal(L, "package");
+  lua_getfield(L, -1, "preload");
+  lua_getfield(L, -1, name);
+  int embedded = !lua_isnil(L, -1);
+  lua_pop(L, 3);
+  if (embedded) {
+    lua_getglobal(L, "require");
+    lua_pushstring(L, name);
+    if (lua_pcall(L,1,1,0) != 0) {
+      lua_pop(L, 1);
+      return FALSE;
+    }
+  }
+  else {
+    wchar_t buf[512];
     wcscpy(buf, PluginDir);
     wcscat(buf, L"_globalinfo.lua");
     if (LF_LoadFile(L, buf)) {

@@ -1,5 +1,5 @@
 /*
-** uliolib.c, copyright 2010, Shmuel Zeigerman.
+** uliolib.c, copyright 2010-2011, Shmuel Zeigerman.
 ** A modification of Standard I/O (and system) library
 ** giving it capability of working with Unicode paths.
 ** Same license as Lua 5.1.
@@ -28,12 +28,6 @@
 #include "lualib.h"
 
 #include "ustring.h"
-
-#undef LUA_IOLIBNAME
-#define LUA_IOLIBNAME "uio"
-
-#undef LUA_FILEHANDLE
-#define LUA_FILEHANDLE "UFILE*"
 
 #undef lua_popen
 #define lua_popen(L,c,m)	((void)L, _wpopen(c,m))
