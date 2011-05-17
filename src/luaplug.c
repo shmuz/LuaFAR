@@ -246,10 +246,10 @@ int LUAPLUG ProcessHostFileW(const struct ProcessHostFileInfo *Info)
 #endif
 //---------------------------------------------------------------------------
 
-#ifdef EXPORT_PROCESSKEY
-int LUAPLUG ProcessKeyW(HANDLE hPanel, const INPUT_RECORD *Rec)
+#ifdef EXPORT_PROCESSPANELINPUT
+int LUAPLUG ProcessPanelInputW(HANDLE hPanel,const struct ProcessPanelInputInfo *Info)
 {
-  if(LS) return LF_ProcessKey(LS, hPanel, Rec);
+  if(LS) return LF_ProcessPanelInput(LS, hPanel, Info);
   return FALSE;
 }
 #endif
@@ -283,9 +283,9 @@ int LUAPLUG SetFindListW(const struct SetFindListInfo *Info)
 //---------------------------------------------------------------------------
 
 #ifdef EXPORT_PROCESSEDITORINPUT
-int LUAPLUG ProcessEditorInputW(const INPUT_RECORD *Rec)
+int LUAPLUG ProcessEditorInputW(const struct ProcessEditorInputInfo *Info)
 {
-  if(LS) return LF_ProcessEditorInput(LS, Rec);
+  if(LS) return LF_ProcessEditorInput(LS, Info);
   return 0;
 }
 #endif

@@ -1705,9 +1705,9 @@ id=109
 lv=3
 dt=Text
 nm=export.Open
-mtime=3509018923
+mtime=3514278205
 <article>
-#_object = export.Open (OpenFrom, Guid, Item)
+#_ret = export.Open (OpenFrom, Guid, Item)
 #_
 #_**Parameters:**
 #_  OpenFrom: integer
@@ -1723,11 +1723,18 @@ mtime=3509018923
 #_        integer (for other cases of OpenFrom)
 #_
 #_**Returns:**
-#_  object: plugin object (any Lua value)
-#_    - Nil and false result in returning INVALID_HANDLE_VALUE to FAR.
-#_    - Number 0 (zero) tells Far to unload the plugin.
-#_    - The plugin object is passed to other exported functions
-#_      when they are called by Far.
+#_  ret: any Lua value; it is processed by LuaFAR as follows:
+#_    - Nil and false: INVALID_HANDLE_VALUE is returned to FAR.
+#_    - Number N, where N is 0, -1 or -2: (HANDLE)N is returned to Far.
+#_    - Otherwise: *ret* is considered a panel object, stored in the Lua
+#_      registry, its registry reference is returned to Far.
+#_      The object is passed to other exported functions when they are
+#_      called by Far.
+#_
+#_**Note:**
+#_  Return value of -2 can be used with *OpenFrom* == OPEN_ANALYSE,
+#_  when the plugin does actions other than opening a panel, to tell
+#_  Far that the file has already been processed.
 #_
 #_@@@
 #_

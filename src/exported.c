@@ -4,6 +4,10 @@
 #include "util.h"
 #include "ustring.h"
 
+#define NOPANEL_HANDLE_VALUE(h) ((INT_PTR)h > -3 && (INT_PTR)h <= 0)
+#define TRANSFORM_REF(h)        (h > 0 ? h : h - 3)
+#define UNTRANSFORM_REF(h)      ((INT_PTR)h > 0 ? (INT_PTR)h : (INT_PTR)h + 3)
+
 typedef unsigned __int64 UINT64;
 extern int push64(lua_State *L, UINT64 v);
 extern void PutFlagsToTable (lua_State *L, const char* key, UINT64 flags);
@@ -88,12 +92,12 @@ int pcall_msg (lua_State* L, int narg, int nret)
 
 void PushPluginTable (lua_State* L, HANDLE hPlugin)
 {
-  lua_rawgeti(L, LUA_REGISTRYINDEX, (INT_PTR)hPlugin);
+  lua_rawgeti(L, LUA_REGISTRYINDEX, UNTRANSFORM_REF(hPlugin));
 }
 
 void PushPluginPair (lua_State* L, HANDLE hPlugin)
 {
-  lua_rawgeti(L, LUA_REGISTRYINDEX, (INT_PTR)hPlugin);
+  lua_rawgeti(L, LUA_REGISTRYINDEX, UNTRANSFORM_REF(hPlugin));
   lua_getfield(L, -1, KEY_OBJECT);
   lua_remove(L, -2);
   lua_pushinteger(L, (INT_PTR)hPlugin);
@@ -353,7 +357,7 @@ INT_PTR RegisterObject (lua_State* L)
   lua_setfield(L,-2,KEY_OBJECT); //+2: Obj,Tbl
   int ref = luaL_ref(L, LUA_REGISTRYINDEX); //+1: Obj
   lua_pop(L,1);                  //+0
-  return ref;
+  return TRANSFORM_REF(ref);
 }
 
 int LF_Analyse(lua_State* L, const struct AnalyseInfo *Info)
@@ -548,9 +552,12 @@ HANDLE LF_Open (lua_State* L, const struct OpenInfo *Info)
   }
 
   if (pcall_msg(L, 3, 1) == 0) {
-    if (lua_type(L,-1) == LUA_TNUMBER && lua_tointeger(L,-1) == 0) {
-      lua_pop(L,1);
-      return (HANDLE) 0; // unload plugin
+    if (lua_type(L,-1) == LUA_TNUMBER) {
+      int ret = lua_tointeger(L,-1);
+      if (NOPANEL_HANDLE_VALUE(ret)) {
+        lua_pop(L,1);
+        return (HANDLE) ret;
+      }
     }
     if (lua_toboolean(L, -1))            //+1: Obj
       return (HANDLE) RegisterObject(L); //+0
@@ -566,7 +573,7 @@ void LF_ClosePanel(lua_State* L, HANDLE hPlugin)
     pcall_msg(L, 2, 0);
   }
   DestroyCollector(L, hPlugin, COLLECTOR_OPI);
-  luaL_unref(L, LUA_REGISTRYINDEX, (INT_PTR)hPlugin);
+  luaL_unref(L, LUA_REGISTRYINDEX, UNTRANSFORM_REF(hPlugin));
 }
 
 int LF_Compare(lua_State* L, const struct CompareInfo *Info)
@@ -675,12 +682,12 @@ int LF_ProcessHostFile(lua_State* L, const struct ProcessHostFileInfo *Info)
   return FALSE;
 }
 
-int LF_ProcessKey(lua_State* L, HANDLE hPlugin, const INPUT_RECORD *Rec)
+int LF_ProcessPanelInput(lua_State* L, HANDLE hPanel, const struct ProcessPanelInputInfo *Info)
 {
-  if (GetExportFunction(L, "ProcessKey")) {   //+1: Func
-    PushPluginPair(L, hPlugin);        //+3: Func,Pair
-    pushInputRecord(L, Rec);           //+4
-    if (pcall_msg(L, 3, 1) == 0)    {  //+1: Res
+  if (GetExportFunction(L, "ProcessPanelInput")) {   //+1: Func
+    PushPluginPair(L, hPanel);                       //+3: Func,Pair
+    pushInputRecord(L, &Info->Rec);                  //+4
+    if (pcall_msg(L, 3, 1) == 0)    {                //+1: Res
       int ret = lua_toboolean(L,-1);
       return lua_pop(L,1), ret;
     }
@@ -787,10 +794,12 @@ void LF_GetPluginInfo(lua_State* L, struct PluginInfo *PI)
   lua_pop(L, 3);
 }
 
-int LF_ProcessEditorInput (lua_State* L, const INPUT_RECORD *Rec)
+//int LF_ProcessEditorInput (lua_State* L, const INPUT_RECORD *Rec)
+int LF_ProcessEditorInput (lua_State* L, const struct ProcessEditorInputInfo *Info)
 {
   if (!GetExportFunction(L, "ProcessEditorInput"))   //+1: Func
     return 0;
+  const INPUT_RECORD *Rec = &Info->Rec;
   lua_newtable(L);                   //+2: Func,Tbl
   PutNumToTable(L, "EventType", Rec->EventType);
   if (Rec->EventType==KEY_EVENT || Rec->EventType==FARMACRO_KEY_EVENT) {
