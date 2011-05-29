@@ -165,10 +165,10 @@ void LUAPLUG GetOpenPanelInfoW(struct OpenPanelInfo *Info)
 //---------------------------------------------------------------------------
 
 #ifdef EXPORT_EXITFAR
-void LUAPLUG ExitFARW()
+void LUAPLUG ExitFARW(const struct ExitInfo *Info)
 {
   if(LS) {
-    LF_ExitFAR(LS);
+    LF_ExitFAR(LS, Info);
     LF_LuaClose(LS); LS = NULL;
   }
 }

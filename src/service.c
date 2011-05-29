@@ -1046,11 +1046,11 @@ static void PushFarColor (lua_State *L, const struct FarColor* Color)
 
 static int far_EditorAddColor(lua_State *L)
 {
-  PSInfo *Info = GetPluginData(L)->Info;
+  TPluginData *pd = GetPluginData(L);
   struct EditorColor ec;
   memset(&ec, 0, sizeof(ec));
   ec.StructSize = sizeof(ec);
-  ec.ColorItem    = 0;
+  ec.ColorItem = 0;
 
   int EditorId    = luaL_optinteger(L, 1, -1);
   ec.StringNumber = luaL_optinteger(L, 2, -1);
@@ -1059,7 +1059,23 @@ static int far_EditorAddColor(lua_State *L)
   ec.Flags        = CheckFlags(L, 5);
   luaL_checktype(L, 6, LUA_TTABLE);
   GetFarColorFromTable(L, 6, &ec.Color);
-  lua_pushboolean(L, Info->EditorControl(EditorId, ECTL_ADDCOLOR, 0, &ec));
+  ec.Owner        = *pd->PluginId;
+  ec.Priority     = luaL_optnumber(L, 7, EDITOR_COLOR_NORMAL_PRIORITY);
+  lua_pushboolean(L, pd->Info->EditorControl(EditorId, ECTL_ADDCOLOR, 0, &ec));
+  return 1;
+}
+
+static int far_EditorDelColor(lua_State *L)
+{
+  TPluginData *pd = GetPluginData(L);
+  struct EditorDeleteColor edc;
+  edc.StructSize = sizeof(edc);
+  edc.Owner = *pd->PluginId;
+
+  int EditorId     = luaL_optinteger(L, 1, -1);
+  edc.StringNumber = luaL_optinteger(L, 2, -1);
+  edc.StartPos     = luaL_checkinteger(L, 3);
+  lua_pushboolean(L, pd->Info->EditorControl(EditorId, ECTL_DELCOLOR, 0, &edc));
   return 1;
 }
 
@@ -3574,7 +3590,7 @@ static int far_AdvControl (lua_State *L)
         lua_pushinteger(L, vi.Stage);
         return 5;
       }
-      lua_pushfstring(L, "%d.%d.%d.%d", vi.Major, vi.Minor, vi.Revision, vi.Build);
+      lua_pushfstring(L, "%d.%d.%d.%d.%d", vi.Major, vi.Minor, vi.Revision, vi.Build, vi.Stage);
       return 1;
     }
 
@@ -4597,6 +4613,7 @@ const luaL_reg far_funcs[] = {
   {"EditorAddColor",      far_EditorAddColor},
   {"EditorAddStackBookmark",    far_EditorAddStackBookmark},
   {"EditorClearStackBookmarks", far_EditorClearStackBookmarks},
+  {"EditorDelColor",      far_EditorDelColor},
   {"EditorDeleteStackBookmark", far_EditorDeleteStackBookmark},
   {"EditorGetStackBookmarks",   far_EditorGetStackBookmarks},
   {"EditorNextStackBookmark",   far_EditorNextStackBookmark},

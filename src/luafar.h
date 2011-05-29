@@ -45,7 +45,7 @@ DLLFUNC void    LF_ClosePanel (lua_State* L, HANDLE hPanel);
 DLLFUNC int     LF_Compare (lua_State* L, const struct CompareInfo *Info);
 DLLFUNC int     LF_Configure (lua_State* L, const GUID* Guid);
 DLLFUNC int     LF_DeleteFiles (lua_State* L, const struct DeleteFilesInfo *Info);
-DLLFUNC void    LF_ExitFAR (lua_State* L);
+DLLFUNC void    LF_ExitFAR (lua_State* L, const struct ExitInfo *Info);
 DLLFUNC void    LF_FreeFindData (lua_State* L, const struct FreeFindDataInfo *Info);
 DLLFUNC void    LF_FreeVirtualFindData (lua_State* L, const struct FreeFindDataInfo *Info);
 DLLFUNC int     LF_GetFiles (lua_State* L, struct GetFilesInfo *Info);

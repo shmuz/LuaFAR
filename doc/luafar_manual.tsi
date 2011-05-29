@@ -241,7 +241,7 @@ id=149
 lv=0
 dt=Text
 nm=What's new in this version
-mtime=3512732330
+mtime=3515093821
 <article>
 #_<markdown>
 #_
@@ -252,6 +252,7 @@ mtime=3512732330
 #_1. [Far Settings Control](403.html)
 #_1. [`far.ColorDialog`](435.html)
 #_1. [`far.Colors`](437.html)
+#_1. [`far.EditorDelColor`](444.html)
 #_1. [`far.FarKeyToInputRecord`](426.html)
 #_1. [`far.Keys`](438.html)
 #_1. [`win.GetFileAttr`](433.html)
@@ -1308,7 +1309,7 @@ lv=3
 dt=Text
 nm=export.GetGlobalInfo
 ctime=3506281912
-mtime=3509018846
+mtime=3515075300
 <article>
 #_GlobalInfo = export.GetGlobalInfo ()
 #_
@@ -1318,8 +1319,8 @@ mtime=3509018846
 #_**Returns:**
 #_  GlobalInfo: table
 #_    fields of GlobalInfo:
-#_      MinFarVersion:       table (array of 4 integers)
-#_      Version:             table (array of 4 integers)
+#_      MinFarVersion:       table (array of 5 integers)
+#_      Version:             table (array of 5 integers)
 #_      Guid:                string
 #_      Title:               string
 #_      Description:         string
@@ -2078,7 +2079,7 @@ id=153
 lv=3
 dt=Text
 nm=far.AdvControl
-mtime=3512809864
+mtime=3515075458
 <article>
 #_Result = far.AdvControl (Command, Param1, Param2)
 #_
@@ -2128,8 +2129,8 @@ mtime=3512809864
 #_
 #_ACTL_GETFARMANAGERVERSION:
 #_    Param1:  boolean (optional)
-#_    Result:  string (e.g. "3.0.0.1907"), if Param==false;
-#_             4 numbers (e.g. 3,0,0,1907), if Param==true;
+#_    Result:  string (e.g. "3.0.0.2040.0"), if Param==false;
+#_             5 numbers (e.g. 3,0,0,2040,0), if Param==true;
 #_
 #_ACTL_GETWINDOWINFO:
 #_    Param1:  window number; 0-based integer (optional; default=-1)
@@ -3382,9 +3383,9 @@ id=22
 lv=3
 dt=Text
 nm=far.EditorAddColor
-mtime=3508691609
+mtime=3515169452
 <article>
-#_result = far.EditorAddColor (EditorId, StringNumber, StartPos, EndPos, Flags, Color)
+#_result = far.EditorAddColor (EditorId, StringNumber, StartPos, EndPos, Flags, Color, Priority)
 #_
 #_**Parameters:**
 #_  EditorId:     integer, or nil
@@ -3393,6 +3394,7 @@ mtime=3508691609
 #_  EndPos:       integer
 #_  Flags:        flags
 #_  Color:        table FarColor
+#_  Priority:     integer (optional; default=EDITOR_COLOR_NORMAL_PRIORITY)
 #_
 #_**Returns:**
 #_  result:       boolean
@@ -3444,6 +3446,31 @@ mtime=3507542594
 #_**Far API used:**
 #_  EditorControl, ECTL_CLEARSTACKBOOKMARKS
 #_
+#_
+</article>
+</node>
+<node>
+id=444
+lv=3
+dt=Text
+nm=far.EditorDelColor
+ctime=3515093666
+mtime=3515093738
+<article>
+#_result = far.EditorDelColor (EditorId, StringNumber, StartPos)
+#_
+#_**Parameters:**
+#_  EditorId:     integer, or nil
+#_  StringNumber: integer, or nil
+#_  StartPos:     integer
+#_
+#_**Returns:**
+#_  result:       boolean
+#_
+#_**Far API used:**
+#_  EditorControl, ECTL_DELCOLOR
+#_
+#_@@@
 #_
 </article>
 </node>
@@ -9846,6 +9873,7 @@ id=250
 lv=0
 dt=Text
 nm=Selene Unicode library
+mtime=3514823822
 <article>
 #_<markdown>
 #_There are four string-like ctype closures: **`unicode.ascii`**,
@@ -9905,7 +9933,7 @@ nm=Selene Unicode library
 #_      %z the 0 byte
 #_
 #_c.f.<br>
-#_[http://unicode.org/Public/UNIDATA/UCD.html#General_Category_Values](http://unicode.org/Public/UNIDATA/UCD.html#General_Category_Values)
+#_[http://www.unicode.org/reports/tr44/tr44-6.html#Property_Values](http://www.unicode.org/reports/tr44/tr44-6.html#Property_Values)
 #_[http://unicode.org/Public/UNIDATA/UnicodeData.txt](http://unicode.org/Public/UNIDATA/UnicodeData.txt)
 #_
 #_**NOTE:**

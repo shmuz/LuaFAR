@@ -746,8 +746,9 @@ int LF_SetFindList(lua_State* L, const struct SetFindListInfo *Info)
   return FALSE;
 }
 
-void LF_ExitFAR(lua_State* L)
+void LF_ExitFAR(lua_State* L, const struct ExitInfo *Info)
 {
+  (void)Info;
   if (GetExportFunction(L, "ExitFAR"))   //+1: Func
     pcall_msg(L, 0, 0);                  //+0
 }
@@ -1009,12 +1010,12 @@ int LF_GetGlobalInfo (lua_State* L, struct GlobalInfo *Info, const wchar_t *Plug
   lua_getfield(L, -1, "MinFarVersion");
   if (lua_istable(L, -1))
     Info->MinFarVersion = MAKEFARVERSION(GetOptIntFromArray(L,1,0),GetOptIntFromArray(L,2,0),
-                                         GetOptIntFromArray(L,3,0),GetOptIntFromArray(L,4,0));
+      GetOptIntFromArray(L,3,0),GetOptIntFromArray(L,4,0),GetOptIntFromArray(L,5,0));
   lua_pop(L, 1);
   lua_getfield(L, -1, "Version");
   if (lua_istable(L, -1))
     Info->Version = MAKEFARVERSION(GetOptIntFromArray(L,1,0),GetOptIntFromArray(L,2,0),
-                                   GetOptIntFromArray(L,3,0),GetOptIntFromArray(L,4,0));
+      GetOptIntFromArray(L,3,0),GetOptIntFromArray(L,4,0),GetOptIntFromArray(L,5,0));
   lua_pop(L, 1);
   //--------------------------------------------------------------------------
   lua_getfield(L, -1, "Guid");
