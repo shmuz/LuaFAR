@@ -1746,10 +1746,10 @@ mtime=3514278205
 id=112
 lv=3
 dt=Text
-nm=export.ProcessEvent
-mtime=3509018927
+nm=export.ProcessPanelEvent
+mtime=3518458893
 <article>
-#_result = export.ProcessEvent (object, handle, Event, Param)
+#_result = export.ProcessPanelEvent (object, handle, Event, Param)
 #_
 #_**Parameters:**
 #_  object: plugin object
@@ -1761,6 +1761,8 @@ mtime=3509018927
 #_  result: boolean
 #_
 #_@@@
+#_
+#_
 #_
 </article>
 </node>
@@ -2079,7 +2081,7 @@ id=153
 lv=3
 dt=Text
 nm=far.AdvControl
-mtime=3515075458
+mtime=3517906733
 <article>
 #_Result = far.AdvControl (Command, Param1, Param2)
 #_
@@ -2108,12 +2110,15 @@ mtime=3515075458
 #_ACTL_REDRAWALL:
 #_    Result:  integer
 #_
-#_ACTL_GETCOLOR,
 #_ACTL_SETCURRENTWINDOW,
 #_ACTL_WAITKEY,
 #_ACTL_SYNCHRO:
 #_    Param1:  integer
 #_    Result:  integer
+#_
+#_ACTL_GETCOLOR:
+#_    Param1:  integer
+#_    Result:  table FarColor, or nil
 #_
 #_ACTL_GETSYSWORDDIV:
 #_    Result:  string
@@ -2125,7 +2130,7 @@ mtime=3515075458
 #_    Result:  integer    
 #_
 #_ACTL_GETARRAYCOLOR:
-#_    Result:  table (array of integers)
+#_    Result:  table (array of FarColor tables)
 #_
 #_ACTL_GETFARMANAGERVERSION:
 #_    Param1:  boolean (optional)
@@ -2143,7 +2148,7 @@ mtime=3515075458
 #_
 #_ACTL_SETARRAYCOLOR:
 #_    Param2:  table (see its fields below;
-#_             its array part contains integers)
+#_             its array part contains FarColor tables)
 #_        Flags:       flags
 #_        StartIndex:  integer
 #_    Result:  integer    
@@ -2178,6 +2183,7 @@ mtime=3515075458
 #_  AdvControl
 #_
 #_@@@
+#_<lua>Links = { FarColor="427.html" }</lua>
 #_
 </article>
 </node>
@@ -3317,13 +3323,14 @@ id=76
 lv=3
 dt=Text
 nm=far.Text
+mtime=3517901343
 <article>
-#_far.Text (X, Y, Color [, Str])
+#_far.Text (X, Y [, Color [, Str]])
 #_
 #_**Parameters:**
 #_  X:     integer
 #_  Y:     integer
-#_  Color: integer
+#_  Color: FarColor, or integer
 #_  Str:   string
 #_
 #_**Returns:**
@@ -3332,8 +3339,9 @@ nm=far.Text
 #_**Far API used:**
 #_  Text
 #_
-#_
 #_@@@
+#_<lua> Links = { FarColor="427.html" } </lua>
+#_
 #_
 </article>
 </node>
@@ -5089,7 +5097,7 @@ lv=2
 dt=Text
 nm=Dialog API Events
 ctime=3477040474
-mtime=3508945295
+mtime=3517903754
 <article>
 #_<markdown>
 #_
@@ -5112,12 +5120,12 @@ mtime=3508945295
 #_1. Return value of **nil** (or no value) causes **`DefDlgProc`**
 #_   to be called. Its return value is returned to Far.
 #_1. For some events ([`DN_CTLCOLORDLGLIST`](286.html),
-#_   [`DN_GETDIALOGINFO`](305.html), [`DN_HELP`](289.html)),
+#_   [`DN_GETDIALOGINFO`](305.html), [`DN_HELP`](289.html), etc.),
 #_   see the return values and their meaning in the article describing
 #_   that event.
 #_1. If the return value is **number**, then that number is returned
 #_   to Far.
-#_1. The boolean equivalent of the return value (that is, either
+#_1. Otherwise, the boolean equivalent of the return value (that is, either
 #_   0 or 1) is returned to Far.
 #_
 #_
@@ -5196,19 +5204,21 @@ lv=3
 dt=Text
 nm=DN_CTLCOLORDIALOG
 ctime=3477111575
-mtime=3477129107
+mtime=3517904357
 <article>
 #_**Param1**
 #_    integer; according to Far API 
 #_
 #_**Param2**
-#_    integer; according to Far API 
+#_    table (FarColor)
 #_
 #_**Return**
-#_    default processing of the return value, see description.
+#_    table (FarColor), or nothing
+#_
+#_For default processing of the return value, see the description.
 #_
 #_@@@
-#_<lua>Links = { description="285.html" }</lua>
+#_<lua>Links = { description="285.html", FarColor="427.html" }</lua>
 #_
 </article>
 </node>
@@ -5218,19 +5228,21 @@ lv=3
 dt=Text
 nm=DN_CTLCOLORDLGITEM
 ctime=3477111575
-mtime=3477129169
+mtime=3517904325
 <article>
 #_**Param1**
 #_    integer; according to Far API 
 #_
 #_**Param2**
-#_    integer; according to Far API 
+#_    table (FarDialogItemColors)
 #_
 #_**Return**
-#_    default processing of the return value, see description.
+#_    If the function returned a table (an array of new color
+#_    attributes to be set), 1 is returned to Far, otherwise 0.
 #_
 #_@@@
-#_<lua>Links = { description="285.html" }</lua>
+#_<lua> Links = { FarDialogItemColors="293.html" } </lua>
+#_
 #_
 </article>
 </node>
@@ -5240,20 +5252,20 @@ lv=3
 dt=Text
 nm=DN_CTLCOLORDLGLIST
 ctime=3477040544
-mtime=3477137627
+mtime=3517898033
 <article>
 #_**Param1**
 #_    integer; according to Far API 
 #_
 #_**Param2**
-#_    table (FarListColors)
+#_    table (FarDialogItemColors)
 #_
 #_**Return**
 #_    If the function returned a table (an array of new color
 #_    attributes to be set), 1 is returned to Far, otherwise 0.
 #_
 #_@@@
-#_<lua> Links = { FarListColors="293.html" } </lua>
+#_<lua> Links = { FarDialogItemColors="293.html" } </lua>
 #_
 #_
 </article>
@@ -7534,17 +7546,19 @@ mtime=3512803401
 id=293
 lv=2
 dt=Text
-nm=FarListColors
+nm=FarDialogItemColors
 ctime=3477043729
-mtime=3507818555
+mtime=3517898220
 <article>
 #_<markdown>
-#_**`FarListColors`** is a table with the following predefined fields:
+#_**`FarDialogItemColors`** is a table with the following predefined fields:
 #_
 #_      Flags:  flags
 #_
-#_The array part of the table keeps integers, representing colors.
+#_The array part of the table keeps colors, represented by
+#_[`FarColor`](427.html) tables.
 #_Color count can be obtained via the operator `#`.
+#_
 #_
 </article>
 </node>
@@ -9396,11 +9410,11 @@ mtime=3509019527
 id=176
 lv=2
 dt=Text
-nm=LF_ProcessEvent
-mtime=3509019534
+nm=LF_ProcessPanelEvent
+mtime=3518458935
 <article>
 #_<markdown>
-#_    int LF_ProcessEvent(
+#_    int LF_ProcessPanelEvent(
 #_        lua_State* L,
 #_        HANDLE hPanel,
 #_        int Event,
@@ -9415,7 +9429,7 @@ mtime=3509019534
 #_      Value, according to FAR Plugins API.
 #_
 #_#### Description:
-#_If Lua function [`export.ProcessEvent`](112.html) exists, it is called.
+#_If Lua function [`export.ProcessPanelEvent`](112.html) exists, it is called.
 #_Else, `0` is returned.
 #_
 #_@@@

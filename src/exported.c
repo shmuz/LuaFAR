@@ -20,8 +20,8 @@ extern int pushInputRecord(lua_State *L, const INPUT_RECORD* ir);
 extern int far_FreeSettings (lua_State *L);
 
 // "Collector" is a Lua table referenced from the Plugin Object table by name.
-// Collector contains an array of lightuserdata which are pointers to new[]'ed
-// chars.
+// Collector contains an array of lightuserdata which are pointers to malloc'ed
+// memory regions.
 const char COLLECTOR_FD[]  = "Collector_FindData";
 const char COLLECTOR_FVD[] = "Collector_FindVirtualData";
 const char COLLECTOR_OPI[] = "Collector_OpenPanelInfo";
@@ -566,14 +566,14 @@ HANDLE LF_Open (lua_State* L, const struct OpenInfo *Info)
   return INVALID_HANDLE_VALUE;
 }
 
-void LF_ClosePanel(lua_State* L, HANDLE hPlugin)
+void LF_ClosePanel(lua_State* L, const struct ClosePanelInfo *Info)
 {
   if (GetExportFunction(L, "ClosePanel")) { //+1: Func
-    PushPluginPair(L, hPlugin);             //+3: Func,Pair
+    PushPluginPair(L, Info->hPanel);        //+3: Func,Pair
     pcall_msg(L, 2, 0);
   }
-  DestroyCollector(L, hPlugin, COLLECTOR_OPI);
-  luaL_unref(L, LUA_REGISTRYINDEX, UNTRANSFORM_REF(hPlugin));
+  DestroyCollector(L, Info->hPanel, COLLECTOR_OPI);
+  luaL_unref(L, LUA_REGISTRYINDEX, UNTRANSFORM_REF(Info->hPanel));
 }
 
 int LF_Compare(lua_State* L, const struct CompareInfo *Info)
@@ -592,11 +592,11 @@ int LF_Compare(lua_State* L, const struct CompareInfo *Info)
   return res;
 }
 
-int LF_Configure(lua_State* L, const GUID* Guid)
+int LF_Configure(lua_State* L, const struct ConfigureInfo *Info)
 {
   int res = FALSE;
   if (GetExportFunction(L, "Configure")) { //+1: Func
-    lua_pushlstring(L, (const char*)Guid, sizeof(GUID));
+    lua_pushlstring(L, (const char*)Info->Guid, sizeof(GUID));
     if(0 == pcall_msg(L, 1, 1)) {        //+1
       res = lua_toboolean(L,-1);
       lua_pop(L,1);
@@ -646,13 +646,12 @@ int LF_MakeDirectory (lua_State* L, struct MakeDirectoryInfo *Info)
   return res;
 }
 
-int LF_ProcessEvent(lua_State* L, HANDLE hPlugin, int Event, void *Param)
+int LF_ProcessPanelEvent(lua_State* L, const struct ProcessPanelEventInfo *Info)
 {
-  (void) Param;
   int res = FALSE;
-  if (GetExportFunction(L, "ProcessEvent")) { //+1: Func
-    PushPluginPair(L, hPlugin);        //+3
-    lua_pushinteger(L, Event);         //+4
+  if (GetExportFunction(L, "ProcessPanelEvent")) { //+1: Func
+    PushPluginPair(L, Info->hPanel);   //+3
+    lua_pushinteger(L, Info->Event);   //+4
     lua_pushnil(L);                    //+5
     if(0 == pcall_msg(L, 4, 1))  {     //+1
       res = lua_toboolean(L,-1);
@@ -682,10 +681,10 @@ int LF_ProcessHostFile(lua_State* L, const struct ProcessHostFileInfo *Info)
   return FALSE;
 }
 
-int LF_ProcessPanelInput(lua_State* L, HANDLE hPanel, const struct ProcessPanelInputInfo *Info)
+int LF_ProcessPanelInput(lua_State* L, const struct ProcessPanelInputInfo *Info)
 {
   if (GetExportFunction(L, "ProcessPanelInput")) {   //+1: Func
-    PushPluginPair(L, hPanel);                       //+3: Func,Pair
+    PushPluginPair(L, Info->hPanel);                 //+3: Func,Pair
     pushInputRecord(L, &Info->Rec);                  //+4
     if (pcall_msg(L, 3, 1) == 0)    {                //+1: Res
       int ret = lua_toboolean(L,-1);
@@ -837,18 +836,18 @@ int LF_ProcessEditorInput (lua_State* L, const struct ProcessEditorInputInfo *In
   return 0;
 }
 
-int LF_ProcessEditorEvent (lua_State* L, int Event, void *Param)
+int LF_ProcessEditorEvent (lua_State* L, const struct ProcessEditorEventInfo *Info)
 {
   int ret = 0;
   if (GetExportFunction(L, "ProcessEditorEvent"))  { //+1: Func
-    lua_pushinteger(L, Event);  //+2;
-    switch(Event) {
+    lua_pushinteger(L, Info->Event);  //+2;
+    switch(Info->Event) {
       case EE_CLOSE:
       case EE_GOTFOCUS:
       case EE_KILLFOCUS:
-        lua_pushinteger(L, *(int*)Param); break;
+        lua_pushinteger(L, *(int*)Info->Param); break;
       case EE_REDRAW:
-        lua_pushinteger(L, (INT_PTR)Param); break;
+        lua_pushinteger(L, (INT_PTR)Info->Param); break;
       default:
         lua_pushnil(L); break;
     }
@@ -860,15 +859,15 @@ int LF_ProcessEditorEvent (lua_State* L, int Event, void *Param)
   return ret;
 }
 
-int LF_ProcessViewerEvent (lua_State* L, int Event, void* Param)
+int LF_ProcessViewerEvent (lua_State* L, const struct ProcessViewerEventInfo *Info)
 {
   int ret = 0;
   if (GetExportFunction(L, "ProcessViewerEvent"))  { //+1: Func
-    lua_pushinteger(L, Event);
-    switch(Event) {
+    lua_pushinteger(L, Info->Event);
+    switch(Info->Event) {
       case VE_GOTFOCUS:
       case VE_KILLFOCUS:
-      case VE_CLOSE:  lua_pushinteger(L, *(int*)Param); break;
+      case VE_CLOSE:  lua_pushinteger(L, *(int*)Info->Param); break;
       default:        lua_pushnil(L); break;
     }
     if (pcall_msg(L, 2, 1) == 0) {      //+1
@@ -879,13 +878,13 @@ int LF_ProcessViewerEvent (lua_State* L, int Event, void* Param)
   return ret;
 }
 
-int LF_ProcessDialogEvent (lua_State* L, int Event, void *Param)
+int LF_ProcessDialogEvent (lua_State* L, const struct ProcessDialogEventInfo *Info)
 {
   int ret = 0;
   if (GetExportFunction(L, "ProcessDialogEvent"))  { //+1: Func
-    struct FarDialogEvent *fde = (struct FarDialogEvent*) Param;
-    lua_pushinteger(L, Event); //+2
-    lua_createtable(L, 0, 5);  //+3
+    struct FarDialogEvent *fde = Info->Param;
+    lua_pushinteger(L, Info->Event); //+2
+    lua_createtable(L, 0, 5);        //+3
     NewDialogData(L, NULL, fde->hDlg, FALSE);
     lua_setfield(L, -2, "hDlg"); //+3
     PutIntToTable(L, "Msg", fde->Msg);
@@ -902,12 +901,12 @@ int LF_ProcessDialogEvent (lua_State* L, int Event, void *Param)
   return ret;
 }
 
-int LF_ProcessSynchroEvent (lua_State* L, int Event, void *Param)
+int LF_ProcessSynchroEvent (lua_State* L, const struct ProcessSynchroEventInfo *Info)
 {
   int ret = 0;
-  if (Event == SE_COMMONSYNCHRO) {
-    TSynchroData sd = *(TSynchroData*)Param; // copy
-    free(Param);
+  if (Info->Event == SE_COMMONSYNCHRO) {
+    TSynchroData sd = *(TSynchroData*)Info->Param; // copy
+    free(Info->Param);
 
     if (sd.regAction != 0) {
       if (sd.regAction & LUAFAR_TIMER_CALL) {
@@ -927,9 +926,9 @@ int LF_ProcessSynchroEvent (lua_State* L, int Event, void *Param)
       }
     }
     else if (GetExportFunction(L, "ProcessSynchroEvent"))  { //+1: Func
-      lua_pushinteger(L, Event); //+2
-      lua_pushinteger(L, sd.data); //+3
-      if (pcall_msg(L, 2, 1) == 0) {  //+1
+      lua_pushinteger(L, Info->Event); //+2
+      lua_pushinteger(L, sd.data);     //+3
+      if (pcall_msg(L, 2, 1) == 0) {   //+1
         if (lua_isnumber(L,-1)) ret = lua_tointeger(L,-1);
         lua_pop(L,1);
       }

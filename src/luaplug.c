@@ -97,9 +97,9 @@ void LUAPLUG GetPluginInfoW(struct PluginInfo *Info)
 }
 //---------------------------------------------------------------------------
 
-int LUAPLUG ProcessSynchroEventW(int Event, void *Param)
+int LUAPLUG ProcessSynchroEventW(const struct ProcessSynchroEventInfo *Info)
 {
-  if(LS) return LF_ProcessSynchroEvent(LS, Event, Param);
+  if(LS) return LF_ProcessSynchroEvent(LS, Info);
   return 0;
 }
 //---------------------------------------------------------------------------
@@ -139,9 +139,9 @@ void LUAPLUG FreeFindDataW(const struct FreeFindDataInfo *Info)
 //---------------------------------------------------------------------------
 
 #ifdef EXPORT_CLOSEPANEL
-void LUAPLUG ClosePanelW(HANDLE hPanel)
+void LUAPLUG ClosePanelW(const struct ClosePanelInfo *Info)
 {
-  if(LS) LF_ClosePanel(LS, hPanel);
+  if(LS) LF_ClosePanel(LS, Info);
 }
 #endif
 //---------------------------------------------------------------------------
@@ -185,9 +185,9 @@ int LUAPLUG CompareW(const struct CompareInfo *Info)
 //---------------------------------------------------------------------------
 
 #ifdef EXPORT_CONFIGURE
-int LUAPLUG ConfigureW(const GUID* Guid)
+int LUAPLUG ConfigureW(const struct ConfigureInfo *Info)
 {
-  if(LS) return LF_Configure(LS, Guid);
+  if(LS) return LF_Configure(LS, Info);
   return FALSE;
 }
 #endif
@@ -228,10 +228,10 @@ int LUAPLUG MakeDirectoryW(struct MakeDirectoryInfo *Info)
 #endif
 //---------------------------------------------------------------------------
 
-#ifdef EXPORT_PROCESSEVENT
-int LUAPLUG ProcessEventW(HANDLE hPanel, int Event, void *Param)
+#ifdef EXPORT_PROCESSPANELEVENT
+int LUAPLUG ProcessPanelEventW(const struct ProcessPanelEventInfo *Info)
 {
-  if(LS) return LF_ProcessEvent(LS, hPanel, Event, Param);
+  if(LS) return LF_ProcessPanelEvent(LS, Info);
   return FALSE;
 }
 #endif
@@ -247,9 +247,9 @@ int LUAPLUG ProcessHostFileW(const struct ProcessHostFileInfo *Info)
 //---------------------------------------------------------------------------
 
 #ifdef EXPORT_PROCESSPANELINPUT
-int LUAPLUG ProcessPanelInputW(HANDLE hPanel,const struct ProcessPanelInputInfo *Info)
+int LUAPLUG ProcessPanelInputW(const struct ProcessPanelInputInfo *Info)
 {
-  if(LS) return LF_ProcessPanelInput(LS, hPanel, Info);
+  if(LS) return LF_ProcessPanelInput(LS, Info);
   return FALSE;
 }
 #endif
@@ -292,27 +292,27 @@ int LUAPLUG ProcessEditorInputW(const struct ProcessEditorInputInfo *Info)
 //---------------------------------------------------------------------------
 
 #ifdef EXPORT_PROCESSEDITOREVENT
-int LUAPLUG ProcessEditorEventW(int Event, void *Param)
+int LUAPLUG ProcessEditorEventW(const struct ProcessEditorEventInfo *Info)
 {
-  if(LS) return LF_ProcessEditorEvent(LS, Event, Param);
+  if(LS) return LF_ProcessEditorEvent(LS, Info);
   return 0;
 }
 #endif
 //---------------------------------------------------------------------------
 
 #ifdef EXPORT_PROCESSVIEWEREVENT
-int LUAPLUG ProcessViewerEventW(int Event, void *Param)
+int LUAPLUG ProcessViewerEventW(const struct ProcessViewerEventInfo *Info)
 {
-  if(LS) return LF_ProcessViewerEvent(LS, Event, Param);
+  if(LS) return LF_ProcessViewerEvent(LS, Info);
   return 0;
 }
 #endif
 //---------------------------------------------------------------------------
 
 #ifdef EXPORT_PROCESSDIALOGEVENT
-int LUAPLUG ProcessDialogEventW(int Event, void *Param)
+int LUAPLUG ProcessDialogEventW(const struct ProcessDialogEventInfo *Info)
 {
-  if(LS) return LF_ProcessDialogEvent(LS, Event, Param);
+  if(LS) return LF_ProcessDialogEvent(LS, Info);
   return 0;
 }
 #endif

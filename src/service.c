@@ -2095,7 +2095,7 @@ struct FarList* CreateList (lua_State *L, int historyindex)
 //		DWORD_PTR Reserved;                    6
 //		int Selected;                          6
 //		struct FarList *ListItems;             6
-//		CHAR_INFO *VBuf;                       6
+//		FAR_CHAR_INFO *VBuf;                   6
 //	}
 //#ifndef __cplusplus
 //	Param
@@ -2617,14 +2617,19 @@ INT_PTR LF_DlgProc (lua_State *L, HANDLE hDlg, int Msg, int Param1, void *Param2
   lua_pushinteger (L, Msg);            //+4
   lua_pushinteger (L, Param1);         //+5
 
-  if (Msg == DN_CTLCOLORDLGLIST) {
-    struct FarListColors* flc = (struct FarListColors*) Param2;
-    lua_createtable(L, flc->ColorCount, 1);
-    PutFlagsToTable(L, "Flags", flc->Flags);
-    int i;
-    for (i=0; i < flc->ColorCount; i++)
-      PutIntToArray(L, i+1, flc->Colors[i]);
+  if (Msg == DN_CTLCOLORDLGLIST || Msg == DN_CTLCOLORDLGITEM) {
+    struct FarDialogItemColors* fdic = (struct FarDialogItemColors*) Param2;
+    lua_createtable(L, fdic->ColorsCount, 1);
+    PutFlagsToTable(L, "Flags", fdic->Flags);
+    size_t i;
+    for (i=0; i < fdic->ColorsCount; i++) {
+      PushFarColor(L, &fdic->Colors[i]);
+      lua_rawseti(L, -2, i+1);
+    }
   }
+
+  else if (Msg == DN_CTLCOLORDIALOG)
+    PushFarColor(L, (struct FarColor*) Param2);
 
   else if (Msg == DN_DRAWDLGITEM)
     PushDlgItem (L, (struct FarDialogItem*)Param2, FALSE);
@@ -2670,13 +2675,24 @@ INT_PTR LF_DlgProc (lua_State *L, HANDLE hDlg, int Msg, int Param1, void *Param2
   if (lua_isnil(L, -1))
     ret = Info->DefDlgProc(hDlg, Msg, Param1, Param2);
 
-  else if (Msg == DN_CTLCOLORDLGLIST) {
-    struct FarListColors* flc = (struct FarListColors*) Param2;
+  else if (Msg == DN_CTLCOLORDLGLIST || Msg == DN_CTLCOLORDLGITEM) {
     if ((ret = lua_istable(L,-1)) != 0) {
-      int i;
-      for (i=0; i < flc->ColorCount; i++)
-        flc->Colors[i] = GetIntFromArray(L, i+1);
+      struct FarDialogItemColors* fdic = (struct FarDialogItemColors*) Param2;
+      size_t i;
+      size_t len = lua_objlen(L, -1);
+      if (len > fdic->ColorsCount) len = fdic->ColorsCount;
+      for (i = 0; i < len; i++) {
+        lua_rawgeti(L, -1, i+1);
+        if (lua_istable(L, -1))
+          GetFarColorFromTable(L, -1, &fdic->Colors[i]);
+        lua_pop(L, 1);
+      }
     }
+  }
+
+  else if (Msg == DN_CTLCOLORDIALOG) {
+    if ((ret = lua_istable(L,-1)) != 0)
+      GetFarColorFromTable(L, -1, (struct FarColor*)Param2);
   }
 
   else if (Msg == DN_HELP) {
@@ -3031,11 +3047,18 @@ static int far_GetMsg(lua_State *L)
 static int far_Text(lua_State *L)
 {
   PSInfo *Info = GetPluginData(L)->Info;
+  struct FarColor fc = { (FCF_FG_4BIT | FCF_BG_4BIT), 0x0F, 0x00, NULL };
   int X = luaL_checkinteger(L, 1);
   int Y = luaL_checkinteger(L, 2);
-  int Color = 0xFF & luaL_checkinteger(L, 3);
+  if (lua_istable(L, 3))
+    GetFarColorFromTable(L, 3, &fc);
+  else if (lua_isnumber(L, 3)) {
+    int Color = lua_tointeger(L, 3);
+    fc.ForegroundColor = Color & 0x0F;
+    fc.BackgroundColor = (Color>>4) & 0x0F;
+  }
   const wchar_t* Str = opt_utf8_string(L, 4, L"");
-  Info->Text(X, Y, Color, Str);
+  Info->Text(X, Y, &fc, Str);
   return 0;
 }
 
@@ -3503,6 +3526,7 @@ static int far_AdvControl (lua_State *L)
   void *Param2 = NULL;
   wchar_t buf[300];
   struct ActlEjectMedia em;
+  struct FarColor fc;
   struct FarSetColors fsc;
   struct ProgressValue pv;
   struct WindowInfo wi;
@@ -3529,11 +3553,18 @@ static int far_AdvControl (lua_State *L)
     case ACTL_REDRAWALL:
       break;
 
-    case ACTL_GETCOLOR:
     case ACTL_SETCURRENTWINDOW:
     case ACTL_WAITKEY:
       Param1 = luaL_checkinteger(L, 2);
       break;
+
+    case ACTL_GETCOLOR:
+      Param1 = luaL_checkinteger(L, 2);
+      if (Info->AdvControl(PluginId, Command, Param1, &fc))
+        PushFarColor(L, &fc);
+      else
+        lua_pushnil(L);
+      return 1;
 
     case ACTL_SYNCHRO: {
       int p = luaL_checkinteger(L, 2);
@@ -3554,7 +3585,7 @@ static int far_AdvControl (lua_State *L)
       break;
 
     case ACTL_GETSYSWORDDIV:
-      Info->AdvControl(PluginId, Command, 0, buf);
+      Info->AdvControl(PluginId, Command, DIM(buf), buf);
       return push_utf8_string(L,buf,-1), 1;
 
     case ACTL_EJECTMEDIA:
@@ -3567,14 +3598,14 @@ static int far_AdvControl (lua_State *L)
 
     case ACTL_GETARRAYCOLOR: {
       int size = Info->AdvControl(PluginId, Command, 0, NULL);
-      void *p = lua_newuserdata(L, size);
-      Info->AdvControl(PluginId, Command, 0, p);
-      lua_createtable(L, size, 0);
+      int len = size / sizeof(struct FarColor);
+      struct FarColor *arr = (struct FarColor*) lua_newuserdata(L, size);
+      Info->AdvControl(PluginId, Command, 0, arr);
+      lua_createtable(L, len, 0);
       int i;
-      for (i=0; i < size; i++) {
-        lua_pushinteger(L, i+1);
-        lua_pushinteger(L, ((BYTE*)p)[i]);
-        lua_rawset(L,-3);
+      for (i=0; i < len; i++) {
+        PushFarColor(L, &arr[i]);
+        lua_rawseti(L, -2, i+1);
       }
       return 1;
     }
@@ -3621,13 +3652,15 @@ static int far_AdvControl (lua_State *L)
       fsc.StartIndex = GetOptIntFromTable(L, "StartIndex", 0);
       lua_getfield(L, 3, "Flags");
       fsc.Flags = GetFlagCombination(L, -1, NULL);
-      fsc.ColorCount = lua_objlen(L, 3);
-      fsc.Colors = (BYTE*)lua_newuserdata(L, fsc.ColorCount);
-      int i;
-      for (i=0; i < fsc.ColorCount; i++) {
-        lua_pushinteger(L,i+1);
-        lua_gettable(L,3);
-        fsc.Colors[i] = lua_tointeger(L,-1);
+      fsc.ColorsCount = lua_objlen(L, 3);
+      size_t size = fsc.ColorsCount * sizeof(struct FarColor);
+      fsc.Colors = (struct FarColor*) lua_newuserdata(L, size);
+      memset(fsc.Colors, 0, size);
+      size_t i;
+      for (i=0; i < fsc.ColorsCount; i++) {
+        lua_rawgeti(L, 3, i+1);
+        if (lua_istable(L, -1))
+          GetFarColorFromTable(L, -1, &fsc.Colors[i]);
         lua_pop(L,1);
       }
       Param2 = &fsc;
@@ -4557,7 +4590,7 @@ static int far_ColorDialog (lua_State *L)
     int code = luaL_optinteger(L, 1, 0x0F);
     Color.ForegroundColor = code & 0x0F;
     Color.BackgroundColor = (code & 0xF0) >> 4;
-    Color.Flags = (FMSG_FG_4BIT | FMSG_BG_4BIT);
+    Color.Flags = (FCF_FG_4BIT | FCF_BG_4BIT);
   }
   UINT64 Flags = CheckFlags(L, 2);
 
