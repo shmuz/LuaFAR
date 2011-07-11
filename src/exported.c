@@ -206,7 +206,7 @@ void FillPluginPanelItem (lua_State *L, struct PluginPanelItem *pi)
 // Two known values on the stack top: Tbl (at -2) and FindData (at -1).
 // Both are popped off the stack on return.
 void FillFindData(lua_State* L, struct PluginPanelItem **pPanelItems,
-  int *pItemsNumber, const char* Collector)
+  size_t *pItemsNumber, const char* Collector)
 {
   int numLines = lua_objlen(L,-1);
   lua_newtable(L);                           //+3  Tbl,FindData,Coll

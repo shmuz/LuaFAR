@@ -24,7 +24,7 @@ extern int luaopen_upackage (lua_State *L);
 extern int  luaB_loadfileW (lua_State *L);
 extern int  pcall_msg (lua_State* L, int narg, int nret);
 extern void push_flags_table (lua_State *L);
-extern void SetFarKeysAndColors (lua_State *L);
+extern void SetFarColors (lua_State *L);
 
 #define DIM(buff) (sizeof(buff)/sizeof(buff[0]))
 #define OptHandle(L,i) ((HANDLE)luaL_optinteger (L,i,(INT_PTR)INVALID_HANDLE_VALUE))
@@ -1253,6 +1253,7 @@ static int far_Menu(lua_State *L)
   UINT64 Flags = FMENU_WRAPMODE | FMENU_AUTOHIGHLIGHT;
   const wchar_t *Title = L"Menu", *Bottom = NULL, *HelpTopic = NULL;
   int SelectIndex = 0;
+  const GUID* MenuGuid = pd->PluginId;
 
   lua_settop (L, 3);    // cut unneeded parameters; make stack predictable
   luaL_checktype(L, 1, LUA_TTABLE);
@@ -1277,6 +1278,10 @@ static int far_Menu(lua_State *L)
   if(lua_isstring(L,-1))    HelpTopic = StoreTempString(L, 4, &store);
   lua_getfield(L, 1, "SelectIndex");
   SelectIndex = lua_tointeger(L,-1);
+  lua_getfield(L, 1, "Id");
+  if (lua_type(L,-1)==LUA_TSTRING && lua_objlen(L,-1)==sizeof(GUID))
+    MenuGuid = (const GUID*)lua_tostring(L, -1);
+  lua_pop(L, 2);
 
   // Items
   int i;
@@ -1365,7 +1370,7 @@ static int far_Menu(lua_State *L)
     pBreakCode = &BreakCode;
   }
 
-  int ret = pd->Info->Menu(pd->PluginId, X, Y, MaxHeight, Flags, Title,
+  int ret = pd->Info->Menu(pd->PluginId, MenuGuid, X, Y, MaxHeight, Flags, Title,
     Bottom, HelpTopic, pBreakKeys, pBreakCode, Items, ItemsNumber);
 
   if (NumBreakCodes && (BreakCode != -1)) {
@@ -1387,8 +1392,9 @@ int LF_Message(lua_State *L,
   const wchar_t* aMsg,      // if multiline, then lines must be separated by '\n'
   const wchar_t* aTitle,
   const wchar_t* aButtons,  // if multiple, then captions must be separated by ';'
-  const char* aFlags,
-  const wchar_t* aHelpTopic)
+  const char*    aFlags,
+  const wchar_t* aHelpTopic,
+  const GUID*    aMessageGuid)
 {
   TPluginData *pd = GetPluginData(L);
 
@@ -1519,7 +1525,10 @@ int LF_Message(lua_State *L,
     if(strchr(aFlags, 'l')) Flags |= FMSG_LEFTALIGN;
   }
 
-  ret = pd->Info->Message(pd->PluginId, Flags, aHelpTopic, items, num_items, num_buttons);
+  // Id
+  if (aMessageGuid == NULL) aMessageGuid = pd->PluginId;
+
+  ret = pd->Info->Message(pd->PluginId, aMessageGuid, Flags, aHelpTopic, items, num_items, num_buttons);
   free(BtnCopy);
   while(nAlloc) free(allocLines[--nAlloc]);
   free(MsgCopy);
@@ -1538,7 +1547,7 @@ void LF_Error(lua_State *L, const wchar_t* aMsg)
   lua_pushlstring(L, (const char*)aMsg, wcslen(aMsg)*sizeof(wchar_t));
   lua_pushlstring(L, "\0\0", 2);
   lua_concat(L, 4);
-  LF_Message(L, (const wchar_t*)lua_tostring(L,-1), L"Error", L"OK", "w", NULL);
+  LF_Message(L, (const wchar_t*)lua_tostring(L,-1), L"Error", L"OK", "w", NULL, NULL);
   lua_pop(L, 1);
 }
 
@@ -1570,8 +1579,10 @@ static int far_Message(lua_State *L)
   const wchar_t *Buttons = opt_utf8_string(L, 3, L";OK");
   const char    *Flags   = luaL_optstring(L, 4, "");
   const wchar_t *HelpTopic = opt_utf8_string(L, 5, NULL);
+  const GUID    *Id      = (lua_type(L,6)==LUA_TSTRING && lua_objlen(L,6)==sizeof(GUID)) ?
+    (const GUID*)lua_tostring(L,6) : NULL;
 
-  lua_pushinteger(L, LF_Message(L, Msg, Title, Buttons, Flags, HelpTopic));
+  lua_pushinteger(L, LF_Message(L, Msg, Title, Buttons, Flags, HelpTopic, Id));
   return 1;
 }
 
@@ -1964,10 +1975,10 @@ static int far_GetDirList (lua_State *L)
   PSInfo *Info = GetPluginData(L)->Info;
   const wchar_t *Dir = check_utf8_string (L, 1, NULL);
   struct PluginPanelItem *PanelItems;
-  int ItemsNumber;
+  size_t ItemsNumber;
   int ret = Info->GetDirList (Dir, &PanelItems, &ItemsNumber);
   if(ret) {
-    int i;
+    size_t i;
     lua_createtable(L, ItemsNumber, 0); // "PanelItems"
     for(i=0; i < ItemsNumber; i++) {
       lua_createtable(L, 0, 8);
@@ -1989,7 +2000,7 @@ static int far_GetPluginDirList (lua_State *L)
   HANDLE handle = OptHandle (L, 1);
   const wchar_t *Dir = check_utf8_string (L, 2, NULL);
   struct PluginPanelItem *PanelItems;
-  int ItemsNumber;
+  size_t ItemsNumber;
   int ret = pd->Info->GetPluginDirList (pd->PluginId, handle, Dir, &PanelItems, &ItemsNumber);
   if(ret) {
     PushPanelItems (L, PanelItems, ItemsNumber);
@@ -3008,19 +3019,21 @@ static int far_ShowHelp(lua_State *L)
 // all arguments are optional
 static int far_InputBox(lua_State *L)
 {
-  const wchar_t *Title       = opt_utf8_string (L, 1, L"Input Box");
-  const wchar_t *Prompt      = opt_utf8_string (L, 2, L"Enter the text:");
-  const wchar_t *HistoryName = opt_utf8_string (L, 3, NULL);
-  const wchar_t *SrcText     = opt_utf8_string (L, 4, L"");
-  int DestLength             = luaL_optinteger (L, 5, 1024);
-  const wchar_t *HelpTopic   = opt_utf8_string (L, 6, NULL);
-  UINT64 Flags = lua_isnoneornil(L, 7) ?
-    (FIB_ENABLEEMPTY|FIB_BUTTONS|FIB_NOAMPERSAND) : CheckFlags(L, 7);
+  TPluginData *pd = GetPluginData(L);
+  const GUID *Id = (lua_type(L,1)==LUA_TSTRING && lua_objlen(L,1)==sizeof(GUID)) ?
+    (const GUID*)lua_tostring(L, 1) : pd->PluginId;
+  const wchar_t *Title       = opt_utf8_string (L, 2, L"Input Box");
+  const wchar_t *Prompt      = opt_utf8_string (L, 3, L"Enter the text:");
+  const wchar_t *HistoryName = opt_utf8_string (L, 4, NULL);
+  const wchar_t *SrcText     = opt_utf8_string (L, 5, L"");
+  int DestLength             = luaL_optinteger (L, 6, 1024);
+  const wchar_t *HelpTopic   = opt_utf8_string (L, 7, NULL);
+  UINT64 Flags = lua_isnoneornil(L, 8) ?
+    (FIB_ENABLEEMPTY|FIB_BUTTONS|FIB_NOAMPERSAND) : CheckFlags(L, 8);
 
   if (DestLength < 1) DestLength = 1;
   wchar_t *DestText = (wchar_t*) malloc(sizeof(wchar_t)*DestLength);
-  TPluginData *pd = GetPluginData(L);
-  int res = pd->Info->InputBox(pd->PluginId, Title, Prompt, HistoryName, SrcText,
+  int res = pd->Info->InputBox(pd->PluginId, Id, Title, Prompt, HistoryName, SrcText,
                                 DestText, DestLength, HelpTopic, Flags);
 
   if (res) push_utf8_string (L, DestText, -1);
@@ -3267,37 +3280,22 @@ static int far_PasteFromClipboard (lua_State *L)
   return 1;
 }
 
-static int far_FarKeyToName (lua_State *L)
+static int far_FarInputRecordToName (lua_State *L)
 {
   wchar_t buf[256];
-  int Key = luaL_checkinteger(L,1);
-  BOOL result = GetPluginData(L)->FSF->FarKeyToName(Key, buf, DIM(buf)-1);
-  if (result) push_utf8_string(L, buf, -1);
+  INPUT_RECORD ir;
+  FillInputRecord(L, 1, &ir);
+  size_t result = GetPluginData(L)->FSF->FarInputRecordToName(&ir, buf, DIM(buf)-1);
+  if (result > 0) push_utf8_string(L, buf, -1);
   else lua_pushnil(L);
   return 1;
 }
 
-static int far_FarNameToKey (lua_State *L)
-{
-  const wchar_t* str = check_utf8_string(L,1,NULL);
-  int Key = GetPluginData(L)->FSF->FarNameToKey(str);
-  if (Key == -1) lua_pushnil(L);
-  else lua_pushinteger(L, Key);
-  return 1;
-}
-
-static int far_FarInputRecordToKey (lua_State *L)
+static int far_FarNameToInputRecord (lua_State *L)
 {
   INPUT_RECORD ir;
-  FillInputRecord(L, 1, &ir);
-  lua_pushinteger(L, GetPluginData(L)->FSF->FarInputRecordToKey(&ir));
-  return 1;
-}
-
-static int far_FarKeyToInputRecord (lua_State *L)
-{
-  INPUT_RECORD ir;
-  if (GetPluginData(L)->FSF->FarKeyToInputRecord(luaL_checkinteger(L, 1), &ir))
+  const wchar_t* str = check_utf8_string(L, 1, NULL);
+  if (GetPluginData(L)->FSF->FarNameToInputRecord(str, &ir))
     pushInputRecord(L, &ir);
   else
     lua_pushnil(L);
@@ -3743,12 +3741,17 @@ static int MacroSendString (lua_State* L, int Param1)
   smt->StructSize = sizeof(*smt);
 
   luaL_checktype(L, 1, LUA_TTABLE);
-  lua_settop(L, 1);
+
+  lua_getfield(L, 1, "AKey");
+  if (lua_istable(L, -1))
+    FillInputRecord(L, -1, &smt->AKey);
+  else {
+    memset(&smt->AKey, 0, sizeof(INPUT_RECORD));
+    smt->AKey.EventType = KEY_EVENT;
+  }
 
   smt->Flags = CheckFlagsFromTable(L, 1, "Flags");
-  smt->AKey = GetOptIntFromTable(L, "AKey", 0);
-
-  lua_getfield(L, -1, "SequenceText");
+  lua_getfield(L, 1, "SequenceText");
   smt->SequenceText = check_utf8_string(L, -1, NULL);
 
   if (Param1 == MSSC_POST) {
@@ -4760,10 +4763,8 @@ const luaL_reg far_funcs[] = {
   {"EditorGetSelection",  far_EditorGetSelection},
   {"CopyToClipboard",     far_CopyToClipboard},
   {"PasteFromClipboard",  far_PasteFromClipboard},
-  {"FarKeyToName",        far_FarKeyToName},
-  {"FarNameToKey",        far_FarNameToKey},
-  {"FarInputRecordToKey", far_FarInputRecordToKey},
-  {"FarKeyToInputRecord", far_FarKeyToInputRecord},
+  {"FarInputRecordToName",far_FarInputRecordToName},
+  {"FarNameToInputRecord",far_FarNameToInputRecord},
   {"LStricmp",            far_LStricmp},
   {"LStrnicmp",           far_LStrnicmp},
   {"ProcessName",         far_ProcessName},
@@ -4869,7 +4870,7 @@ static int luaopen_far (lua_State *L)
   lua_pushvalue(L, -1);
   lua_setfield(L, -3, "Flags");
   lua_setfield(L, LUA_REGISTRYINDEX, FAR_FLAGSTABLE);
-  SetFarKeysAndColors(L);
+  SetFarColors(L);
 
   luaL_newmetatable(L, FarFileFilterType);
   lua_pushvalue(L,-1);

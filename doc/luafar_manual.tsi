@@ -31,12 +31,11 @@ lv=1
 dt=Text
 nm=Flags
 ctime=3480257526
-mtime=3512120849
+mtime=3519379190
 <article>
 #_<markdown>
 #_
-#_As Far API makes wide use of named integer constants, there is a necessity to represent those constants in Lua. LuaFAR keeps the names and values of the constants in tables. Most constants are embedded into LuaFAR, in the tables [`far.Flags`](57.html), [`far.Keys`](438.html) and
-#_[`far.Colors`](437.html).
+#_As Far API makes wide use of named integer constants, there is a necessity to represent those constants in Lua. LuaFAR keeps the names and values of the constants in tables. Most constants are embedded into LuaFAR, in the tables [`far.Flags`](57.html) and [`far.Colors`](437.html).
 #_
 #_This manual uses the term **flags** for both a single constant contained in the table `far.Flags`, and for the [bitwise OR](405.html) of two or more such constants.
 #_
@@ -241,7 +240,7 @@ id=149
 lv=0
 dt=Text
 nm=What's new in this version
-mtime=3515093821
+mtime=3519379609
 <article>
 #_<markdown>
 #_
@@ -253,8 +252,8 @@ mtime=3515093821
 #_1. [`far.ColorDialog`](435.html)
 #_1. [`far.Colors`](437.html)
 #_1. [`far.EditorDelColor`](444.html)
-#_1. [`far.FarKeyToInputRecord`](426.html)
-#_1. [`far.Keys`](438.html)
+#_1. [`far.FarInputRecordToName`](186.html)
+#_1. [`far.FarNameToInputRecord`](426.html)
 #_1. [`win.GetFileAttr`](433.html)
 #_1. [`win.GlobalMemoryStatus`](431.html)
 #_1. [`win.SearchPath`](429.html)
@@ -271,6 +270,8 @@ mtime=3515093821
 #_1. `far.LoadFile` -- replaced by **`loadfile`**.
 #_1. `far.LoadLib` -- replaced by **`package.loadlib`**.
 #_1. `far.Require` -- replaced by **`require`**.
+#_1. `far.FarInputRecordToKey`
+#_1. `far.FarKeyToInputRecord`
 #_
 </article>
 </node>
@@ -3010,14 +3011,14 @@ lv=3
 dt=Text
 nm=far.MacroCheck
 ctime=3507633625
-mtime=3507818158
+mtime=3519503002
 <article>
 #_result = far.MacroCheck (macro)
 #_
 #_**Parameters:**
 #_  macro:  table
 #_            Flags:        flags (defaults to 0)
-#_            AKey:         integer (defaults to 0)
+#_            AKey:         table InputRecord (optional)
 #_            SequenceText: string
 #_
 #_**Returns:**
@@ -3031,7 +3032,7 @@ mtime=3507818158
 #_  MacroControl
 #_
 #_@@@
-#_
+#_<lua> Links = { InputRecord="187.html" } </lua>
 #_
 </article>
 </node>
@@ -3111,14 +3112,14 @@ lv=3
 dt=Text
 nm=far.MacroPost
 ctime=3507633616
-mtime=3507818167
+mtime=3519503048
 <article>
 #_result = far.MacroPost (macro)
 #_
 #_**Parameters:**
 #_  macro:  table
 #_            Flags:        flags (defaults to 0)
-#_            AKey:         integer (defaults to 0)
+#_            AKey:         table InputRecord (optional)
 #_            SequenceText: string
 #_
 #_**Returns:**
@@ -3128,7 +3129,7 @@ mtime=3507818167
 #_  MacroControl
 #_
 #_@@@
-#_
+#_<lua> Links = { InputRecord="187.html" } </lua>
 #_
 </article>
 </node>
@@ -3161,7 +3162,7 @@ id=64
 lv=3
 dt=Text
 nm=far.Menu
-mtime=3507818171
+mtime=3519542118
 <article>
 #_Item, Position = far.Menu (Properties, Items [, BreakKeys])
 #_
@@ -3176,6 +3177,7 @@ mtime=3507818171
 #_      Bottom:       string
 #_      HelpTopic:    string
 #_      SelectIndex:  integer (1-based)
+#_      Id:           string (GUID; default=plugin Id)
 #_
 #_  Items: table (array of menu items)
 #_      a menu item is a table;
@@ -4775,12 +4777,13 @@ id=62
 lv=3
 dt=Text
 nm=far.InputBox
-mtime=3507818333
+mtime=3519542187
 <article>
-#_result = far.InputBox (Title, Prompt, HistoryName, SrcText,
+#_result = far.InputBox (Id, Title, Prompt, HistoryName, SrcText,
 #_                       DestLength, HelpTopic, Flags)
 #_
 #_**Parameters:**
+#_  Id:          string (dialog GUID), or nil (default=Plugin Id)
 #_  Title:       string, or nil
 #_  Prompt:      string, or nil
 #_  HistoryName: string, or nil
@@ -4807,9 +4810,9 @@ id=65
 lv=3
 dt=Text
 nm=far.Message
-mtime=3482991858
+mtime=3519542294
 <article>
-#_result = far.Message (Msg, [Title], [Buttons], [Flags], [HelpTopic])
+#_result = far.Message (Msg, [Title], [Buttons], [Flags], [HelpTopic], [Id])
 #_
 #_**Parameters:**
 #_  *Msg:*       any type (usually: string)
@@ -4833,6 +4836,8 @@ mtime=3482991858
 #_      'l' stands for FMSG_LEFTALIGN
 #_
 #_  *HelpTopic:* string
+#_
+#_  *Id:*        string (GUID); default=plugin Id
 #_
 #_**Returns:**
 #_  *result:* integer
@@ -6123,9 +6128,10 @@ nm=far.CopyToClipboard
 id=186
 lv=3
 dt=Text
-nm=far.FarInputRecordToKey
+nm=far.FarInputRecordToName
+mtime=3519359011
 <article>
-#_Key = far.FarInputRecordToKey (Input)
+#_Name = far.FarInputRecordToName (Input)
 #_
 #_**Parameters:**
 #_  Input: table InputRecord
@@ -6135,10 +6141,10 @@ nm=far.FarInputRecordToKey
 #_         that defaults to 1).
 #_
 #_**Returns:**
-#_  Key: integer
+#_  Name:  string, or nil
 #_
 #_**Far API used:**
-#_  FSF.FarInputRecordToKey
+#_  FSF.FarInputRecordToName
 #_
 #_@@@
 #_<lua> Links = { ["\\bInputRecord\\b"]="187.html", } </lua>
@@ -6149,67 +6155,25 @@ nm=far.FarInputRecordToKey
 id=426
 lv=3
 dt=Text
-nm=far.FarKeyToInputRecord
+nm=far.FarNameToInputRecord
 ctime=3508525223
-mtime=3508525451
+mtime=3519359123
 <article>
-#_Record = far.FarKeyToInputRecord (Key)
+#_Record = far.FarNameToInputRecord (Name)
 #_
 #_**Parameters:**
-#_  Key:    integer
+#_  Name:   string
 #_
 #_**Returns:**
 #_  Record: table InputRecord, or nil
 #_er
 #_
 #_**Far API used:**
-#_  FSF.FarKeyToInputRecord
+#_  FSF.FarNameToInputRecord
 #_
 #_@@@
 #_<lua> Links = { ["\\bInputRecord\\b"]="187.html", } </lua>
 #_
-#_
-</article>
-</node>
-<node>
-id=63
-lv=3
-dt=Text
-nm=far.FarKeyToName
-<article>
-#_Name = far.FarKeyToName (Key)
-#_
-#_**Parameters:**
-#_  Key: integer
-#_
-#_**Returns:**
-#_  Name: string, or nil
-#_
-#_**Far API used:**
-#_  FSF.FarKeyToName
-#_
-#_@@@
-#_
-</article>
-</node>
-<node>
-id=66
-lv=3
-dt=Text
-nm=far.FarNameToKey
-<article>
-#_Key = far.FarNameToKey (Name)
-#_
-#_**Parameters:**
-#_  Name: string
-#_
-#_**Returns:**
-#_  Key: integer, or nil
-#_
-#_**Far API used:**
-#_  FSF.FarNameToKey
-#_
-#_@@@
 #_
 </article>
 </node>
@@ -7447,26 +7411,6 @@ mtime=3512058652
 </article>
 </node>
 <node>
-id=438
-lv=3
-dt=Text
-nm=far.Keys
-ctime=3512119673
-mtime=3512120942
-<article>
-#_far.Keys
-#_
-#_**Description:**
-#_  A table containing values of all constants (32-bit integers)
-#_  from *farkeys.hpp* indexed by their string names.
-#_
-#_**Example of use:**
-#_  local FK = far.Keys
-#_  far.EditorProcessKey (nil, FK.KEY_CTRLEND)
-#_
-</article>
-</node>
-<node>
 id=84
 lv=1
 dt=Text
@@ -7558,6 +7502,23 @@ mtime=3517898220
 #_The array part of the table keeps colors, represented by
 #_[`FarColor`](427.html) tables.
 #_Color count can be obtained via the operator `#`.
+#_
+#_
+</article>
+</node>
+<node>
+id=445
+lv=2
+dt=Text
+nm=FarKey
+ctime=3519480559
+mtime=3519480675
+<article>
+#_<markdown>
+#_**`FarKey`** is a table with the following predefined fields:
+#_
+#_      VirtualKeyCode:     integer
+#_      ControlKeyState:    integer
 #_
 #_
 </article>

@@ -49,7 +49,7 @@ luafar.o   : version.h
 flags.c: $(INC_FAR)\plugin.hpp makeflags.lua
 	lua makeflags.lua $< > $@
 
-keysandcolors.c: $(INC_FAR)/farkeys.hpp $(INC_FAR)/farcolor.hpp makefarkeys.lua
+keysandcolors.c: $(INC_FAR)/farcolor.hpp makefarkeys.lua
 	lua makefarkeys.lua $(INC_FAR) $@
 
 clean:

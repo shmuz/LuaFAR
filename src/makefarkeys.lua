@@ -17,7 +17,6 @@ end
 local sTmpFile = [[
 #include <windows.h>
 #include <stdio.h>
-#include <farkeys.hpp>
 #include <farcolor.hpp>
 
 int main() {
@@ -28,15 +27,11 @@ local sOutFile = [[
 #include <lua.h>
 #include <lauxlib.h>
 
-static const char keys[] = "return { $keys }";
 static const char colors[] = "return { $colors }";
 
 // output table is on stack top
-void SetFarKeysAndColors (lua_State *L)
+void SetFarColors (lua_State *L)
 {
-  luaL_loadstring(L, keys);
-  lua_call(L, 0, 1);
-  lua_setfield(L, -2, "Keys");
   luaL_loadstring(L, colors);
   lua_call(L, 0, 1);
   lua_setfield(L, -2, "Colors");
@@ -66,19 +61,11 @@ local function get_insert (in_dir, src)
   return str
 end
 
-local function makefarkeys (in_dir, out_file, notall)
-  local fp = assert(io.open(in_dir.."\\farkeys.hpp"))
+local function makefarcolors (in_dir, out_file, notall)
+  local fp = assert(io.open(in_dir.."\\farcolor.hpp"))
   local src = fp:read("*all")
   fp:close()
-  if notall then
-    src = assert(src:match("\n%s*enum%s*BaseDefKeyboard.-\n%s*}%s*;"))
-  end
-  local out = sOutFile:gsub("$keys", get_insert(in_dir, src))
-
-  fp = assert(io.open(in_dir.."\\farcolor.hpp"))
-  src = fp:read("*all")
-  fp:close()
-  out = out:gsub("$colors", get_insert(in_dir, src))
+  local out = sOutFile:gsub("$colors", get_insert(in_dir, src))
 
   fp = io.open(out_file, "w")
   fp:write(out)
@@ -88,4 +75,4 @@ end
 local in_dir, out_file, notall = ...
 assert(in_dir, "input directory not specified")
 assert(out_file, "output file not specified")
-makefarkeys(in_dir, out_file, notall=="-notall")
+makefarcolors(in_dir, out_file)
