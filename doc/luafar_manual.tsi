@@ -1918,45 +1918,19 @@ id=111
 lv=3
 dt=Text
 nm=export.ProcessEditorInput
-mtime=3509018959
+mtime=3522051184
 <article>
 #_result = export.ProcessEditorInput (Rec)
 #_
 #_**Parameters:**
-#_  Rec: table
-#_    fields of Rec:
-#_      EventType:         integer
-#_
-#_      *--if EventType is KEY_EVENT or FARMACRO_KEY_EVENT:*
-#_      bKeyDown:          boolean
-#_      wRepeatCount:      integer
-#_      wVirtualKeyCode:   string
-#_      wVirtualScanCode:  integer
-#_      AsciiChar:         integer
-#_      UnicodeChar:       integer
-#_      dwControlKeyState: integer
-#_
-#_      *--if EventType is MOUSE_EVENT:*
-#_      dwMousePositionX   integer
-#_      dwMousePositionY   integer
-#_      dwButtonState      integer
-#_      dwControlKeyState  integer
-#_      dwEventFlags       integer
-#_
-#_      *--if EventType is WINDOW_BUFFER_SIZE_EVENT:*
-#_      dwSizeX            integer
-#_      dwSizeY            integer
-#_
-#_      *--if EventType is MENU_EVENT:*
-#_      dwCommandId        integer
-#_
-#_      *--if EventType is FOCUS_EVENT:*
-#_      bSetFocus          boolean
+#_  Rec:    table InputRecord
 #_
 #_**Returns:**
 #_  result: boolean
 #_
 #_@@@
+#_<lua> Links = { InputRecord="187.html" } </lua>
+#_
 #_
 </article>
 </node>
@@ -3325,15 +3299,15 @@ id=76
 lv=3
 dt=Text
 nm=far.Text
-mtime=3517901343
+mtime=3521831927
 <article>
-#_far.Text (X, Y [, Color [, Str]])
+#_far.Text (X, Y, Color, Str)
 #_
 #_**Parameters:**
 #_  X:     integer
 #_  Y:     integer
-#_  Color: FarColor, or integer
-#_  Str:   string
+#_  Color: table FarColor, or integer
+#_  Str:   string, or nil (if nil, NULL is passed to Far)
 #_
 #_**Returns:**
 #_  nothing
@@ -4859,7 +4833,7 @@ id=71
 lv=3
 dt=Text
 nm=far.SendDlgMessage
-mtime=3507818372
+mtime=3520792714
 <article>
 #_Result = far.SendDlgMessage (hDlg, Msg, Param1, Param2)
 #_
@@ -4908,10 +4882,6 @@ mtime=3507818372
 #_DM_SETTEXT,
 #_DM_SETTEXTPTR:
 #_    Param2:  string
-#_    Result:  integer
-#_
-#_DM_LISTSETMOUSEREACTION:
-#_    Param2:  flags
 #_    Result:  integer
 #_
 #_DM_GETCURSORPOS,
@@ -7165,7 +7135,7 @@ lv=3
 dt=Text
 nm=far.Timer
 ctime=3482124061
-mtime=3482993402
+mtime=3520022259
 <article>
 #_timer = far.Timer (interval, handler)
 #_
@@ -7196,7 +7166,7 @@ mtime=3482993402
 #_
 #_  3. This function requires that the plugin DLL has
 #_     *ProcessSynchroEventW* exported. (There is not such a requirement
-#_     for far.ProcessSynchroEvent though, as it is not called by the
+#_     for export.ProcessSynchroEvent though, as it is not called by the
 #_     Timer function and methods).
 #_
 #_**Far API used:**
@@ -7207,7 +7177,7 @@ mtime=3482993402
 #_
 #_@@@
 #_<lua> Links = {
-#_["\\bfar.ProcessSynchroEvent\\b"]="319.html",
+#_["\\bexport.ProcessSynchroEvent\\b"]="319.html",
 #_} </lua>
 #_
 #_
@@ -8293,7 +8263,7 @@ lv=1
 dt=Text
 nm=win.GetVirtualKeys
 ctime=3477369087
-mtime=3499948713
+mtime=3522050567
 <article>
 #_vkeys = win.GetVirtualKeys ()
 #_
@@ -8308,10 +8278,14 @@ mtime=3499948713
 #_  their string names (and vice versa). The prefix VK_ is stripped
 #_  from the names, so VK_LBUTTON is represented as "LBUTTON", etc.
 #_
+#_**Note:**
+#_  If some key code N (where 0 <= N < 256) does not have a corresponding
+#_  name, then vkeys[N] is "" (empty string).
+#_
 #_**Example:**
 #_  local vk = win.GetVirtualKeys()
-#_  win.Message(vk.ESCAPE) --> 27
-#_  win.Message(vk[27])    --> ESCAPE
+#_  far.Message(vk.ESCAPE) --> 27
+#_  far.Message(vk[27])    --> ESCAPE
 #_
 #_@@@
 #_
@@ -9941,12 +9915,12 @@ id=194
 lv=0
 dt=Text
 nm=Third party software used
-mtime=3507800436
+mtime=3520022380
 <article>
 #_<markdown>
 #_The following third party software is used as part of LuaFAR:
 #_
-#_1. [FAR 2.0 Plugin SDK](195.html)
+#_1. [FAR 3.0 Plugin SDK](195.html)
 #_1. [Lua 5.1](196.html)
 #_1. [Selene Unicode](251.html)
 #_

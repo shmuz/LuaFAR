@@ -1113,9 +1113,10 @@ static int far_EditorSaveFile(lua_State *L)
 int pushInputRecord(lua_State *L, const INPUT_RECORD* ir)
 {
   lua_newtable(L);
+  PutIntToTable(L, "EventType", ir->EventType);
   switch(ir->EventType) {
     case KEY_EVENT:
-      PutIntToTable(L, "EventType", KEY_EVENT);
+    case FARMACRO_KEY_EVENT:
       PutBoolToTable(L,"bKeyDown", ir->Event.KeyEvent.bKeyDown);
       PutNumToTable(L, "wRepeatCount", ir->Event.KeyEvent.wRepeatCount);
       PutNumToTable(L, "wVirtualKeyCode", ir->Event.KeyEvent.wVirtualKeyCode);
@@ -1126,23 +1127,19 @@ int pushInputRecord(lua_State *L, const INPUT_RECORD* ir)
       break;
 
     case MOUSE_EVENT:
-      PutIntToTable(L, "EventType", MOUSE_EVENT);
       PutMouseEvent(L, &ir->Event.MouseEvent, TRUE);
       break;
 
     case WINDOW_BUFFER_SIZE_EVENT:
-      PutIntToTable(L, "EventType", WINDOW_BUFFER_SIZE_EVENT);
       PutNumToTable(L, "dwSizeX", ir->Event.WindowBufferSizeEvent.dwSize.X);
       PutNumToTable(L, "dwSizeY", ir->Event.WindowBufferSizeEvent.dwSize.Y);
       break;
 
     case MENU_EVENT:
-      PutIntToTable(L, "EventType", MENU_EVENT);
       PutNumToTable(L, "dwCommandId", ir->Event.MenuEvent.dwCommandId);
       break;
 
     case FOCUS_EVENT:
-      PutIntToTable(L, "EventType", FOCUS_EVENT);
       PutBoolToTable(L,"bSetFocus", ir->Event.FocusEvent.bSetFocus);
       break;
 
@@ -2339,7 +2336,6 @@ static int far_SendDlgMessage (lua_State *L)
       Param2 = (void*)opt_utf8_string(L, 4, NULL);
       break;
 
-    case DM_LISTSETMOUSEREACTION:
     case DM_SETCHECK:
       Param2 = (void*)(INT_PTR)get_env_flag (L, 4, NULL);
       break;
@@ -3070,7 +3066,7 @@ static int far_Text(lua_State *L)
     fc.ForegroundColor = Color & 0x0F;
     fc.BackgroundColor = (Color>>4) & 0x0F;
   }
-  const wchar_t* Str = opt_utf8_string(L, 4, L"");
+  const wchar_t* Str = opt_utf8_string(L, 4, NULL);
   Info->Text(X, Y, &fc, Str);
   return 0;
 }
@@ -3965,16 +3961,16 @@ static int far_Show (lua_State *L)
 static void NewVirtualKeyTable(lua_State* L, BOOL twoways)
 {
   int i;
-  lua_createtable(L, 0, twoways ? 360:180);
+  lua_createtable(L, twoways ? 256:0, 200);
   for (i=0; i<256; i++) {
     const char* str = VirtualKeyStrings[i];
-    if (str != NULL) {
+    if (str) {
       lua_pushinteger(L, i);
       lua_setfield(L, -2, str);
-      if (twoways) {
-        lua_pushstring(L, str);
-        lua_rawseti(L, -2, i);
-      }
+    }
+    if (twoways) {
+      lua_pushstring(L, str ? str : "");
+      lua_rawseti(L, -2, i);
     }
   }
 }

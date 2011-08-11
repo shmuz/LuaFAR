@@ -794,43 +794,13 @@ void LF_GetPluginInfo(lua_State* L, struct PluginInfo *PI)
   lua_pop(L, 3);
 }
 
-//int LF_ProcessEditorInput (lua_State* L, const INPUT_RECORD *Rec)
 int LF_ProcessEditorInput (lua_State* L, const struct ProcessEditorInputInfo *Info)
 {
   if (!GetExportFunction(L, "ProcessEditorInput"))   //+1: Func
     return 0;
-  const INPUT_RECORD *Rec = &Info->Rec;
-  lua_newtable(L);                   //+2: Func,Tbl
-  PutNumToTable(L, "EventType", Rec->EventType);
-  if (Rec->EventType==KEY_EVENT || Rec->EventType==FARMACRO_KEY_EVENT) {
-    PutBoolToTable(L, "bKeyDown",          Rec->Event.KeyEvent.bKeyDown);
-    PutNumToTable(L,  "wRepeatCount",      Rec->Event.KeyEvent.wRepeatCount);
-
-    int vKey = Rec->Event.KeyEvent.wVirtualKeyCode & 0xff;
-    const char* s = VirtualKeyStrings[vKey] ? VirtualKeyStrings[vKey] : "";
-    PutStrToTable(L, "wVirtualKeyCode", s);
-
-    PutNumToTable(L,  "wVirtualScanCode",  Rec->Event.KeyEvent.wVirtualScanCode);
-    PutNumToTable(L,  "AsciiChar",         Rec->Event.KeyEvent.uChar.AsciiChar);
-    PutNumToTable(L,  "UnicodeChar",       Rec->Event.KeyEvent.uChar.UnicodeChar);
-    PutNumToTable(L,  "dwControlKeyState", Rec->Event.KeyEvent.dwControlKeyState);
-  }
-  else if (Rec->EventType == MOUSE_EVENT) {
-    PutMouseEvent(L, &Rec->Event.MouseEvent, TRUE);
-  }
-  else if (Rec->EventType == WINDOW_BUFFER_SIZE_EVENT) {
-    PutNumToTable(L, "dwSizeX", Rec->Event.WindowBufferSizeEvent.dwSize.X);
-    PutNumToTable(L, "dwSizeY", Rec->Event.WindowBufferSizeEvent.dwSize.Y);
-  }
-  else if (Rec->EventType == MENU_EVENT) {
-    PutNumToTable(L, "dwCommandId", Rec->Event.MenuEvent.dwCommandId);
-  }
-  else if (Rec->EventType == FOCUS_EVENT) {
-    PutBoolToTable(L, "bSetFocus", Rec->Event.FocusEvent.bSetFocus);
-  }
-  int ret = pcall_msg(L, 1, 1);      //+1: Res
-  if (ret == 0) {
-    ret = lua_toboolean(L,-1);
+  pushInputRecord(L, &Info->Rec);
+  if (pcall_msg(L, 1, 1) == 0) {     //+1: Res
+    int ret = lua_toboolean(L,-1);
     return lua_pop(L,1), ret;
   }
   return 0;
