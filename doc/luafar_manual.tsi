@@ -2985,22 +2985,21 @@ lv=3
 dt=Text
 nm=far.MacroCheck
 ctime=3507633625
-mtime=3519503002
+mtime=3522357335
 <article>
-#_result = far.MacroCheck (macro)
+#_result = far.MacroCheck (SequenceText, Flags, AKey)
 #_
 #_**Parameters:**
-#_  macro:  table
-#_            Flags:        flags (defaults to 0)
-#_            AKey:         table InputRecord (optional)
-#_            SequenceText: string
+#_  SequenceText: string
+#_  Flags:        flags (defaults to 0)
+#_  AKey:         table InputRecord (optional)
 #_
 #_**Returns:**
-#_  result: table
-#_            ErrCode:      integer
-#_            ErrPosX:      integer
-#_            ErrPosY:      integer
-#_            ErrSrc:       string
+#_  result:       table
+#_                  ErrCode:  integer
+#_                  ErrPosX:  integer
+#_                  ErrPosY:  integer
+#_                  ErrSrc:   string
 #_
 #_**Far API used:**
 #_  MacroControl
@@ -3086,15 +3085,14 @@ lv=3
 dt=Text
 nm=far.MacroPost
 ctime=3507633616
-mtime=3519503048
+mtime=3522357152
 <article>
-#_result = far.MacroPost (macro)
+#_result = far.MacroPost (SequenceText, Flags, AKey)
 #_
 #_**Parameters:**
-#_  macro:  table
-#_            Flags:        flags (defaults to 0)
-#_            AKey:         table InputRecord (optional)
-#_            SequenceText: string
+#_  SequenceText: string
+#_  Flags:        flags (defaults to 0)
+#_  AKey:         table InputRecord (optional)
 #_
 #_**Returns:**
 #_  result: boolean

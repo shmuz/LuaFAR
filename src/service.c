@@ -3736,20 +3736,14 @@ static int MacroSendString (lua_State* L, int Param1)
   struct MacroSendMacroText *smt = &cmt.Check.Text;
   smt->StructSize = sizeof(*smt);
 
-  luaL_checktype(L, 1, LUA_TTABLE);
-
-  lua_getfield(L, 1, "AKey");
-  if (lua_istable(L, -1))
-    FillInputRecord(L, -1, &smt->AKey);
+  smt->SequenceText = check_utf8_string(L, 1, NULL);
+  smt->Flags = CheckFlags(L, 2);
+  if (lua_istable(L, 3))
+    FillInputRecord(L, 3, &smt->AKey);
   else {
     memset(&smt->AKey, 0, sizeof(INPUT_RECORD));
     smt->AKey.EventType = KEY_EVENT;
   }
-
-  smt->Flags = CheckFlagsFromTable(L, 1, "Flags");
-  lua_getfield(L, 1, "SequenceText");
-  smt->SequenceText = check_utf8_string(L, -1, NULL);
-
   if (Param1 == MSSC_POST) {
     lua_pushboolean(L, Info->MacroControl(NULL, MCTL_SENDSTRING, Param1, smt));
   }
