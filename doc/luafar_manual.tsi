@@ -2980,19 +2980,67 @@ mtime=3507552662
 </article>
 </node>
 <node>
+id=446
+lv=3
+dt=Text
+nm=far.MacroAdd
+ctime=3523354795
+mtime=3523358448
+<article>
+#_Id = far.MacroAdd (Callback, SequenceText, Flags, AKey, Description)
+#_
+#_**Parameters:**
+#_  Callback:     function
+#_  SequenceText: string
+#_  Flags:        flags (defaults to 0)
+#_  AKey:         table InputRecord, or string (e.g. "CtrlShiftF12")
+#_  Description:  string (defaults to "")
+#_
+#_**Returns:**
+#_  Id:           integer (success), or nil (failure)
+#_                  used in Callback and far.MacroDelete
+#_
+#_**Far API used:**
+#_  MacroControl(MCTL_ADDMACRO)
+#_
+#_**Example:**
+#_  local F = far.Flags
+#_
+#_  local function Callback (Id, Flags)
+#_    return F.MACROAREA_SHELL == far.MacroGetArea()
+#_  end
+#_
+#_  local Id = far.MacroAdd(
+#_      Callback,
+#_      'msgbox("test","test")',
+#_      F.KMFLAGS_DISABLEOUTPUT,
+#_      "CtrlShiftF12",
+#_      "cool macro"
+#_  )
+#_
+#_@@@
+#_<lua> Links = {
+#_  InputRecord="187.html",
+#_  ["far.MacroGetArea"]="413.html",
+#_  ["far.MacroDelete"]="447.html",
+#_} </lua>
+#_
+</article>
+</node>
+<node>
 id=415
 lv=3
 dt=Text
 nm=far.MacroCheck
 ctime=3507633625
-mtime=3522357335
+mtime=3523358353
 <article>
 #_result = far.MacroCheck (SequenceText, Flags, AKey)
 #_
 #_**Parameters:**
 #_  SequenceText: string
 #_  Flags:        flags (defaults to 0)
-#_  AKey:         table InputRecord (optional)
+#_  AKey:         table InputRecord, or string (e.g. "CtrlShiftF12"); optional
 #_
 #_**Returns:**
 #_  result:       table
@@ -3002,10 +3050,36 @@ mtime=3522357335
 #_                  ErrSrc:   string
 #_
 #_**Far API used:**
-#_  MacroControl
+#_  MacroControl(MCTL_SENDSTRING, MSSC_CHECK)
 #_
 #_@@@
 #_<lua> Links = { InputRecord="187.html" } </lua>
+#_
+</article>
+</node>
+<node>
+id=447
+lv=3
+dt=Text
+nm=far.MacroDelete
+ctime=3523354806
+mtime=3523357280
+<article>
+#_result = far.MacroDelete (Id)
+#_
+#_**Parameters:**
+#_  Id:      integer (value returned by far.MacroAdd)
+#_
+#_**Returns:**
+#_  result:  boolean
+#_
+#_**Far API used:**
+#_  MacroControl(MCTL_DELMACRO)
+#_
+#_@@@
+#_<lua> Links = {
+#_  ["far.MacroAdd"]="446.html",
+#_} </lua>
 #_
 </article>
 </node>
@@ -3015,7 +3089,7 @@ lv=3
 dt=Text
 nm=far.MacroGetArea
 ctime=3507633603
-mtime=3507633849
+mtime=3523362800
 <article>
 #_result = far.MacroGetArea ()
 #_
@@ -3026,7 +3100,7 @@ mtime=3507633849
 #_  result: integer
 #_
 #_**Far API used:**
-#_  MacroControl
+#_  MacroControl(MCTL_GETAREA)
 #_
 #_@@@
 #_
@@ -3038,7 +3112,7 @@ lv=3
 dt=Text
 nm=far.MacroGetState
 ctime=3507633589
-mtime=3507633868
+mtime=3523362887
 <article>
 #_result = far.MacroGetState ()
 #_
@@ -3049,7 +3123,7 @@ mtime=3507633868
 #_  result: integer
 #_
 #_**Far API used:**
-#_  MacroControl
+#_  MacroControl(MCTL_GETSTATE)
 #_
 #_@@@
 #_
@@ -3062,7 +3136,7 @@ lv=3
 dt=Text
 nm=far.MacroLoadAll
 ctime=3507631227
-mtime=3507633747
+mtime=3523362830
 <article>
 #_result = far.MacroLoadAll ()
 #_
@@ -3073,7 +3147,7 @@ mtime=3507633747
 #_  result: boolean
 #_
 #_**Far API used:**
-#_  MacroControl
+#_  MacroControl(MCTL_LOADALL)
 #_
 #_@@@
 #_
@@ -3085,20 +3159,20 @@ lv=3
 dt=Text
 nm=far.MacroPost
 ctime=3507633616
-mtime=3522357152
+mtime=3523358392
 <article>
 #_result = far.MacroPost (SequenceText, Flags, AKey)
 #_
 #_**Parameters:**
 #_  SequenceText: string
 #_  Flags:        flags (defaults to 0)
-#_  AKey:         table InputRecord (optional)
+#_  AKey:         table InputRecord, or string (e.g. "CtrlShiftF12"); optional
 #_
 #_**Returns:**
 #_  result: boolean
 #_
 #_**Far API used:**
-#_  MacroControl
+#_  MacroControl(MCTL_SENDSTRING, MSSC_POST)
 #_
 #_@@@
 #_<lua> Links = { InputRecord="187.html" } </lua>
@@ -3111,7 +3185,7 @@ lv=3
 dt=Text
 nm=far.MacroSaveAll
 ctime=3507633579
-mtime=3507633826
+mtime=3523362847
 <article>
 #_result = far.MacroSaveAll ()
 #_
@@ -3122,7 +3196,7 @@ mtime=3507633826
 #_  result: boolean
 #_
 #_**Far API used:**
-#_  MacroControl
+#_  MacroControl(MCTL_SAVEALL)
 #_
 #_@@@
 #_
@@ -3134,7 +3208,7 @@ id=64
 lv=3
 dt=Text
 nm=far.Menu
-mtime=3519542118
+mtime=3523261889
 <article>
 #_Item, Position = far.Menu (Properties, Items [, BreakKeys])
 #_
@@ -3149,7 +3223,7 @@ mtime=3519542118
 #_      Bottom:       string
 #_      HelpTopic:    string
 #_      SelectIndex:  integer (1-based)
-#_      Id:           string (GUID; default=plugin Id)
+#_      Id:           string (GUID)
 #_
 #_  Items: table (array of menu items)
 #_      a menu item is a table;

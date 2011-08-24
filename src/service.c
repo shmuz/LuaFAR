@@ -1250,7 +1250,7 @@ static int far_Menu(lua_State *L)
   UINT64 Flags = FMENU_WRAPMODE | FMENU_AUTOHIGHLIGHT;
   const wchar_t *Title = L"Menu", *Bottom = NULL, *HelpTopic = NULL;
   int SelectIndex = 0;
-  const GUID* MenuGuid = pd->PluginId;
+  const GUID* MenuGuid = NULL;
 
   lua_settop (L, 3);    // cut unneeded parameters; make stack predictable
   luaL_checktype(L, 1, LUA_TTABLE);
@@ -3701,54 +3701,64 @@ static int far_AdvControl (lua_State *L)
   return 1;
 }
 
+static void CheckAKey (lua_State* L, TPluginData *pd, int pos, INPUT_RECORD* ir)
+{
+  if (lua_istable(L, pos))
+    FillInputRecord(L, pos, ir);
+  else if (lua_type(L, pos) == LUA_TSTRING) {
+    wchar_t* name = check_utf8_string(L, pos, NULL);
+    if (!pd->FSF->FarNameToInputRecord(name, ir))
+      luaL_argerror(L, pos, "invalid key");
+  }
+  else {
+    memset(ir, 0, sizeof(INPUT_RECORD));
+    ir->EventType = KEY_EVENT;
+  }
+}
+
 static int far_MacroLoadAll (lua_State* L)
 {
-  PSInfo *Info = GetPluginData(L)->Info;
-  lua_pushboolean(L, Info->MacroControl(NULL, MCTL_LOADALL, 0, 0));
+  TPluginData *pd = GetPluginData(L);
+  lua_pushboolean(L, pd->Info->MacroControl(pd->PluginId, MCTL_LOADALL, 0, 0));
   return 1;
 }
 
 static int far_MacroSaveAll (lua_State* L)
 {
-  PSInfo *Info = GetPluginData(L)->Info;
-  lua_pushboolean(L, Info->MacroControl(NULL, MCTL_SAVEALL, 0, 0));
+  TPluginData *pd = GetPluginData(L);
+  lua_pushboolean(L, pd->Info->MacroControl(pd->PluginId, MCTL_SAVEALL, 0, 0));
   return 1;
 }
 
 static int far_MacroGetState (lua_State* L)
 {
-  PSInfo *Info = GetPluginData(L)->Info;
-  lua_pushinteger(L, Info->MacroControl(NULL, MCTL_GETSTATE, 0, 0));
+  TPluginData *pd = GetPluginData(L);
+  lua_pushinteger(L, pd->Info->MacroControl(pd->PluginId, MCTL_GETSTATE, 0, 0));
   return 1;
 }
 
 static int far_MacroGetArea (lua_State* L)
 {
-  PSInfo *Info = GetPluginData(L)->Info;
-  lua_pushinteger(L, Info->MacroControl(NULL, MCTL_GETAREA, 0, 0));
+  TPluginData *pd = GetPluginData(L);
+  lua_pushinteger(L, pd->Info->MacroControl(pd->PluginId, MCTL_GETAREA, 0, 0));
   return 1;
 }
 
 static int MacroSendString (lua_State* L, int Param1)
 {
-  PSInfo *Info = GetPluginData(L)->Info;
+  TPluginData *pd = GetPluginData(L);
   struct MacroCheckMacroText cmt;
   struct MacroSendMacroText *smt = &cmt.Check.Text;
   smt->StructSize = sizeof(*smt);
 
   smt->SequenceText = check_utf8_string(L, 1, NULL);
   smt->Flags = CheckFlags(L, 2);
-  if (lua_istable(L, 3))
-    FillInputRecord(L, 3, &smt->AKey);
-  else {
-    memset(&smt->AKey, 0, sizeof(INPUT_RECORD));
-    smt->AKey.EventType = KEY_EVENT;
-  }
+  CheckAKey(L, pd, 3, &smt->AKey);
   if (Param1 == MSSC_POST) {
-    lua_pushboolean(L, Info->MacroControl(NULL, MCTL_SENDSTRING, Param1, smt));
+    lua_pushboolean(L, pd->Info->MacroControl(pd->PluginId, MCTL_SENDSTRING, Param1, smt));
   }
   else if (Param1 == MSSC_CHECK) {
-    int result = Info->MacroControl(NULL, MCTL_SENDSTRING, Param1, &cmt);
+    int result = pd->Info->MacroControl(pd->PluginId, MCTL_SENDSTRING, Param1, &cmt);
     if (result) {
       lua_createtable(L, 0, 4);
       PutIntToTable(L, "ErrCode", cmt.Check.Result.ErrCode);
@@ -3770,6 +3780,61 @@ static int far_MacroPost (lua_State* L)
 static int far_MacroCheck (lua_State* L)
 {
   return MacroSendString(L, MSSC_CHECK);
+}
+
+int LF_MacroAddCallback (lua_State* L, void* Id, FARADDKEYMACROFLAGS Flags)
+{
+  int result = FALSE;
+  int funcref = (int) Id;
+  lua_rawgeti(L, LUA_REGISTRYINDEX, funcref);
+  if (lua_type(L,-1) == LUA_TFUNCTION) {
+    lua_pushinteger(L, funcref);
+    push64(L, Flags);
+    if (lua_pcall(L, 2, 1, 0) == 0)
+      result = lua_toboolean(L, -1);
+  }
+  lua_pop(L, 1);
+  return result;
+}
+
+static int far_MacroAdd (lua_State* L)
+{
+  TPluginData *pd = GetPluginData(L);
+
+  struct MacroAddMacro data;
+  memset(&data, 0, sizeof(data));
+  data.StructSize = sizeof(data);
+  data.Callback = pd->MacroAddCallback;
+
+  luaL_checktype(L, 1, LUA_TFUNCTION);
+  data.SequenceText = check_utf8_string(L, 2, NULL);
+  data.Flags = CheckFlags(L, 3);
+  CheckAKey(L, pd, 4, &data.AKey);
+  data.Description = opt_utf8_string(L, 5, L"");
+
+  lua_pushvalue(L, 1);
+  int ref = luaL_ref(L, LUA_REGISTRYINDEX);
+  data.Id = (void*) ref;
+
+  int result = pd->Info->MacroControl(pd->PluginId, MCTL_ADDMACRO, 0, &data);
+  if (result)
+    lua_pushinteger(L, ref);
+  else {
+    luaL_unref(L, LUA_REGISTRYINDEX, ref);
+    lua_pushnil(L);
+  }
+  return 1;
+}
+
+static int far_MacroDelete (lua_State* L)
+{
+  TPluginData *pd = GetPluginData(L);
+  int ref = luaL_checkinteger(L, 1);
+  int result = pd->Info->MacroControl(pd->PluginId, MCTL_DELMACRO, 0, (void*)ref);
+  if (result)
+    luaL_unref(L, LUA_REGISTRYINDEX, ref);
+  lua_pushboolean(L, result);
+  return 1;
 }
 
 static int far_CPluginStartupInfo(lua_State *L)
@@ -4739,6 +4804,8 @@ const luaL_reg far_funcs[] = {
   {"MacroGetArea",        far_MacroGetArea},
   {"MacroPost",           far_MacroPost},
   {"MacroCheck",          far_MacroCheck},
+  {"MacroAdd",            far_MacroAdd},
+  {"MacroDelete",         far_MacroDelete},
   {"DefDlgProc",          far_DefDlgProc},
   {"CreateFileFilter",    far_CreateFileFilter},
   {"PluginsControl",      far_PluginsControl},

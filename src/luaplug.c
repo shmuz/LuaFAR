@@ -25,10 +25,15 @@ INT_PTR WINAPI DlgProc(HANDLE hDlg, int Msg, int Param1, void *Param2)
   return LF_DlgProc(LS, hDlg, Msg, Param1, Param2);
 }
 
+int WINAPI MacroAddCallback (void* Id, FARADDKEYMACROFLAGS Flags)
+{
+  return LF_MacroAddCallback(LS, Id, Flags);
+}
+
 struct PluginStartupInfo Info;
 struct FarStandardFunctions FSF;
 GUID PluginId;
-TPluginData PluginData = { &Info, &FSF, &PluginId, DlgProc, NULL, NULL };
+TPluginData PluginData = { &Info, &FSF, &PluginId, DlgProc, MacroAddCallback, NULL, NULL };
 wchar_t PluginName[512], PluginDir[512];
 //---------------------------------------------------------------------------
 

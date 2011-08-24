@@ -24,12 +24,14 @@ typedef struct {
   struct FarStandardFunctions *FSF;
   GUID *PluginId;
   FARWINDOWPROC DlgProc;
+  FARMACROCALLBACK MacroAddCallback;
   lua_Alloc origAlloc;
   void *origUserdata;
 } TPluginData;
 TPluginData* GetPluginData(lua_State* L);
 
 DLLFUNC INT_PTR LF_DlgProc(lua_State *L, HANDLE hDlg, int Msg, int Param1, void *Param2);
+DLLFUNC int     LF_MacroAddCallback (lua_State* L, void* Id, FARADDKEYMACROFLAGS Flags);
 DLLFUNC const wchar_t *LF_Gsub (lua_State *L, const wchar_t *s, const wchar_t *p, const wchar_t *r);
 DLLFUNC void    LF_InitLuaState1(lua_State *L, lua_CFunction aOpenLibs);
 DLLFUNC void    LF_InitLuaState2 (lua_State *L, TPluginData *aData);
