@@ -846,7 +846,7 @@ static int far_EditorClearStackBookmarks(lua_State *L)
 static int far_EditorDeleteStackBookmark(lua_State *L)
 {
   int EditorId = luaL_optinteger(L, 1, -1);
-  int num = luaL_optinteger(L, 2, -1);
+  INT_PTR num = luaL_optinteger(L, 2, -1);
   PSInfo *Info = GetPluginData(L)->Info;
   lua_pushboolean(L, Info->EditorControl(EditorId, ECTL_DELETESTACKBOOKMARK, 0, (void*)num));
   return 1;
@@ -1225,7 +1225,7 @@ static int far_EditorProcessInput(lua_State *L)
 static int far_EditorProcessKey(lua_State *L)
 {
   int EditorId = luaL_optinteger(L, 1, -1);
-  int key = luaL_checkinteger(L, 2);
+  INT_PTR key = luaL_checkinteger(L, 2);
   PSInfo *Info = GetPluginData(L)->Info;
   Info->EditorControl(EditorId, ECTL_PROCESSKEY, 0, (void*)key);
   return 0;
@@ -1895,7 +1895,7 @@ static int ChangePanelSelection(lua_State *L, BOOL op_set)
   }
   else if (!lua_istable(L,3))
     return luaL_typerror(L, 3, "number or table");
-  int state = op_set ? lua_toboolean(L,4) : 0;
+  INT_PTR state = op_set ? lua_toboolean(L,4) : 0;
 
   // get panel info
   struct PanelInfo pi;
@@ -2326,7 +2326,7 @@ static int far_SendDlgMessage (lua_State *L)
     case DM_SHOWDIALOG:
     case DM_SHOWITEM:
     case DM_USER:
-      Param2 = (void*)luaL_optlong(L, 4, 0);
+      Param2 = (void*)(LONG_PTR)luaL_optlong(L, 4, 0);
       break;
 
     case DM_LISTADDSTR: res_incr=1;
@@ -2830,7 +2830,8 @@ static int dialog_tostring (lua_State *L)
 
 static int far_DefDlgProc(lua_State *L)
 {
-  int Msg, Param1, Param2;
+  int Msg, Param1;
+  INT_PTR Param2;
 
   luaL_checktype(L, 1, LUA_TLIGHTUSERDATA);
   HANDLE hDlg = lua_touserdata(L, 1);
@@ -3782,10 +3783,10 @@ static int far_MacroCheck (lua_State* L)
   return MacroSendString(L, MSSC_CHECK);
 }
 
-int LF_MacroAddCallback (lua_State* L, void* Id, FARADDKEYMACROFLAGS Flags)
+int LF_MacroCallback (lua_State* L, void* Id, FARADDKEYMACROFLAGS Flags)
 {
   int result = FALSE;
-  int funcref = (int) Id;
+  int funcref = (INT_PTR) Id;
   lua_rawgeti(L, LUA_REGISTRYINDEX, funcref);
   if (lua_type(L,-1) == LUA_TFUNCTION) {
     lua_pushinteger(L, funcref);
@@ -3804,7 +3805,7 @@ static int far_MacroAdd (lua_State* L)
   struct MacroAddMacro data;
   memset(&data, 0, sizeof(data));
   data.StructSize = sizeof(data);
-  data.Callback = pd->MacroAddCallback;
+  data.Callback = pd->MacroCallback;
 
   luaL_checktype(L, 1, LUA_TFUNCTION);
   data.SequenceText = check_utf8_string(L, 2, NULL);
@@ -3813,7 +3814,7 @@ static int far_MacroAdd (lua_State* L)
   data.Description = opt_utf8_string(L, 5, L"");
 
   lua_pushvalue(L, 1);
-  int ref = luaL_ref(L, LUA_REGISTRYINDEX);
+  INT_PTR ref = luaL_ref(L, LUA_REGISTRYINDEX);
   data.Id = (void*) ref;
 
   int result = pd->Info->MacroControl(pd->PluginId, MCTL_ADDMACRO, 0, &data);
@@ -3829,7 +3830,7 @@ static int far_MacroAdd (lua_State* L)
 static int far_MacroDelete (lua_State* L)
 {
   TPluginData *pd = GetPluginData(L);
-  int ref = luaL_checkinteger(L, 1);
+  INT_PTR ref = luaL_checkinteger(L, 1);
   int result = pd->Info->MacroControl(pd->PluginId, MCTL_DELMACRO, 0, (void*)ref);
   if (result)
     luaL_unref(L, LUA_REGISTRYINDEX, ref);

@@ -553,7 +553,7 @@ HANDLE LF_Open (lua_State* L, const struct OpenInfo *Info)
 
   if (pcall_msg(L, 3, 1) == 0) {
     if (lua_type(L,-1) == LUA_TNUMBER) {
-      int ret = lua_tointeger(L,-1);
+      INT_PTR ret = lua_tointeger(L,-1);
       if (NOPANEL_HANDLE_VALUE(ret)) {
         lua_pop(L,1);
         return (HANDLE) ret;
