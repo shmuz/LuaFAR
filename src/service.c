@@ -535,7 +535,7 @@ static BOOL FastGetString (PSInfo *Info, struct EditorGetString *egs,
 //              1 = much faster, but changes current position;
 //              2 = the fastest: as 1 but returns StringText only;
 //   LineInfo:  a table
-static int far_EditorGetString(lua_State *L)
+static int _EditorGetString(lua_State *L, int is_wide)
 {
   int EditorId = luaL_optinteger(L, 1, -1);
   PSInfo *Info = GetPluginData(L)->Info;
@@ -544,86 +544,115 @@ static int far_EditorGetString(lua_State *L)
   BOOL res;
   struct EditorGetString egs;
 
-  if (fast == 1 || fast == 2)
-    res = FastGetString(Info, &egs, line_num, EditorId);
-  else {
+  if (fast == 0) {
     egs.StringNumber = line_num;
     res = Info->EditorControl(EditorId, ECTL_GETSTRING, 0, &egs);
   }
+  else
+    res = FastGetString(Info, &egs, line_num, EditorId);
+
   if (res) {
-    if (fast == 2)
-      push_utf8_string (L, egs.StringText, egs.StringLength);
+    if (fast == 2) {
+      if (is_wide)
+        push_utf16_string (L, egs.StringText, egs.StringLength);
+      else
+        push_utf8_string (L, egs.StringText, egs.StringLength);
+    }
     else {
       lua_createtable(L, 0, 6);
       PutNumToTable (L, "StringNumber", egs.StringNumber);
-      PutWStrToTable (L, "StringText",  egs.StringText, egs.StringLength);
-      PutWStrToTable (L, "StringEOL",   egs.StringEOL, -1);
       PutNumToTable (L, "StringLength", egs.StringLength);
       PutNumToTable (L, "SelStart",     egs.SelStart);
       PutNumToTable (L, "SelEnd",       egs.SelEnd);
+      if (is_wide) {
+        push_utf16_string(L, egs.StringText, egs.StringLength);
+        lua_setfield(L, -2, "StringText");
+        push_utf16_string(L, egs.StringEOL, -1);
+        lua_setfield(L, -2, "StringEOL");
+      }
+      else {
+        PutWStrToTable (L, "StringText",  egs.StringText, egs.StringLength);
+        PutWStrToTable (L, "StringEOL",   egs.StringEOL, -1);
+      }
     }
     return 1;
   }
   return 0;
 }
 
-static int far_EditorSetString(lua_State *L)
+static int far_EditorGetString  (lua_State *L) { return _EditorGetString(L, 0); }
+static int far_EditorGetStringW (lua_State *L) { return _EditorGetString(L, 1); }
+
+static int _EditorSetString(lua_State *L, int is_wide)
 {
-  int EditorId = luaL_optinteger(L, 1, -1);
   PSInfo *Info = GetPluginData(L)->Info;
   struct EditorSetString ess;
+  int EditorId = luaL_optinteger(L, 1, -1);
   ess.StringNumber = luaL_optinteger(L, 2, -1);
-  ess.StringText = check_utf8_string(L, 3, &ess.StringLength);
-  ess.StringEOL = opt_utf8_string(L, 4, NULL);
-  if (Info->EditorControl(EditorId, ECTL_SETSTRING, 0, &ess))
-    return lua_pushboolean(L, 1), 1;
-  return 0;
+  if (is_wide) {
+    ess.StringText = check_utf16_string(L, 3, &ess.StringLength);
+    ess.StringEOL = opt_utf16_string(L, 4, NULL);
+    if (ess.StringEOL) {
+      lua_pushvalue(L, 4);
+      lua_pushliteral(L, "\0\0");
+      lua_concat(L, 2);
+      ess.StringEOL = (wchar_t*) lua_tostring(L, -1);
+    }
+  }
+  else {
+    ess.StringText = check_utf8_string(L, 3, &ess.StringLength);
+    ess.StringEOL = opt_utf8_string(L, 4, NULL);
+  }
+  lua_pushboolean(L, Info->EditorControl(EditorId, ECTL_SETSTRING, 0, &ess));
+  return 1;
 }
+
+static int far_EditorSetString  (lua_State *L) { return _EditorSetString(L, 0); }
+static int far_EditorSetStringW (lua_State *L) { return _EditorSetString(L, 1); }
 
 static int far_EditorInsertString(lua_State *L)
 {
-  int EditorId = luaL_optinteger(L, 1, -1);
   PSInfo *Info = GetPluginData(L)->Info;
+  int EditorId = luaL_optinteger(L, 1, -1);
   int indent = lua_toboolean(L, 2);
-  if (Info->EditorControl(EditorId, ECTL_INSERTSTRING, 0, &indent))
-    return lua_pushboolean(L, 1), 1;
-  return 0;
+  lua_pushboolean(L, Info->EditorControl(EditorId, ECTL_INSERTSTRING, 0, &indent));
+  return 1;
 }
 
 static int far_EditorDeleteString(lua_State *L)
 {
-  int EditorId = luaL_optinteger(L, 1, -1);
   PSInfo *Info = GetPluginData(L)->Info;
-  if (Info->EditorControl(EditorId, ECTL_DELETESTRING, 0, 0))
-    return lua_pushboolean(L, 1), 1;
-  return 0;
+  int EditorId = luaL_optinteger(L, 1, -1);
+  lua_pushboolean(L, Info->EditorControl(EditorId, ECTL_DELETESTRING, 0, 0));
+  return 1;
 }
 
-static int far_EditorInsertText(lua_State *L)
+static int _EditorInsertText(lua_State *L, int is_wide)
 {
   int EditorId = luaL_optinteger(L, 1, -1);
   PSInfo *Info = GetPluginData(L)->Info;
-  wchar_t* text = check_utf8_string(L,2,NULL);
-  lua_pushboolean(L, Info->EditorControl(EditorId, ECTL_INSERTTEXT, 0, text));
+  const wchar_t* text = is_wide ? check_utf16_string(L,2,NULL) : check_utf8_string(L,2,NULL);
+  lua_pushboolean(L, Info->EditorControl(EditorId, ECTL_INSERTTEXT, 0, (void*)text));
   return 1;
 }
+
+static int far_EditorInsertText  (lua_State *L) { return _EditorInsertText(L, 0); }
+static int far_EditorInsertTextW (lua_State *L) { return _EditorInsertText(L, 1); }
 
 static int far_EditorDeleteChar(lua_State *L)
 {
   int EditorId = luaL_optinteger(L, 1, -1);
   PSInfo *Info = GetPluginData(L)->Info;
-  if (Info->EditorControl(EditorId, ECTL_DELETECHAR, 0, 0))
-    return lua_pushboolean(L, 1), 1;
-  return 0;
+  lua_pushboolean(L, Info->EditorControl(EditorId, ECTL_DELETECHAR, 0, 0));
+  return 1;
 }
 
 static int far_EditorDeleteBlock(lua_State *L)
 {
   int EditorId = luaL_optinteger(L, 1, -1);
   PSInfo *Info = GetPluginData(L)->Info;
-  if (Info->EditorControl(EditorId, ECTL_DELETEBLOCK, 0, 0))
-    return lua_pushboolean(L, 1), 1;
-  return 0;
+  lua_pushboolean(L, Info->EditorControl(EditorId, ECTL_DELETEBLOCK, 0, 0));
+  return 1;
 }
 
 static int far_EditorUndoRedo(lua_State *L)
@@ -633,8 +662,8 @@ static int far_EditorUndoRedo(lua_State *L)
   memset(&eur, 0, sizeof(eur));
   eur.Command = check_env_flag(L, 2);
   PSInfo *Info = GetPluginData(L)->Info;
-  return lua_pushboolean (L,
-    Info->EditorControl(EditorId, ECTL_UNDOREDO, 0, &eur)), 1;
+  lua_pushboolean (L, Info->EditorControl(EditorId, ECTL_UNDOREDO, 0, &eur));
+  return 1;
 }
 
 static void FillKeyBarTitles (lua_State *L, int src_pos, struct KeyBarTitles *kbt)
@@ -2166,7 +2195,7 @@ static void SetFarDialogItem(lua_State *L, struct FarDialogItem* Item, int itemi
     lua_pop(L, 1);
   //---------------------------------------------------------------------------
   lua_rawgeti(L, -1, 12);
-  Item->UserData = lua_touserdata(L, -1);
+  Item->UserData = lua_tointeger(L, -1);
   lua_pop(L, 1);
 }
 
@@ -2192,7 +2221,7 @@ static void PushDlgItem (lua_State *L, const struct FarDialogItem* pItem, BOOL t
   lua_settable(L, -3);
   PutIntToArray  (L, 11, pItem->MaxLength);
   lua_pushinteger(L, 12);
-  lua_pushlightuserdata(L, pItem->UserData);
+  lua_pushinteger(L, pItem->UserData);
   lua_rawset(L, -3);
 }
 
@@ -4328,7 +4357,7 @@ static int win_GetConsoleScreenBufferInfo (lua_State* L)
   return 1;
 }
 
-static int far_CopyFile (lua_State *L)
+static int win_CopyFile (lua_State *L)
 {
   const wchar_t* src = check_utf8_string(L, 1, NULL);
   const wchar_t* trg = check_utf8_string(L, 2, NULL);
@@ -4718,8 +4747,10 @@ const luaL_reg far_funcs[] = {
   {"EditorGetColor",      far_EditorGetColor},
   {"EditorGetInfo",       far_EditorGetInfo},
   {"EditorGetString",     far_EditorGetString},
+  {"EditorGetStringW",    far_EditorGetStringW},
   {"EditorInsertString",  far_EditorInsertString},
   {"EditorInsertText",    far_EditorInsertText},
+  {"EditorInsertTextW",   far_EditorInsertTextW},
   {"EditorProcessInput",  far_EditorProcessInput},
   {"EditorProcessKey",    far_EditorProcessKey},
   {"EditorQuit",          far_EditorQuit},
@@ -4732,6 +4763,7 @@ const luaL_reg far_funcs[] = {
   {"EditorSetParam",      far_EditorSetParam},
   {"EditorSetPosition",   far_EditorSetPosition},
   {"EditorSetString",     far_EditorSetString},
+  {"EditorSetStringW",    far_EditorSetStringW},
   {"EditorSetTitle",      far_EditorSetTitle},
   {"EditorTabToReal",     far_EditorTabToReal},
   {"EditorTurnOffMarkingBlock", far_EditorTurnOffMarkingBlock},
@@ -4856,7 +4888,7 @@ const luaL_reg far_funcs[] = {
 
 const luaL_reg win_funcs[] = {
   {"CompareString",       win_CompareString},
-  {"CopyFile",            far_CopyFile},
+  {"CopyFile",            win_CopyFile},
   {"CreateDir",           win_CreateDir},
   {"DeleteFile",          win_DeleteFile},
   {"ExtractKey",          win_ExtractKey},
@@ -4893,6 +4925,9 @@ const luaL_reg win_funcs[] = {
   {"Utf8ToOem",           ustring_Utf8ToOem},
   {"Utf8ToUtf16",         ustring_Utf8ToUtf16},
   {"Uuid",                ustring_Uuid},
+
+  {"sub",                 ustring_sub},
+  {"len",                 ustring_len},
 
   {NULL, NULL}
 };

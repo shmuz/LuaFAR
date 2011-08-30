@@ -61,7 +61,7 @@ lv=1
 dt=Text
 nm=Unicode support
 ctime=3480525243
-mtime=3512732895
+mtime=3523911147
 <article>
 #_<markdown>
 #_
@@ -75,7 +75,7 @@ mtime=3512732895
 #_### Unicode-capable Lua libraries and functions
 #_
 #_The following standard Lua libraries and functions were modified by LuaFAR
-#_in order to work with file names and paths in UTF-8 edncoding:
+#_in order to work with file names and paths in UTF-8 encoding:
 #_
 #_* `io`
 #_* `loadfile`
@@ -3871,6 +3871,21 @@ mtime=3512374210
 </article>
 </node>
 <node>
+id=448
+lv=3
+dt=Text
+nm=far.EditorGetStringW
+ctime=3523911376
+mtime=3523911537
+<article>
+#_Same as far.EditorGetString but *StringText* and *StringEOL* are encoded in UTF-16LE.
+#_
+#_@@@
+#_<lua> Links = { ["far.EditorGetString"]="31.html" } </lua>
+#_
+</article>
+</node>
+<node>
 id=32
 lv=3
 dt=Text
@@ -3913,6 +3928,22 @@ mtime=3507542869
 #_  EditorControl, ECTL_INSERTTEXT
 #_
 #_@@@
+#_
+</article>
+</node>
+<node>
+id=450
+lv=3
+dt=Text
+nm=far.EditorInsertTextW
+ctime=3523911742
+mtime=3523911803
+<article>
+#_Same as far.EditorInsertText but *text* should be encoded in UTF-16LE.
+#_
+#_@@@
+#_<lua> Links = { ["far.EditorInsertText"]="33.html" } </lua>
+#_
 #_
 </article>
 </node>
@@ -4283,6 +4314,22 @@ mtime=3507542532
 #_  EditorControl, ECTL_SETSTRING
 #_
 #_@@@
+#_
+</article>
+</node>
+<node>
+id=449
+lv=3
+dt=Text
+nm=far.EditorSetStringW
+ctime=3523911625
+mtime=3523911700
+<article>
+#_Same as far.EditorSetString but *StringText* and *StringEOL*
+#_should be encoded in UTF-16LE.
+#_
+#_@@@
+#_<lua> Links = { ["far.EditorSetString"]="44.html" } </lua>
 #_
 </article>
 </node>
@@ -7499,7 +7546,7 @@ lv=2
 dt=Text
 nm=FarDialogItem
 ctime=3477054110
-mtime=3512803401
+mtime=3523911182
 <article>
 #_<markdown>
 #_**`FarDialogItem`** is a table (array)
@@ -7523,7 +7570,7 @@ mtime=3512803401
 #_      [9]  Flags             flags
 #_      [10] Data:             string
 #_      [11] MaxLength:        integer
-#_      [12] UserData:         light userdata
+#_      [12] UserData:         integer
 #_
 #_
 </article>

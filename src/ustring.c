@@ -534,3 +534,50 @@ int ustring_SHGetFolderPath(lua_State *L)
   return 1;
 }
 
+void push_utf16_string (lua_State* L, const wchar_t* str, int numchars)
+{
+  if (numchars < 0)
+    numchars = wcslen(str);
+  lua_pushlstring(L, (const char*)str, numchars*sizeof(wchar_t));
+}
+
+int ustring_sub(lua_State *L)
+{
+  size_t len;
+  const char* s = luaL_checklstring(L, 1, &len);
+  len /= sizeof(wchar_t);
+
+  int from = luaL_optinteger(L, 2, 1);
+  if (from < 0) from += len+1;
+  if (--from < 0) from = 0;
+  else if ((size_t)from > len) from = len;
+
+  int to = luaL_optinteger(L, 3, -1);
+  if (to < 0) to += len+1;
+  if (to < from) to = from;
+  else if ((size_t)to > len) to = len;
+
+  lua_pushlstring(L, s + from*sizeof(wchar_t), (to-from)*sizeof(wchar_t));
+  return 1;
+}
+
+int ustring_len(lua_State *L)
+{
+  size_t len;
+  (void) luaL_checklstring(L, 1, &len);
+  lua_pushinteger(L, len / sizeof(wchar_t));
+  return 1;
+}
+
+const wchar_t* check_utf16_string(lua_State *L, int pos, int *len)
+{
+  const wchar_t* s = (const wchar_t*)luaL_checklstring(L, pos, (size_t*)len);
+  if (len) *len /= sizeof(wchar_t);
+  return s;
+}
+
+const wchar_t* opt_utf16_string(lua_State *L, int pos, const wchar_t *dflt)
+{
+  const wchar_t* s = (const wchar_t*)luaL_optstring(L, pos, (const char*)dflt);
+  return s;
+}

@@ -35,6 +35,9 @@ const wchar_t* opt_utf8_string (lua_State *L, int pos, const wchar_t* dflt);
 wchar_t* oem_to_utf16 (lua_State *L, int pos, int* pTrgSize);
 char* push_utf8_string (lua_State* L, const wchar_t* str, int numchars);
 char* push_oem_string (lua_State* L, const wchar_t* str, int numchars);
+void  push_utf16_string (lua_State* L, const wchar_t* str, int numchars);
+const wchar_t* check_utf16_string(lua_State *L, int pos, int *len);
+const wchar_t* opt_utf16_string(lua_State *L, int pos, const wchar_t *dflt);
 
 int  DecodeAttributes(const char* str);
 void PushAttrString(lua_State *L, int attr);
@@ -59,6 +62,8 @@ int ustring_Utf16ToUtf8 (lua_State *L);
 int ustring_Utf8ToOem (lua_State *L);
 int ustring_Utf8ToUtf16 (lua_State *L);
 int ustring_Uuid (lua_State* L);
+int ustring_sub(lua_State *L);
+int ustring_len(lua_State *L);
 
 #ifdef __cplusplus
 }
