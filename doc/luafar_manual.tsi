@@ -100,7 +100,7 @@ id=126
 lv=0
 dt=Text
 nm=Introduction
-mtime=3512990908
+mtime=3523956920
 <article>
 #_<markdown>
 #_### Brief description of LuaFAR package
@@ -111,7 +111,7 @@ mtime=3512990908
 #_
 #_* To program functions exported by the plugin in Lua: e.g., the function `OpenW` should be named [`export.Open`](109.html) in the Lua program, the same goes for all functions exported by the plugin.
 #_ 
-#_* To call FAR service functions from a Lua program. The service functions are placed in the `far` table but their names aren't identical to the names of the respective FAR API functions. For instance, function `EditorControl` with parameter `ECTL_GETINFO` will be named [`far.EditorGetInfo`](29.html) in Lua programs.
+#_* To call FAR service functions from a Lua program. The service functions are placed in the `far`, `editor`, `viewer` and `panel` tables, and their names aren't identical to the names of the respective FAR API functions. For instance, function `EditorControl` with parameter `ECTL_GETINFO` will be named [`editor.GetInfo`](29.html) in Lua programs.
 #_
 #_* **Note:** the functions of the Unicode LuaFAR library assume string arguments and string return values to be in the **UTF-8** encoding. (There are a few exceptions from this rule, mostly when strings are used to exchange binary data).
 #_
@@ -2163,754 +2163,6 @@ mtime=3517906733
 </article>
 </node>
 <node>
-id=145
-lv=3
-dt=Text
-nm=far.CtrlCheckPanelsExist
-mtime=3507873382
-<article>
-#_result = far.CtrlCheckPanelsExist ([handle])
-#_
-#_**Parameters:**
-#_  handle: panel handle
-#_
-#_**Returns:**
-#_  result: boolean
-#_
-#_**Far API used:**
-#_  Control, FCTL_CHECKPANELSEXIST
-#_
-#_@@@
-#_
-</article>
-</node>
-<node>
-id=330
-lv=3
-dt=Text
-nm=far.CtrlClearSelection
-ctime=3480322277
-mtime=3507873394
-<article>
-#_result = far.CtrlClearSelection (handle, whatpanel, items)
-#_
-#_**Parameters:**
-#_  handle:       panel handle, or nil
-#_  whatpanel:    1=active_panel, 0=inactive_panel
-#_  items:        integer (1-based item index),
-#_                or table (array of item indexes)
-#_
-#_**Returns:**
-#_  result: boolean
-#_
-#_**Far API used:**
-#_  Control, FCTL_GETPANELINFO, FCTL_BEGINSELECTION,
-#_  FCTL_CLEARSELECTION, FCTL_ENDSELECTION
-#_
-#_
-#_@@@
-#_
-</article>
-</node>
-<node>
-id=4
-lv=3
-dt=Text
-nm=far.CtrlClosePanel
-mtime=3507873011
-<article>
-#_result = far.CtrlClosePanel (handle [, dir])
-#_
-#_**Parameters:**
-#_  handle: panel handle
-#_  dir:    string (defaults to ".")
-#_
-#_**Returns:**
-#_  result: boolean
-#_
-#_**Far API used:**
-#_  Control, FCTL_CLOSEPANEL
-#_
-#_@@@
-#_
-</article>
-</node>
-<node>
-id=5
-lv=3
-dt=Text
-nm=far.CtrlGetCmdLine
-<article>
-#_result = far.CtrlGetCmdLine ([handle])
-#_
-#_**Parameters:**
-#_  handle: panel handle
-#_
-#_**Returns:**
-#_  result: string (or nil)
-#_
-#_**Far API used:**
-#_  Control, FCTL_GETCMDLINE
-#_
-#_
-#_@@@
-#_
-</article>
-</node>
-<node>
-id=6
-lv=3
-dt=Text
-nm=far.CtrlGetCmdLinePos
-mtime=3480330205
-<article>
-#_pos = far.CtrlGetCmdLinePos ([handle])
-#_
-#_**Parameters:**
-#_  handle: panel handle
-#_
-#_**Returns:**
-#_  pos: 1-based position (or nil)
-#_
-#_**Far API used:**
-#_  Control, FCTL_GETCMDLINEPOS
-#_
-#_@@@
-#_
-</article>
-</node>
-<node>
-id=331
-lv=3
-dt=Text
-nm=far.CtrlGetCmdLineSelection
-ctime=3480326038
-mtime=3480330696
-<article>
-#_SelStart, SelEnd = far.CtrlGetCmdLineSelection ([handle])
-#_
-#_**Parameters:**
-#_  handle: panel handle
-#_
-#_**Returns:**
-#_  SelStart: integer (1-based)
-#_  SelEnd:   integer
-#_
-#_**Far API used:**
-#_  Control, FCTL_GETCMDLINESELECTION
-#_
-#_@@@
-#_
-</article>
-</node>
-<node>
-id=258
-lv=3
-dt=Text
-nm=far.CtrlGetColumnTypes
-<article>
-#_ColumnTypes = far.CtrlGetColumnTypes ([handle], whatpanel)
-#_
-#_**Parameters:**
-#_  handle:      panel handle, or nil
-#_  whatpanel:   1=active panel; 0=passive panel;
-#_
-#_**Returns:**
-#_  ColumnTypes: string
-#_
-#_**Far API used:**
-#_  Control, FCTL_GETCOLUMNTYPES
-#_
-#_@@@
-#_
-</article>
-</node>
-<node>
-id=259
-lv=3
-dt=Text
-nm=far.CtrlGetColumnWidths
-<article>
-#_ColumnWidths = far.CtrlGetColumnWidths ([handle], whatpanel)
-#_
-#_**Parameters:**
-#_  handle:       panel handle, or nil
-#_  whatpanel:    1=active panel; 0=passive panel;
-#_
-#_**Returns:**
-#_  ColumnWidths: string
-#_
-#_**Far API used:**
-#_  Control, FCTL_GETCOLUMNWIDTHS
-#_
-#_@@@
-#_
-</article>
-</node>
-<node>
-id=252
-lv=3
-dt=Text
-nm=far.CtrlGetCurrentPanelItem
-<article>
-#_item = far.CtrlGetCurrentPanelItem ([handle], whatpanel)
-#_
-#_**Parameters:**
-#_  handle:    panel handle, or nil
-#_  whatpanel: 1=active panel; 0=passive panel;
-#_
-#_**Returns:**
-#_  item:      PluginPanelItem
-#_
-#_**Far API used:**
-#_  Control, FCTL_GETCURRENTPANELITEM
-#_
-#_@@@
-#_<lua> Links = { PluginPanelItem="85.html" } </lua>
-#_
-</article>
-</node>
-<node>
-id=260
-lv=3
-dt=Text
-nm=far.CtrlGetPanelDir
-<article>
-#_PanelDir = far.CtrlGetPanelDir ([handle], whatpanel)
-#_
-#_**Parameters:**
-#_  handle:    panel handle, or nil
-#_  whatpanel: 1=active panel; 0=passive panel;
-#_
-#_**Returns:**
-#_  PanelDir:  string
-#_
-#_**Far API used:**
-#_  Control, FCTL_GETPANELDIR
-#_
-#_@@@
-#_
-#_
-</article>
-</node>
-<node>
-id=381
-lv=3
-dt=Text
-nm=far.CtrlGetPanelFormat
-ctime=3492068593
-mtime=3492068684
-<article>
-#_PanelFormat = far.CtrlGetPanelFormat ([handle], whatpanel)
-#_
-#_**Parameters:**
-#_  handle:    panel handle, or nil
-#_  whatpanel: 1=active panel; 0=passive panel;
-#_
-#_**Returns:**
-#_  PanelFormat:  string
-#_
-#_**Far API used:**
-#_  Control, FCTL_GETPANELFORMAT
-#_
-#_@@@
-#_
-#_
-</article>
-</node>
-<node>
-id=382
-lv=3
-dt=Text
-nm=far.CtrlGetPanelHostFile
-ctime=3492068606
-mtime=3492068724
-<article>
-#_HostFile = far.CtrlGetPanelHostFile ([handle], whatpanel)
-#_
-#_**Parameters:**
-#_  handle:    panel handle, or nil
-#_  whatpanel: 1=active panel; 0=passive panel;
-#_
-#_**Returns:**
-#_  HostFile:  string
-#_
-#_**Far API used:**
-#_  Control, FCTL_GETPANELHOSTFILE
-#_
-#_@@@
-#_
-#_
-</article>
-</node>
-<node>
-id=7
-lv=3
-dt=Text
-nm=far.CtrlGetPanelInfo
-mtime=3507818145
-<article>
-#_PanelInfo = far.CtrlGetPanelInfo ([handle], whatpanel)
-#_
-#_**Parameters:**
-#_  handle:    panel handle, or nil
-#_  whatpanel: 1=active panel; 0=passive panel;
-#_
-#_**Returns:**
-#_  PanelInfo: table, or nil
-#_    fields of PanelInfo:
-#_      OwnerGuid:           string
-#_      PluginHandle:        userdata
-#_      PanelType:           integer
-#_      PanelRect:           table (fields: left, top, right, bottom)
-#_      ItemsNumber:         integer
-#_      SelectedItemsNumber: integer
-#_      CurrentItem:         1-based integer
-#_      TopPanelItem:        1-based integer
-#_      ViewMode:            integer
-#_      SortMode:            integer
-#_      Flags:               flags
-#_
-#_**Far API used:**
-#_  Control, FCTL_GETPANELINFO
-#_
-#_@@@
-#_<lua> Links = { PluginPanelItem="85.html" } </lua>
-#_
-#_
-</article>
-</node>
-<node>
-id=253
-lv=3
-dt=Text
-nm=far.CtrlGetPanelItem
-<article>
-#_item = far.CtrlGetPanelItem ([handle], whatpanel, itemindex)
-#_
-#_**Parameters:**
-#_  handle:    panel handle, or nil
-#_  whatpanel: 1=active panel; 0=passive panel;
-#_  itemindex: integer (1-based)
-#_
-#_**Returns:**
-#_  item:      PluginPanelItem
-#_
-#_**Far API used:**
-#_  Control, FCTL_GETPANELITEM
-#_
-#_@@@
-#_<lua> Links = { PluginPanelItem="85.html" } </lua>
-#_
-</article>
-</node>
-<node>
-id=254
-lv=3
-dt=Text
-nm=far.CtrlGetSelectedPanelItem
-<article>
-#_item = far.CtrlGetSelectedPanelItem ([handle], whatpanel, itemindex)
-#_
-#_**Parameters:**
-#_  handle:    panel handle, or nil
-#_  whatpanel: 1=active panel; 0=passive panel;
-#_  itemindex: integer (1-based)
-#_
-#_**Returns:**
-#_  item:      PluginPanelItem
-#_
-#_**Far API used:**
-#_  Control, FCTL_GETSELECTEDPANELITEM
-#_
-#_@@@
-#_<lua> Links = { PluginPanelItem="85.html" } </lua>
-#_
-</article>
-</node>
-<node>
-id=228
-lv=3
-dt=Text
-nm=far.CtrlGetUserScreen
-<article>
-#_result = far.CtrlGetUserScreen ([handle])
-#_
-#_**Parameters:**
-#_  handle: panel handle
-#_
-#_**Returns:**
-#_  result: boolean
-#_
-#_**Far API used:**
-#_  Control, FCTL_GETUSERSCREEN
-#_
-#_@@@
-#_
-#_
-</article>
-</node>
-<node>
-id=9
-lv=3
-dt=Text
-nm=far.CtrlInsertCmdLine
-<article>
-#_result = far.CtrlInsertCmdLine (handle, str)
-#_
-#_**Parameters:**
-#_  handle: panel handle, or nil
-#_  str:    string
-#_
-#_**Returns:**
-#_  result: boolean
-#_
-#_**Far API used:**
-#_  Control, FCTL_INSERTCMDLINE
-#_
-#_
-#_@@@
-#_
-</article>
-</node>
-<node>
-id=320
-lv=3
-dt=Text
-nm=far.CtrlIsActivePanel
-ctime=3480215162
-mtime=3480215301
-<article>
-#_result = far.CtrlIsActivePanel ([handle])
-#_
-#_**Parameters:**
-#_  handle: panel handle
-#_
-#_**Returns:**
-#_  result: boolean
-#_
-#_**Far API used:**
-#_  Control, FCTL_ISACTIVEPANEL
-#_
-#_
-#_@@@
-#_
-</article>
-</node>
-<node>
-id=10
-lv=3
-dt=Text
-nm=far.CtrlRedrawPanel
-<article>
-#_result = far.CtrlRedrawPanel (handle, whatpanel [, redrawinfo])
-#_
-#_**Parameters:**
-#_  handle:     panel handle, or nil
-#_  whatpanel:  1=active panel; 0=passive panel;
-#_  redrawinfo: table with the following fields:
-#_                CurrentItem  : integer (1-based)
-#_                TopPanelItem : integer (1-based)
-#_
-#_**Returns:**
-#_  result: boolean
-#_
-#_**Far API used:**
-#_  Control, FCTL_REDRAWPANEL
-#_
-#_
-#_@@@
-#_
-</article>
-</node>
-<node>
-id=395
-lv=3
-dt=Text
-nm=far.CtrlSetCaseSensitiveSort
-ctime=3501391498
-mtime=3501391568
-<article>
-#_result = far.CtrlSetCaseSensitiveSort (handle, whatpanel [, set])
-#_
-#_**Parameters:**
-#_  handle:    panel handle, or nil
-#_  whatpanel: 1=active panel; 0=passive panel;
-#_  set:       boolean, defaults to false
-#_
-#_**Returns:**
-#_  result: boolean
-#_
-#_**Far API used:**
-#_  Control, FCTL_SETCASESENSITIVESORT
-#_
-#_@@@
-#_
-</article>
-</node>
-<node>
-id=11
-lv=3
-dt=Text
-nm=far.CtrlSetCmdLine
-<article>
-#_result = far.CtrlSetCmdLine (handle, str)
-#_
-#_**Parameters:**
-#_  handle: panel handle, or nil
-#_  str:    string
-#_
-#_**Returns:**
-#_  result: boolean
-#_
-#_**Far API used:**
-#_  Control, FCTL_SETCMDLINE
-#_
-#_
-#_@@@
-#_
-</article>
-</node>
-<node>
-id=12
-lv=3
-dt=Text
-nm=far.CtrlSetCmdLinePos
-mtime=3480451106
-<article>
-#_result = far.CtrlSetCmdLinePos (handle, pos)
-#_
-#_**Parameters:**
-#_  handle: panel handle, or nil
-#_  pos:    1-based integer
-#_
-#_**Returns:**
-#_  result: boolean
-#_
-#_**Far API used:**
-#_  Control, FCTL_SETCMDLINEPOS
-#_
-#_@@@
-#_
-</article>
-</node>
-<node>
-id=332
-lv=3
-dt=Text
-nm=far.CtrlSetCmdLineSelection
-ctime=3480326063
-mtime=3480451070
-<article>
-#_result = far.CtrlSetCmdLineSelection (handle, selStart, selEnd)
-#_
-#_**Parameters:**
-#_  handle:   panel handle, or nil
-#_  selStart: integer (1-based)
-#_  selEnd:   integer
-#_
-#_**Returns:**
-#_  result: boolean
-#_
-#_**Far API used:**
-#_  Control, FCTL_SETCMDLINESELECTION
-#_
-#_@@@
-#_
-</article>
-</node>
-<node>
-id=146
-lv=3
-dt=Text
-nm=far.CtrlSetNumericSort
-<article>
-#_result = far.CtrlSetNumericSort (handle, whatpanel [, set])
-#_
-#_**Parameters:**
-#_  handle:    panel handle, or nil
-#_  whatpanel: 1=active panel; 0=passive panel;
-#_  set:       boolean, defaults to false
-#_
-#_**Returns:**
-#_  result: boolean
-#_
-#_**Far API used:**
-#_  Control, FCTL_SETNUMERICSORT
-#_
-#_@@@
-#_
-</article>
-</node>
-<node>
-id=13
-lv=3
-dt=Text
-nm=far.CtrlSetPanelDir
-<article>
-#_result = far.CtrlSetPanelDir (handle, whatpanel, dir)
-#_
-#_**Parameters:**
-#_  handle:    panel handle, or nil
-#_  whatpanel: 1=active panel; 0=passive panel;
-#_  dir:       string
-#_
-#_**Returns:**
-#_  result: boolean
-#_
-#_**Far API used:**
-#_  Control, FCTL_SETPANELDIR
-#_
-#_@@@
-#_
-</article>
-</node>
-<node>
-id=14
-lv=3
-dt=Text
-nm=far.CtrlSetSelection
-mtime=3480322462
-<article>
-#_result = far.CtrlSetSelection (handle, whatpanel, items, selection)
-#_
-#_**Parameters:**
-#_  handle:       panel handle, or nil
-#_  whatpanel:    1=active_panel, 0=inactive_panel
-#_  items:        integer (1-based item index),
-#_                or table (array of item indexes)
-#_  selection:    boolean
-#_
-#_**Returns:**
-#_  result: boolean
-#_
-#_**Far API used:**
-#_  Control, FCTL_GETPANELINFO, FCTL_BEGINSELECTION,
-#_  FCTL_SETSELECTION, FCTL_ENDSELECTION
-#_
-#_@@@
-#_
-#_
-</article>
-</node>
-<node>
-id=147
-lv=3
-dt=Text
-nm=far.CtrlSetSortMode
-mtime=3507818152
-<article>
-#_result = far.CtrlSetSortMode (handle, whatpanel, mode)
-#_
-#_**Parameters:**
-#_  handle:    panel handle, or nil
-#_  whatpanel: 1=active panel; 0=passive panel;
-#_  mode:      flags
-#_
-#_**Returns:**
-#_  result: boolean
-#_
-#_**Far API used:**
-#_  Control, FCTL_SETSORTMODE
-#_
-#_@@@
-#_
-</article>
-</node>
-<node>
-id=148
-lv=3
-dt=Text
-nm=far.CtrlSetSortOrder
-<article>
-#_result = far.CtrlSetSortOrder (handle, whatpanel [, order])
-#_
-#_**Parameters:**
-#_  handle:    panel handle, or nil
-#_  whatpanel: 1=active panel; 0=passive panel;
-#_  order:     boolean (false=direct order; true=reverse order;
-#_                      defaults to false)
-#_
-#_**Returns:**
-#_  result: boolean
-#_
-#_**Far API used:**
-#_  Control, FCTL_SETSORTORDER
-#_
-#_@@@
-#_
-</article>
-</node>
-<node>
-id=15
-lv=3
-dt=Text
-nm=far.CtrlSetUserScreen
-<article>
-#_result = far.CtrlSetUserScreen ([handle])
-#_
-#_**Parameters:**
-#_  handle: panel handle
-#_
-#_**Returns:**
-#_  result: boolean
-#_
-#_**Far API used:**
-#_  Control, FCTL_SETUSERSCREEN
-#_
-#_@@@
-#_
-</article>
-</node>
-<node>
-id=16
-lv=3
-dt=Text
-nm=far.CtrlSetViewMode
-<article>
-#_result = far.CtrlSetViewMode (handle, whatpanel, mode)
-#_
-#_**Parameters:**
-#_  handle:    panel handle, or nil
-#_  whatpanel: 1=active panel; 0=passive panel;
-#_  mode:      integer (0...9)
-#_
-#_**Returns:**
-#_  result: boolean
-#_
-#_**Far API used:**
-#_  Control, FCTL_SETVIEWMODE
-#_
-#_
-#_@@@
-#_
-</article>
-</node>
-<node>
-id=17
-lv=3
-dt=Text
-nm=far.CtrlUpdatePanel
-<article>
-#_result = far.CtrlUpdatePanel (handle, whatpanel [, keepselection])
-#_
-#_**Parameters:**
-#_  handle:         panel handle, or nil
-#_  whatpanel:      1=active panel; 0=passive panel;
-#_  keepselection:  boolean, defaults to false
-#_
-#_**Returns:**
-#_  result: boolean
-#_
-#_**Far API used:**
-#_  Control, FCTL_UPDATEPANEL
-#_
-#_
-#_@@@
-#_
-</article>
-</node>
-<node>
 id=53
 lv=3
 dt=Text
@@ -3394,6 +2646,764 @@ mtime=3521831927
 </article>
 </node>
 <node>
+id=453
+lv=2
+dt=Text
+nm=Panel specific functions
+ctime=3523954698
+mtime=3523954698
+<article>
+</article>
+</node>
+<node>
+id=145
+lv=3
+dt=Text
+nm=panel.CheckPanelsExist
+mtime=3507873382
+<article>
+#_result = panel.CheckPanelsExist ([handle])
+#_
+#_**Parameters:**
+#_  handle: panel handle
+#_
+#_**Returns:**
+#_  result: boolean
+#_
+#_**Far API used:**
+#_  Control, FCTL_CHECKPANELSEXIST
+#_
+#_@@@
+#_
+</article>
+</node>
+<node>
+id=330
+lv=3
+dt=Text
+nm=panel.ClearSelection
+ctime=3480322277
+mtime=3507873394
+<article>
+#_result = panel.ClearSelection (handle, whatpanel, items)
+#_
+#_**Parameters:**
+#_  handle:       panel handle, or nil
+#_  whatpanel:    1=active_panel, 0=inactive_panel
+#_  items:        integer (1-based item index),
+#_                or table (array of item indexes)
+#_
+#_**Returns:**
+#_  result: boolean
+#_
+#_**Far API used:**
+#_  Control, FCTL_GETPANELINFO, FCTL_BEGINSELECTION,
+#_  FCTL_CLEARSELECTION, FCTL_ENDSELECTION
+#_
+#_
+#_@@@
+#_
+</article>
+</node>
+<node>
+id=4
+lv=3
+dt=Text
+nm=panel.ClosePanel
+mtime=3507873011
+<article>
+#_result = panel.ClosePanel (handle [, dir])
+#_
+#_**Parameters:**
+#_  handle: panel handle
+#_  dir:    string (defaults to ".")
+#_
+#_**Returns:**
+#_  result: boolean
+#_
+#_**Far API used:**
+#_  Control, FCTL_CLOSEPANEL
+#_
+#_@@@
+#_
+</article>
+</node>
+<node>
+id=5
+lv=3
+dt=Text
+nm=panel.GetCmdLine
+<article>
+#_result = panel.GetCmdLine ([handle])
+#_
+#_**Parameters:**
+#_  handle: panel handle
+#_
+#_**Returns:**
+#_  result: string (or nil)
+#_
+#_**Far API used:**
+#_  Control, FCTL_GETCMDLINE
+#_
+#_
+#_@@@
+#_
+</article>
+</node>
+<node>
+id=6
+lv=3
+dt=Text
+nm=panel.GetCmdLinePos
+mtime=3480330205
+<article>
+#_pos = panel.GetCmdLinePos ([handle])
+#_
+#_**Parameters:**
+#_  handle: panel handle
+#_
+#_**Returns:**
+#_  pos: 1-based position (or nil)
+#_
+#_**Far API used:**
+#_  Control, FCTL_GETCMDLINEPOS
+#_
+#_@@@
+#_
+</article>
+</node>
+<node>
+id=331
+lv=3
+dt=Text
+nm=panel.GetCmdLineSelection
+ctime=3480326038
+mtime=3480330696
+<article>
+#_SelStart, SelEnd = panel.GetCmdLineSelection ([handle])
+#_
+#_**Parameters:**
+#_  handle: panel handle
+#_
+#_**Returns:**
+#_  SelStart: integer (1-based)
+#_  SelEnd:   integer
+#_
+#_**Far API used:**
+#_  Control, FCTL_GETCMDLINESELECTION
+#_
+#_@@@
+#_
+</article>
+</node>
+<node>
+id=258
+lv=3
+dt=Text
+nm=panel.GetColumnTypes
+<article>
+#_ColumnTypes = panel.GetColumnTypes ([handle], whatpanel)
+#_
+#_**Parameters:**
+#_  handle:      panel handle, or nil
+#_  whatpanel:   1=active panel; 0=passive panel;
+#_
+#_**Returns:**
+#_  ColumnTypes: string
+#_
+#_**Far API used:**
+#_  Control, FCTL_GETCOLUMNTYPES
+#_
+#_@@@
+#_
+</article>
+</node>
+<node>
+id=259
+lv=3
+dt=Text
+nm=panel.GetColumnWidths
+<article>
+#_ColumnWidths = panel.GetColumnWidths ([handle], whatpanel)
+#_
+#_**Parameters:**
+#_  handle:       panel handle, or nil
+#_  whatpanel:    1=active panel; 0=passive panel;
+#_
+#_**Returns:**
+#_  ColumnWidths: string
+#_
+#_**Far API used:**
+#_  Control, FCTL_GETCOLUMNWIDTHS
+#_
+#_@@@
+#_
+</article>
+</node>
+<node>
+id=252
+lv=3
+dt=Text
+nm=panel.GetCurrentPanelItem
+<article>
+#_item = panel.GetCurrentPanelItem ([handle], whatpanel)
+#_
+#_**Parameters:**
+#_  handle:    panel handle, or nil
+#_  whatpanel: 1=active panel; 0=passive panel;
+#_
+#_**Returns:**
+#_  item:      PluginPanelItem
+#_
+#_**Far API used:**
+#_  Control, FCTL_GETCURRENTPANELITEM
+#_
+#_@@@
+#_<lua> Links = { PluginPanelItem="85.html" } </lua>
+#_
+</article>
+</node>
+<node>
+id=260
+lv=3
+dt=Text
+nm=panel.GetPanelDir
+<article>
+#_PanelDir = panel.GetPanelDir ([handle], whatpanel)
+#_
+#_**Parameters:**
+#_  handle:    panel handle, or nil
+#_  whatpanel: 1=active panel; 0=passive panel;
+#_
+#_**Returns:**
+#_  PanelDir:  string
+#_
+#_**Far API used:**
+#_  Control, FCTL_GETPANELDIR
+#_
+#_@@@
+#_
+#_
+</article>
+</node>
+<node>
+id=381
+lv=3
+dt=Text
+nm=panel.GetPanelFormat
+ctime=3492068593
+mtime=3492068684
+<article>
+#_PanelFormat = panel.GetPanelFormat ([handle], whatpanel)
+#_
+#_**Parameters:**
+#_  handle:    panel handle, or nil
+#_  whatpanel: 1=active panel; 0=passive panel;
+#_
+#_**Returns:**
+#_  PanelFormat:  string
+#_
+#_**Far API used:**
+#_  Control, FCTL_GETPANELFORMAT
+#_
+#_@@@
+#_
+#_
+</article>
+</node>
+<node>
+id=382
+lv=3
+dt=Text
+nm=panel.GetPanelHostFile
+ctime=3492068606
+mtime=3492068724
+<article>
+#_HostFile = panel.GetPanelHostFile ([handle], whatpanel)
+#_
+#_**Parameters:**
+#_  handle:    panel handle, or nil
+#_  whatpanel: 1=active panel; 0=passive panel;
+#_
+#_**Returns:**
+#_  HostFile:  string
+#_
+#_**Far API used:**
+#_  Control, FCTL_GETPANELHOSTFILE
+#_
+#_@@@
+#_
+#_
+</article>
+</node>
+<node>
+id=7
+lv=3
+dt=Text
+nm=panel.GetPanelInfo
+mtime=3507818145
+<article>
+#_PanelInfo = panel.GetPanelInfo ([handle], whatpanel)
+#_
+#_**Parameters:**
+#_  handle:    panel handle, or nil
+#_  whatpanel: 1=active panel; 0=passive panel;
+#_
+#_**Returns:**
+#_  PanelInfo: table, or nil
+#_    fields of PanelInfo:
+#_      OwnerGuid:           string
+#_      PluginHandle:        userdata
+#_      PanelType:           integer
+#_      PanelRect:           table (fields: left, top, right, bottom)
+#_      ItemsNumber:         integer
+#_      SelectedItemsNumber: integer
+#_      CurrentItem:         1-based integer
+#_      TopPanelItem:        1-based integer
+#_      ViewMode:            integer
+#_      SortMode:            integer
+#_      Flags:               flags
+#_
+#_**Far API used:**
+#_  Control, FCTL_GETPANELINFO
+#_
+#_@@@
+#_<lua> Links = { PluginPanelItem="85.html" } </lua>
+#_
+#_
+</article>
+</node>
+<node>
+id=253
+lv=3
+dt=Text
+nm=panel.GetPanelItem
+<article>
+#_item = panel.GetPanelItem ([handle], whatpanel, itemindex)
+#_
+#_**Parameters:**
+#_  handle:    panel handle, or nil
+#_  whatpanel: 1=active panel; 0=passive panel;
+#_  itemindex: integer (1-based)
+#_
+#_**Returns:**
+#_  item:      PluginPanelItem
+#_
+#_**Far API used:**
+#_  Control, FCTL_GETPANELITEM
+#_
+#_@@@
+#_<lua> Links = { PluginPanelItem="85.html" } </lua>
+#_
+</article>
+</node>
+<node>
+id=254
+lv=3
+dt=Text
+nm=panel.GetSelectedPanelItem
+<article>
+#_item = panel.GetSelectedPanelItem ([handle], whatpanel, itemindex)
+#_
+#_**Parameters:**
+#_  handle:    panel handle, or nil
+#_  whatpanel: 1=active panel; 0=passive panel;
+#_  itemindex: integer (1-based)
+#_
+#_**Returns:**
+#_  item:      PluginPanelItem
+#_
+#_**Far API used:**
+#_  Control, FCTL_GETSELECTEDPANELITEM
+#_
+#_@@@
+#_<lua> Links = { PluginPanelItem="85.html" } </lua>
+#_
+</article>
+</node>
+<node>
+id=228
+lv=3
+dt=Text
+nm=panel.GetUserScreen
+<article>
+#_result = panel.GetUserScreen ([handle])
+#_
+#_**Parameters:**
+#_  handle: panel handle
+#_
+#_**Returns:**
+#_  result: boolean
+#_
+#_**Far API used:**
+#_  Control, FCTL_GETUSERSCREEN
+#_
+#_@@@
+#_
+#_
+</article>
+</node>
+<node>
+id=9
+lv=3
+dt=Text
+nm=panel.InsertCmdLine
+<article>
+#_result = panel.InsertCmdLine (handle, str)
+#_
+#_**Parameters:**
+#_  handle: panel handle, or nil
+#_  str:    string
+#_
+#_**Returns:**
+#_  result: boolean
+#_
+#_**Far API used:**
+#_  Control, FCTL_INSERTCMDLINE
+#_
+#_
+#_@@@
+#_
+</article>
+</node>
+<node>
+id=320
+lv=3
+dt=Text
+nm=panel.IsActivePanel
+ctime=3480215162
+mtime=3480215301
+<article>
+#_result = panel.IsActivePanel ([handle])
+#_
+#_**Parameters:**
+#_  handle: panel handle
+#_
+#_**Returns:**
+#_  result: boolean
+#_
+#_**Far API used:**
+#_  Control, FCTL_ISACTIVEPANEL
+#_
+#_
+#_@@@
+#_
+</article>
+</node>
+<node>
+id=10
+lv=3
+dt=Text
+nm=panel.RedrawPanel
+<article>
+#_result = panel.RedrawPanel (handle, whatpanel [, redrawinfo])
+#_
+#_**Parameters:**
+#_  handle:     panel handle, or nil
+#_  whatpanel:  1=active panel; 0=passive panel;
+#_  redrawinfo: table with the following fields:
+#_                CurrentItem  : integer (1-based)
+#_                TopPanelItem : integer (1-based)
+#_
+#_**Returns:**
+#_  result: boolean
+#_
+#_**Far API used:**
+#_  Control, FCTL_REDRAWPANEL
+#_
+#_
+#_@@@
+#_
+</article>
+</node>
+<node>
+id=395
+lv=3
+dt=Text
+nm=panel.SetCaseSensitiveSort
+ctime=3501391498
+mtime=3501391568
+<article>
+#_result = panel.SetCaseSensitiveSort (handle, whatpanel [, set])
+#_
+#_**Parameters:**
+#_  handle:    panel handle, or nil
+#_  whatpanel: 1=active panel; 0=passive panel;
+#_  set:       boolean, defaults to false
+#_
+#_**Returns:**
+#_  result: boolean
+#_
+#_**Far API used:**
+#_  Control, FCTL_SETCASESENSITIVESORT
+#_
+#_@@@
+#_
+</article>
+</node>
+<node>
+id=11
+lv=3
+dt=Text
+nm=panel.SetCmdLine
+<article>
+#_result = panel.SetCmdLine (handle, str)
+#_
+#_**Parameters:**
+#_  handle: panel handle, or nil
+#_  str:    string
+#_
+#_**Returns:**
+#_  result: boolean
+#_
+#_**Far API used:**
+#_  Control, FCTL_SETCMDLINE
+#_
+#_
+#_@@@
+#_
+</article>
+</node>
+<node>
+id=12
+lv=3
+dt=Text
+nm=panel.SetCmdLinePos
+mtime=3480451106
+<article>
+#_result = panel.SetCmdLinePos (handle, pos)
+#_
+#_**Parameters:**
+#_  handle: panel handle, or nil
+#_  pos:    1-based integer
+#_
+#_**Returns:**
+#_  result: boolean
+#_
+#_**Far API used:**
+#_  Control, FCTL_SETCMDLINEPOS
+#_
+#_@@@
+#_
+</article>
+</node>
+<node>
+id=332
+lv=3
+dt=Text
+nm=panel.SetCmdLineSelection
+ctime=3480326063
+mtime=3480451070
+<article>
+#_result = panel.SetCmdLineSelection (handle, selStart, selEnd)
+#_
+#_**Parameters:**
+#_  handle:   panel handle, or nil
+#_  selStart: integer (1-based)
+#_  selEnd:   integer
+#_
+#_**Returns:**
+#_  result: boolean
+#_
+#_**Far API used:**
+#_  Control, FCTL_SETCMDLINESELECTION
+#_
+#_@@@
+#_
+</article>
+</node>
+<node>
+id=146
+lv=3
+dt=Text
+nm=panel.SetNumericSort
+<article>
+#_result = panel.SetNumericSort (handle, whatpanel [, set])
+#_
+#_**Parameters:**
+#_  handle:    panel handle, or nil
+#_  whatpanel: 1=active panel; 0=passive panel;
+#_  set:       boolean, defaults to false
+#_
+#_**Returns:**
+#_  result: boolean
+#_
+#_**Far API used:**
+#_  Control, FCTL_SETNUMERICSORT
+#_
+#_@@@
+#_
+</article>
+</node>
+<node>
+id=13
+lv=3
+dt=Text
+nm=panel.SetPanelDir
+<article>
+#_result = panel.SetPanelDir (handle, whatpanel, dir)
+#_
+#_**Parameters:**
+#_  handle:    panel handle, or nil
+#_  whatpanel: 1=active panel; 0=passive panel;
+#_  dir:       string
+#_
+#_**Returns:**
+#_  result: boolean
+#_
+#_**Far API used:**
+#_  Control, FCTL_SETPANELDIR
+#_
+#_@@@
+#_
+</article>
+</node>
+<node>
+id=14
+lv=3
+dt=Text
+nm=panel.SetSelection
+mtime=3480322462
+<article>
+#_result = panel.SetSelection (handle, whatpanel, items, selection)
+#_
+#_**Parameters:**
+#_  handle:       panel handle, or nil
+#_  whatpanel:    1=active_panel, 0=inactive_panel
+#_  items:        integer (1-based item index),
+#_                or table (array of item indexes)
+#_  selection:    boolean
+#_
+#_**Returns:**
+#_  result: boolean
+#_
+#_**Far API used:**
+#_  Control, FCTL_GETPANELINFO, FCTL_BEGINSELECTION,
+#_  FCTL_SETSELECTION, FCTL_ENDSELECTION
+#_
+#_@@@
+#_
+#_
+</article>
+</node>
+<node>
+id=147
+lv=3
+dt=Text
+nm=panel.SetSortMode
+mtime=3507818152
+<article>
+#_result = panel.SetSortMode (handle, whatpanel, mode)
+#_
+#_**Parameters:**
+#_  handle:    panel handle, or nil
+#_  whatpanel: 1=active panel; 0=passive panel;
+#_  mode:      flags
+#_
+#_**Returns:**
+#_  result: boolean
+#_
+#_**Far API used:**
+#_  Control, FCTL_SETSORTMODE
+#_
+#_@@@
+#_
+</article>
+</node>
+<node>
+id=148
+lv=3
+dt=Text
+nm=panel.SetSortOrder
+<article>
+#_result = panel.SetSortOrder (handle, whatpanel [, order])
+#_
+#_**Parameters:**
+#_  handle:    panel handle, or nil
+#_  whatpanel: 1=active panel; 0=passive panel;
+#_  order:     boolean (false=direct order; true=reverse order;
+#_                      defaults to false)
+#_
+#_**Returns:**
+#_  result: boolean
+#_
+#_**Far API used:**
+#_  Control, FCTL_SETSORTORDER
+#_
+#_@@@
+#_
+</article>
+</node>
+<node>
+id=15
+lv=3
+dt=Text
+nm=panel.SetUserScreen
+<article>
+#_result = panel.SetUserScreen ([handle])
+#_
+#_**Parameters:**
+#_  handle: panel handle
+#_
+#_**Returns:**
+#_  result: boolean
+#_
+#_**Far API used:**
+#_  Control, FCTL_SETUSERSCREEN
+#_
+#_@@@
+#_
+</article>
+</node>
+<node>
+id=16
+lv=3
+dt=Text
+nm=panel.SetViewMode
+<article>
+#_result = panel.SetViewMode (handle, whatpanel, mode)
+#_
+#_**Parameters:**
+#_  handle:    panel handle, or nil
+#_  whatpanel: 1=active panel; 0=passive panel;
+#_  mode:      integer (0...9)
+#_
+#_**Returns:**
+#_  result: boolean
+#_
+#_**Far API used:**
+#_  Control, FCTL_SETVIEWMODE
+#_
+#_
+#_@@@
+#_
+</article>
+</node>
+<node>
+id=17
+lv=3
+dt=Text
+nm=panel.UpdatePanel
+<article>
+#_result = panel.UpdatePanel (handle, whatpanel [, keepselection])
+#_
+#_**Parameters:**
+#_  handle:         panel handle, or nil
+#_  whatpanel:      1=active panel; 0=passive panel;
+#_  keepselection:  boolean, defaults to false
+#_
+#_**Returns:**
+#_  result: boolean
+#_
+#_**Far API used:**
+#_  Control, FCTL_UPDATEPANEL
+#_
+#_
+#_@@@
+#_
+</article>
+</node>
+<node>
 id=79
 lv=2
 dt=Text
@@ -3402,46 +3412,13 @@ nm=Editor specific functions
 </article>
 </node>
 <node>
-id=21
-lv=3
-dt=Text
-nm=far.Editor
-mtime=3507818190
-<article>
-#_result = far.Editor (FileName, Title, X1, Y1, X2, Y2,
-#_                     Flags, StartLine, StartChar, CodePage)
-#_
-#_**Parameters:**
-#_  FileName:  string
-#_  Title:     string,  or nil (default = FileName)
-#_  X1:        integer, or nil (default = 0)
-#_  Y1:        integer, or nil (default = 0)
-#_  X2:        integer, or nil (default = -1)
-#_  Y2:        integer, or nil (default = -1)
-#_  Flags:     flags, or nil (default = 0)
-#_  StartLine: integer, or nil (default = -1)
-#_  StartChar: integer, or nil (default = -1)
-#_  CodePage:  integer, or nil (default = CP_AUTODETECT)
-#_
-#_**Returns:**
-#_  result: integer
-#_
-#_**Far API used:**
-#_  Editor
-#_
-#_@@@
-#_
-#_
-</article>
-</node>
-<node>
 id=22
 lv=3
 dt=Text
-nm=far.EditorAddColor
+nm=editor.AddColor
 mtime=3515169452
 <article>
-#_result = far.EditorAddColor (EditorId, StringNumber, StartPos, EndPos, Flags, Color, Priority)
+#_result = editor.AddColor (EditorId, StringNumber, StartPos, EndPos, Flags, Color, Priority)
 #_
 #_**Parameters:**
 #_  EditorId:     integer, or nil
@@ -3467,10 +3444,10 @@ mtime=3515169452
 id=223
 lv=3
 dt=Text
-nm=far.EditorAddStackBookmark
+nm=editor.AddStackBookmark
 mtime=3507542580
 <article>
-#_result = far.EditorAddStackBookmark (EditorId)
+#_result = editor.AddStackBookmark (EditorId)
 #_
 #_**Parameters:**
 #_  EditorId: integer, or nil
@@ -3488,10 +3465,10 @@ mtime=3507542580
 id=224
 lv=3
 dt=Text
-nm=far.EditorClearStackBookmarks
+nm=editor.ClearStackBookmarks
 mtime=3507542594
 <article>
-#_result = far.EditorClearStackBookmarks (EditorId)
+#_result = editor.ClearStackBookmarks (EditorId)
 #_
 #_**Parameters:**
 #_  EditorId: integer, or nil
@@ -3509,11 +3486,11 @@ mtime=3507542594
 id=444
 lv=3
 dt=Text
-nm=far.EditorDelColor
+nm=editor.DelColor
 ctime=3515093666
 mtime=3515093738
 <article>
-#_result = far.EditorDelColor (EditorId, StringNumber, StartPos)
+#_result = editor.DelColor (EditorId, StringNumber, StartPos)
 #_
 #_**Parameters:**
 #_  EditorId:     integer, or nil
@@ -3534,10 +3511,10 @@ mtime=3515093738
 id=23
 lv=3
 dt=Text
-nm=far.EditorDeleteBlock
+nm=editor.DeleteBlock
 mtime=3507542607
 <article>
-#_result = far.EditorDeleteBlock (EditorId)
+#_result = editor.DeleteBlock (EditorId)
 #_
 #_**Parameters:**
 #_  EditorId: integer, or nil
@@ -3556,10 +3533,10 @@ mtime=3507542607
 id=24
 lv=3
 dt=Text
-nm=far.EditorDeleteChar
+nm=editor.DeleteChar
 mtime=3507542619
 <article>
-#_result = far.EditorDeleteChar (EditorId)
+#_result = editor.DeleteChar (EditorId)
 #_
 #_**Parameters:**
 #_  EditorId: integer, or nil
@@ -3578,10 +3555,10 @@ mtime=3507542619
 id=225
 lv=3
 dt=Text
-nm=far.EditorDeleteStackBookmark
+nm=editor.DeleteStackBookmark
 mtime=3507542643
 <article>
-#_result = far.EditorDeleteStackBookmark (EditorId, position)
+#_result = editor.DeleteStackBookmark (EditorId, position)
 #_
 #_**Parameters:**
 #_  EditorId: integer, or nil
@@ -3600,10 +3577,10 @@ mtime=3507542643
 id=25
 lv=3
 dt=Text
-nm=far.EditorDeleteString
+nm=editor.DeleteString
 mtime=3507542669
 <article>
-#_result = far.EditorDeleteString (EditorId)
+#_result = editor.DeleteString (EditorId)
 #_
 #_**Parameters:**
 #_  EditorId: integer, or nil
@@ -3619,13 +3596,46 @@ mtime=3507542669
 </article>
 </node>
 <node>
+id=21
+lv=3
+dt=Text
+nm=editor.Editor
+mtime=3523943381
+<article>
+#_result = editor.Editor (FileName, Title, X1, Y1, X2, Y2,
+#_                        Flags, StartLine, StartChar, CodePage)
+#_
+#_**Parameters:**
+#_  FileName:  string
+#_  Title:     string,  or nil (default = FileName)
+#_  X1:        integer, or nil (default = 0)
+#_  Y1:        integer, or nil (default = 0)
+#_  X2:        integer, or nil (default = -1)
+#_  Y2:        integer, or nil (default = -1)
+#_  Flags:     flags,   or nil (default = 0)
+#_  StartLine: integer, or nil (default = -1)
+#_  StartChar: integer, or nil (default = -1)
+#_  CodePage:  integer, or nil (default = CP_AUTODETECT)
+#_
+#_**Returns:**
+#_  result: integer
+#_
+#_**Far API used:**
+#_  Editor
+#_
+#_@@@
+#_
+#_
+</article>
+</node>
+<node>
 id=27
 lv=3
 dt=Text
-nm=far.EditorExpandTabs
+nm=editor.ExpandTabs
 mtime=3507542701
 <article>
-#_result = far.EditorExpandTabs (EditorId, StringNumber)
+#_result = editor.ExpandTabs (EditorId, StringNumber)
 #_
 #_**Parameters:**
 #_  EditorId:     integer, or nil
@@ -3645,10 +3655,10 @@ mtime=3507542701
 id=136
 lv=3
 dt=Text
-nm=far.EditorGetBookmarks
+nm=editor.GetBookmarks
 mtime=3507542713
 <article>
-#_bookmarks = far.EditorGetBookmarks (EditorId)
+#_bookmarks = editor.GetBookmarks (EditorId)
 #_
 #_**Parameters:**
 #_  EditorId:  integer, or nil
@@ -3677,10 +3687,10 @@ mtime=3507542713
 id=28
 lv=3
 dt=Text
-nm=far.EditorGetColor
+nm=editor.GetColor
 mtime=3508691626
 <article>
-#_color = far.EditorGetColor(EditorId, StringNumber, StartPos, EndPos, ColorItem, Flags)
+#_color = editor.GetColor(EditorId, StringNumber, StartPos, EndPos, ColorItem, Flags)
 #_
 #_**Parameters:**
 #_  EditorId:     integer, or nil
@@ -3705,10 +3715,10 @@ mtime=3508691626
 id=261
 lv=3
 dt=Text
-nm=far.EditorGetFileName
+nm=editor.GetFileName
 mtime=3507542738
 <article>
-#_FileName = far.EditorGetFileName (EditorId)
+#_FileName = editor.GetFileName (EditorId)
 #_
 #_**Parameters:**
 #_  EditorId: integer, or nil
@@ -3728,10 +3738,10 @@ mtime=3507542738
 id=29
 lv=3
 dt=Text
-nm=far.EditorGetInfo
+nm=editor.GetInfo
 mtime=3507542754
 <article>
-#_Info = far.EditorGetInfo (EditorId)
+#_Info = editor.GetInfo (EditorId)
 #_
 #_**Parameters:**
 #_  EditorId: integer, or nil
@@ -3769,13 +3779,13 @@ mtime=3507542754
 id=30
 lv=3
 dt=Text
-nm=far.EditorGetSelection
+nm=editor.GetSelection
 mtime=3507542774
 <article>
 #_**Note:**
 #_--This function does not have a prototype in Far API.
 #_
-#_Info = far.EditorGetSelection (EditorId)
+#_Info = editor.GetSelection (EditorId)
 #_
 #_**Parameters:**
 #_  EditorId: integer, or nil
@@ -3801,10 +3811,10 @@ mtime=3507542774
 id=230
 lv=3
 dt=Text
-nm=far.EditorGetStackBookmarks
+nm=editor.GetStackBookmarks
 mtime=3507542793
 <article>
-#_bookmarks = far.EditorGetStackBookmarks (EditorId)
+#_bookmarks = editor.GetStackBookmarks (EditorId)
 #_
 #_**Parameters:**
 #_  EditorId:  integer, or nil
@@ -3833,14 +3843,14 @@ mtime=3507542793
 id=31
 lv=3
 dt=Text
-nm=far.EditorGetString
+nm=editor.GetString
 mtime=3512374210
 <article>
 #_**Note:**
 #_--This function is an extension over its prototype in Far API.
 #_--There are concerns with regards to its API.
 #_
-#_LineInfo = far.EditorGetString (EditorId, StringNumber, Mode)
+#_LineInfo = editor.GetString (EditorId, StringNumber, Mode)
 #_
 #_**Parameters:**
 #_  EditorId:     integer (default=-1)
@@ -3874,14 +3884,14 @@ mtime=3512374210
 id=448
 lv=3
 dt=Text
-nm=far.EditorGetStringW
+nm=editor.GetStringW
 ctime=3523911376
 mtime=3523911537
 <article>
-#_Same as far.EditorGetString but *StringText* and *StringEOL* are encoded in UTF-16LE.
+#_Same as editor.GetString but *StringText* and *StringEOL* are encoded in UTF-16LE.
 #_
 #_@@@
-#_<lua> Links = { ["far.EditorGetString"]="31.html" } </lua>
+#_<lua> Links = { ["editor.GetString"]="31.html" } </lua>
 #_
 </article>
 </node>
@@ -3889,10 +3899,10 @@ mtime=3523911537
 id=32
 lv=3
 dt=Text
-nm=far.EditorInsertString
+nm=editor.InsertString
 mtime=3507542843
 <article>
-#_result = far.EditorInsertString ([EditorId [, indent]])
+#_result = editor.InsertString ([EditorId [, indent]])
 #_
 #_**Parameters:**
 #_  EditorId: integer, or nil
@@ -3912,10 +3922,10 @@ mtime=3507542843
 id=33
 lv=3
 dt=Text
-nm=far.EditorInsertText
+nm=editor.InsertText
 mtime=3507542869
 <article>
-#_result = far.EditorInsertText (EditorId, text)
+#_result = editor.InsertText (EditorId, text)
 #_
 #_**Parameters:**
 #_  EditorId: integer, or nil
@@ -3935,14 +3945,14 @@ mtime=3507542869
 id=450
 lv=3
 dt=Text
-nm=far.EditorInsertTextW
+nm=editor.InsertTextW
 ctime=3523911742
 mtime=3523911803
 <article>
-#_Same as far.EditorInsertText but *text* should be encoded in UTF-16LE.
+#_Same as editor.InsertText but *text* should be encoded in UTF-16LE.
 #_
 #_@@@
-#_<lua> Links = { ["far.EditorInsertText"]="33.html" } </lua>
+#_<lua> Links = { ["editor.InsertText"]="33.html" } </lua>
 #_
 #_
 </article>
@@ -3951,10 +3961,10 @@ mtime=3523911803
 id=227
 lv=3
 dt=Text
-nm=far.EditorNextStackBookmark
+nm=editor.NextStackBookmark
 mtime=3507542898
 <article>
-#_result = far.EditorNextStackBookmark (EditorId)
+#_result = editor.NextStackBookmark (EditorId)
 #_
 #_**Parameters:**
 #_  EditorId: integer, or nil
@@ -3972,10 +3982,10 @@ mtime=3507542898
 id=226
 lv=3
 dt=Text
-nm=far.EditorPrevStackBookmark
+nm=editor.PrevStackBookmark
 mtime=3507542972
 <article>
-#_result = far.EditorPrevStackBookmark (EditorId)
+#_result = editor.PrevStackBookmark (EditorId)
 #_
 #_**Parameters:**
 #_  EditorId: integer, or nil
@@ -3993,10 +4003,10 @@ mtime=3507542972
 id=36
 lv=3
 dt=Text
-nm=far.EditorProcessInput
+nm=editor.ProcessInput
 mtime=3507543023
 <article>
-#_result = far.EditorProcessInput (EditorId, Input)
+#_result = editor.ProcessInput (EditorId, Input)
 #_
 #_**Parameters:**
 #_  EditorId: integer, or nil
@@ -4019,45 +4029,13 @@ mtime=3507543023
 </article>
 </node>
 <node>
-id=138
-lv=3
-dt=Text
-nm=far.EditorProcessKey
-mtime=3507543067
-<article>
-#_far.EditorProcessKey (EditorId, key)
-#_
-#_**Parameters:**
-#_  EditorId: integer, or nil
-#_  key:      integer
-#_
-#_**Returns:**
-#_  nothing
-#_
-#_**Note:**
-#_  There is a file named farkeys.lua that returns a table
-#_  containing values of all constants from *farkeys.hpp* indexed
-#_  by their string names. It's typical use is like that:
-#_      local FK = require "farkeys"
-#_      far.EditorProcessKey (nil, FK.KEY_CTRLEND)
-#_
-#_**Far API used:**
-#_  EditorControl, ECTL_PROCESSKEY
-#_
-#_@@@
-#_<lua> Links = { ["farkeys.lua"]="154.html" } </lua>
-#_
-#_
-</article>
-</node>
-<node>
 id=37
 lv=3
 dt=Text
-nm=far.EditorQuit
+nm=editor.Quit
 mtime=3507543136
 <article>
-#_result = far.EditorQuit (EditorId)
+#_result = editor.Quit (EditorId)
 #_
 #_**Parameters:**
 #_  EditorId: integer, or nil
@@ -4076,10 +4054,10 @@ mtime=3507543136
 id=38
 lv=3
 dt=Text
-nm=far.EditorReadInput
+nm=editor.ReadInput
 mtime=3507543149
 <article>
-#_Info = far.EditorReadInput (EditorId)
+#_Info = editor.ReadInput (EditorId)
 #_
 #_**Parameters:**
 #_  EditorId: integer, or nil
@@ -4100,10 +4078,10 @@ mtime=3507543149
 id=39
 lv=3
 dt=Text
-nm=far.EditorRealToTab
+nm=editor.RealToTab
 mtime=3507543159
 <article>
-#_result = far.EditorRealToTab (EditorId, StringNumber, SrcPos)
+#_result = editor.RealToTab (EditorId, StringNumber, SrcPos)
 #_
 #_**Parameters:**
 #_  EditorId:     integer, or nil
@@ -4125,10 +4103,10 @@ mtime=3507543159
 id=40
 lv=3
 dt=Text
-nm=far.EditorRedraw
+nm=editor.Redraw
 mtime=3507543169
 <article>
-#_result = far.EditorRedraw (EditorId)
+#_result = editor.Redraw (EditorId)
 #_
 #_**Parameters:**
 #_  EditorId: integer, or nil
@@ -4147,10 +4125,10 @@ mtime=3507543169
 id=41
 lv=3
 dt=Text
-nm=far.EditorSaveFile
+nm=editor.SaveFile
 mtime=3507543178
 <article>
-#_result = far.EditorSaveFile (EditorId, FileName, FileEOL)
+#_result = editor.SaveFile (EditorId, FileName, FileEOL)
 #_
 #_**Parameters:**
 #_  EditorId: integer, or nil
@@ -4171,12 +4149,12 @@ mtime=3507543178
 id=42
 lv=3
 dt=Text
-nm=far.EditorSelect
+nm=editor.Select
 mtime=3507818224
 <article>
-#_result = far.EditorSelect (EditorId, SelectData)
+#_result = editor.Select (EditorId, SelectData)
 #_  or
-#_result = far.EditorSelect (EditorId, BlockType, BlockStartLine, BlockStartPos,
+#_result = editor.Select (EditorId, BlockType, BlockStartLine, BlockStartPos,
 #_                           BlockWidth, BlockHeight)
 #_
 #_**Parameters:**
@@ -4206,10 +4184,10 @@ mtime=3507818224
 id=139
 lv=3
 dt=Text
-nm=far.EditorSetKeyBar
+nm=editor.SetKeyBar
 mtime=3507547801
 <article>
-#_result = far.EditorSetKeyBar (EditorId, param)
+#_result = editor.SetKeyBar (EditorId, param)
 #_
 #_**Parameters:**
 #_  EditorId: integer, or nil
@@ -4234,10 +4212,10 @@ mtime=3507547801
 id=140
 lv=3
 dt=Text
-nm=far.EditorSetParam
+nm=editor.SetParam
 mtime=3507818234
 <article>
-#_res1 [, res2] = far.EditorSetParam (EditorId, Type, Param [, Flags])
+#_res1 [, res2] = editor.SetParam (EditorId, Type, Param [, Flags])
 #_
 #_**Parameters:**
 #_  EditorId: integer, or nil
@@ -4260,12 +4238,12 @@ mtime=3507818234
 id=43
 lv=3
 dt=Text
-nm=far.EditorSetPosition
+nm=editor.SetPosition
 mtime=3507543264
 <article>
-#_result = far.EditorSetPosition (EditorId, PosData)
+#_result = editor.SetPosition (EditorId, PosData)
 #_  or
-#_result = far.EditorSetPosition (EditorId, CurLine, CurPos,
+#_result = editor.SetPosition (EditorId, CurLine, CurPos,
 #_               CurTabPos, TopScreenLine, LeftPos, Overtype)
 #_
 #_**Parameters:**
@@ -4296,10 +4274,10 @@ mtime=3507543264
 id=44
 lv=3
 dt=Text
-nm=far.EditorSetString
+nm=editor.SetString
 mtime=3507542532
 <article>
-#_result = far.EditorSetString (EditorId, StringNumber, StringText, StringEOL)
+#_result = editor.SetString (EditorId, StringNumber, StringText, StringEOL)
 #_
 #_**Parameters:**
 #_  EditorId:     integer, or nil
@@ -4321,15 +4299,15 @@ mtime=3507542532
 id=449
 lv=3
 dt=Text
-nm=far.EditorSetStringW
+nm=editor.SetStringW
 ctime=3523911625
 mtime=3523911700
 <article>
-#_Same as far.EditorSetString but *StringText* and *StringEOL*
+#_Same as editor.SetString but *StringText* and *StringEOL*
 #_should be encoded in UTF-16LE.
 #_
 #_@@@
-#_<lua> Links = { ["far.EditorSetString"]="44.html" } </lua>
+#_<lua> Links = { ["editor.SetString"]="44.html" } </lua>
 #_
 </article>
 </node>
@@ -4337,10 +4315,10 @@ mtime=3523911700
 id=45
 lv=3
 dt=Text
-nm=far.EditorSetTitle
+nm=editor.SetTitle
 mtime=3507543302
 <article>
-#_result = far.EditorSetTitle ([EditorId [, Title]])
+#_result = editor.SetTitle ([EditorId [, Title]])
 #_
 #_**Parameters:**
 #_  EditorId: integer, or nil
@@ -4361,10 +4339,10 @@ mtime=3507543302
 id=48
 lv=3
 dt=Text
-nm=far.EditorTabToReal
+nm=editor.TabToReal
 mtime=3507543313
 <article>
-#_result = far.EditorTabToReal (EditorId, StringNumber, SrcPos)
+#_result = editor.TabToReal (EditorId, StringNumber, SrcPos)
 #_
 #_**Parameters:**
 #_  EditorId:     integer, or nil
@@ -4386,10 +4364,10 @@ mtime=3507543313
 id=137
 lv=3
 dt=Text
-nm=far.EditorTurnOffMarkingBlock
+nm=editor.TurnOffMarkingBlock
 mtime=3507543324
 <article>
-#_far.EditorTurnOffMarkingBlock (EditorId)
+#_editor.TurnOffMarkingBlock (EditorId)
 #_
 #_**Parameters:**
 #_  EditorId: integer, or nil
@@ -4409,11 +4387,11 @@ mtime=3507543324
 id=283
 lv=3
 dt=Text
-nm=far.EditorUndoRedo
+nm=editor.UndoRedo
 ctime=3476902749
 mtime=3507818238
 <article>
-#_result = far.EditorUndoRedo (EditorId, Command)
+#_result = editor.UndoRedo (EditorId, Command)
 #_
 #_**Parameters:**
 #_  EditorId: integer, or nil
@@ -4439,42 +4417,13 @@ nm=Viewer specific functions
 </article>
 </node>
 <node>
-id=77
-lv=3
-dt=Text
-nm=far.Viewer
-mtime=3507818246
-<article>
-#_result = far.Viewer (FileName, Title, X1, Y1, X2, Y2, Flags, CodePage)
-#_
-#_**Parameters:**
-#_  FileName: string
-#_  Title:    string  (defaults to FileName)
-#_  X1:       integer (defaults to 0)
-#_  Y1:       integer (defaults to 0)
-#_  X2:       integer (defaults to -1)
-#_  Y2:       integer (defaults to -1)
-#_  Flags:    flags   (defaults to 0)
-#_  CodePage: integer (defaults to CP_AUTODETECT)
-#_
-#_**Returns:**
-#_  result: boolean
-#_
-#_**Far API used:**
-#_  Viewer
-#_
-#_@@@
-#_
-</article>
-</node>
-<node>
 id=132
 lv=3
 dt=Text
-nm=far.ViewerGetInfo
+nm=viewer.GetInfo
 mtime=3507624277
 <article>
-#_Info = far.ViewerGetInfo (ViewerID)
+#_Info = viewer.GetInfo (ViewerID)
 #_
 #_**Parameters:**
 #_  ViewerID: integer, or nil
@@ -4505,10 +4454,10 @@ mtime=3507624277
 id=134
 lv=3
 dt=Text
-nm=far.ViewerQuit
+nm=viewer.Quit
 mtime=3507624360
 <article>
-#_far.ViewerQuit (ViewerID)
+#_viewer.Quit (ViewerID)
 #_
 #_**Parameters:**
 #_  ViewerID: integer, or nil
@@ -4527,10 +4476,10 @@ mtime=3507624360
 id=135
 lv=3
 dt=Text
-nm=far.ViewerRedraw
+nm=viewer.Redraw
 mtime=3507624410
 <article>
-#_far.ViewerRedraw (ViewerID)
+#_viewer.Redraw (ViewerID)
 #_
 #_**Parameters:**
 #_  ViewerID: integer, or nil
@@ -4549,10 +4498,10 @@ mtime=3507624410
 id=144
 lv=3
 dt=Text
-nm=far.ViewerSelect
+nm=viewer.Select
 mtime=3507624477
 <article>
-#_result = far.ViewerSelect (ViewerID, BlockStartPos, BlockLen)
+#_result = viewer.Select (ViewerID, BlockStartPos, BlockLen)
 #_
 #_**Parameters:**
 #_  ViewerID:      integer, or nil
@@ -4573,10 +4522,10 @@ mtime=3507624477
 id=141
 lv=3
 dt=Text
-nm=far.ViewerSetKeyBar
+nm=viewer.SetKeyBar
 mtime=3507624927
 <article>
-#_result = far.ViewerSetKeyBar (ViewerID, param)
+#_result = viewer.SetKeyBar (ViewerID, param)
 #_
 #_**Parameters:**
 #_  ViewerID: integer, or nil
@@ -4601,10 +4550,10 @@ mtime=3507624927
 id=229
 lv=3
 dt=Text
-nm=far.ViewerSetMode
+nm=viewer.SetMode
 mtime=3507818253
 <article>
-#_result = far.ViewerSetMode (ViewerID, ModeData)
+#_result = viewer.SetMode (ViewerID, ModeData)
 #_
 #_**Parameters:**
 #_  ViewerID: integer, or nil
@@ -4626,12 +4575,12 @@ mtime=3507818253
 id=142
 lv=3
 dt=Text
-nm=far.ViewerSetPosition
+nm=viewer.SetPosition
 mtime=3507818286
 <article>
-#_pos = far.ViewerSetPosition (ViewerID, PosData)
+#_pos = viewer.SetPosition (ViewerID, PosData)
 #_  or
-#_pos = far.ViewerSetPosition (ViewerID, StartPos, LeftPos, Flags)
+#_pos = viewer.SetPosition (ViewerID, StartPos, LeftPos, Flags)
 #_
 #_**Parameters:**
 #_  ViewerID: integer, or nil
@@ -4651,6 +4600,37 @@ mtime=3507818286
 #_  ViewerControl, VCTL_SETPOSITION
 #_
 #_@@@
+#_
+</article>
+</node>
+<node>
+id=77
+lv=3
+dt=Text
+nm=viewer.Viewer
+mtime=3523944710
+<article>
+#_result = viewer.Viewer (FileName, Title, X1, Y1, X2, Y2, Flags, CodePage)
+#_
+#_**Parameters:**
+#_  FileName: string
+#_  Title:    string  (defaults to FileName)
+#_  X1:       integer (defaults to 0)
+#_  Y1:       integer (defaults to 0)
+#_  X2:       integer (defaults to -1)
+#_  Y2:       integer (defaults to -1)
+#_  Flags:    flags   (defaults to 0)
+#_  CodePage: integer (defaults to CP_AUTODETECT)
+#_
+#_**Returns:**
+#_  result: boolean
+#_
+#_**Far API used:**
+#_  Viewer
+#_
+#_@@@
+#_
+#_
 #_
 </article>
 </node>
@@ -5129,7 +5109,7 @@ mtime=3520792714
 #_DM_SETSELECTION:
 #_    Param2:  table
 #_    Result:  integer
-#_    *Note:* this function has much in common with far.EditorSelect
+#_    *Note:* this function has much in common with editor.Select
 #_
 #_DM_SETCOMBOBOXEVENT:
 #_    Param2:  flags
@@ -5149,7 +5129,7 @@ mtime=3520792714
 #_@@@
 #_<lua> Links = { ["far.GetDlgItem"]="54.html",
 #_                ["far.SetDlgItem"]="72.html",
-#_                ["far.EditorSelect"]="42.html" }
+#_                ["editor.Select"]="42.html" }
 #_</lua>
 #_
 #_
@@ -6009,7 +5989,7 @@ mtime=3480252933
 #_          -- manipulate panel elements
 #_          for i=1, pInfo.ItemsNumber do
 #_            -- apply the filter...
-#_            local item = far.CtrlGetPanelItem(nil, 1, i)
+#_            local item = panel.GetPanelItem(nil, 1, i)
 #_            if AFilter:IsFileInFilter(item.FindData) then
 #_              -- the element matches filter conditions;
 #_              -- process the element...
@@ -6751,8 +6731,8 @@ nm=Regular expression functions
 id=271
 lv=3
 dt=Text
-nm=far.find
-mtime=3490797670
+nm=far.find, far.findW
+mtime=3524033915
 <article>
 #_from, to [,c1 [,c2]...] = far.find (s, pattern, [init], [cflags])
 #_
@@ -6773,6 +6753,10 @@ mtime=3490797670
 #_  by the meaning of its optional 4-th parameter:
 #_  -- *cflags* : compilation flags;
 #_
+#_**Note:**
+#_*far.findW* receives its 1-st argument and returns captures in
+#_UTF-16LE encoding.
+#_
 #_**Far API used:**
 #_  RegExpControl
 #_
@@ -6783,8 +6767,8 @@ mtime=3490797670
 id=269
 lv=3
 dt=Text
-nm=far.gmatch
-mtime=3490797699
+nm=far.gmatch, far.gmatchW
+mtime=3524033924
 <article>
 #_for c1 [,c2 ...] in far.gmatch (s, pattern [, cflags]) do
 #_  ......
@@ -6804,6 +6788,10 @@ mtime=3490797699
 #_  following extensions:
 #_  -- *cflags* : optional 3-rd parameter: compilation flags;
 #_
+#_**Note:**
+#_*far.gmatchW* receives its 1-st argument and returns captures in
+#_UTF-16LE encoding.
+#_
 #_**Far API used:**
 #_  RegExpControl
 #_
@@ -6814,8 +6802,8 @@ mtime=3490797699
 id=270
 lv=3
 dt=Text
-nm=far.gsub
-mtime=3490797715
+nm=far.gsub, far.gsubW
+mtime=3524033935
 <article>
 #_res, nmatch, nrep = far.gsub (s, pattern, repl, [n], [cflags])
 #_
@@ -6837,6 +6825,10 @@ mtime=3490797715
 #_  -- *cflags* : optional 5-th parameter: compilation flags;
 #_  -- *nrep*   : 3-rd return value: number of replacements made;
 #_
+#_**Note:**
+#_*far.gsubW* receives its 1-st argument and returns captures in
+#_UTF-16LE encoding.
+#_
 #_**Far API used:**
 #_  RegExpControl
 #_
@@ -6848,8 +6840,8 @@ mtime=3490797715
 id=272
 lv=3
 dt=Text
-nm=far.match
-mtime=3490797724
+nm=far.match, far.matchW
+mtime=3524033962
 <article>
 #_c1 [,c2]...] = far.match (s, pattern, [init], [cflags])
 #_
@@ -6868,6 +6860,10 @@ mtime=3490797724
 #_  following extensions:
 #_  -- *cflags* : optional 4-th parameter: compilation flags;
 #_
+#_**Note:**
+#_*far.matchW* receives its 1-st argument and returns captures in
+#_UTF-16LE encoding.
+#_
 #_**Far API used:**
 #_  RegExpControl
 #_
@@ -6879,7 +6875,7 @@ id=266
 lv=3
 dt=Text
 nm=far.regex
-mtime=3490797736
+mtime=3524034285
 <article>
 #_regex_object = far.regex (pattern [, cflags])
 #_
@@ -6899,13 +6895,13 @@ mtime=3490797736
 #_    -- Via the *cflags* parameter.
 #_
 #_**Object methods:**
-#_  bracketscount, find, match
+#_  bracketscount, find, gsub, match
 #_
 #_**Far API used:**
 #_  RegExpControl
 #_
 #_@@@
-#_<lua> Links = { find="267.html", match="268.html",
+#_<lua> Links = { find="267.html", match="268.html", gsub="386.html",
 #_  bracketscount="377.html" } </lua>
 #_
 </article>
@@ -6936,7 +6932,8 @@ mtime=3489990041
 id=267
 lv=4
 dt=Text
-nm=method find
+nm=method find, findW
+mtime=3524034062
 <article>
 #_from, to [,c1 [,c2]...] = regex_object:find (subj [, init])
 #_
@@ -6950,6 +6947,10 @@ nm=method find
 #_  c1,... : strings (there can be *false* in place of captures
 #_                    not participated in the match)
 #_
+#_**Note:**
+#_*regex_object:findW* receives its 1-st argument and returns captures
+#_in UTF-16LE encoding.
+#_
 #_**Far API used:**
 #_  RegExpControl
 #_
@@ -6960,9 +6961,9 @@ nm=method find
 id=386
 lv=4
 dt=Text
-nm=method gsub
+nm=method gsub, gsubW
 ctime=3497976622
-mtime=3497976774
+mtime=3524034123
 <article>
 #_res, nmatch, nrep = regex_object:gsub (s, repl, [n])
 #_
@@ -6976,6 +6977,10 @@ mtime=3497976774
 #_  nmatch:   integer
 #_  nrep:     integer
 #_
+#_**Note:**
+#_*regex_object:gsubW* receives its 1-st argument and returns captures
+#_in UTF-16LE encoding.
+#_
 #_**Far API used:**
 #_  RegExpControl
 #_
@@ -6986,7 +6991,8 @@ mtime=3497976774
 id=268
 lv=4
 dt=Text
-nm=method match
+nm=method match, matchW
+mtime=3524034111
 <article>
 #_c1 [,c2 ...] = regex_object:match (subj [, init])
 #_
@@ -6997,6 +7003,10 @@ nm=method match
 #_**Returns:**
 #_  c1,... : strings (there can be *false* in place of captures
 #_                    not participated in the match)
+#_
+#_**Note:**
+#_*regex_object:matchW* receives its 1-st argument and returns captures
+#_in UTF-16LE encoding.
 #_
 #_**Far API used:**
 #_  RegExpControl
@@ -7701,8 +7711,8 @@ mtime=3508525401
 #_
 #_@@@
 #_<lua> Links = {
-#_  ['far.EditorProcessInput']="36.html",
-#_  ['far.EditorReadInput']="38.html",
+#_  ['editor.ProcessInput']="36.html",
+#_  ['editor.ReadInput']="38.html",
 #_  ['far.FarInputRecordToKey']="186.html",
 #_  ['far.ProcessKey']="114.html",
 #_  MouseEventRecord="313.html",
@@ -8447,6 +8457,30 @@ mtime=3509699035
 </article>
 </node>
 <node>
+id=452
+lv=1
+dt=Text
+nm=win.lenW
+ctime=3523918278
+mtime=3523940191
+<article>
+#_length = win.lenW (str)
+#_
+#_**Parameters:**
+#_  str:    string
+#_
+#_**Returns:**
+#_  length: integer
+#_
+#_**Description:**
+#_  This function is similar to *string.len* except that it works on UTF-16LE strings
+#_  and returns their lengths as  number of characters rather than bytes.
+#_
+#_@@@
+#_
+</article>
+</node>
+<node>
 id=362
 lv=1
 dt=Text
@@ -8705,6 +8739,34 @@ mtime=3510764708
 #_  Sleep
 #_
 #_@@@
+#_
+</article>
+</node>
+<node>
+id=451
+lv=1
+dt=Text
+nm=win.subW
+ctime=3523918268
+mtime=3523940177
+<article>
+#_substr = win.subW (str, from, to)
+#_
+#_**Parameters:**
+#_  str:    string
+#_  from:   integer (default = 1)
+#_  to:     integer (default = -1)
+#_
+#_**Returns:**
+#_  substr: string
+#_
+#_**Description:**
+#_  This function is similar to *string.sub* except that it works on UTF-16LE strings
+#_  and considers arguments *from* and *to* expressed in characters rather than bytes.
+#_
+#_@@@
+#_
+#_
 #_
 </article>
 </node>

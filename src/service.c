@@ -463,13 +463,13 @@ static int push_editor_filename(lua_State *L, int EditorId)
   return 0;
 }
 
-static int far_EditorGetFileName(lua_State *L) {
+static int editor_GetFileName(lua_State *L) {
   int EditorId = luaL_optinteger(L, 1, -1);
   if (!push_editor_filename(L, EditorId)) lua_pushnil(L);
   return 1;
 }
 
-static int far_EditorGetInfo(lua_State *L)
+static int editor_GetInfo(lua_State *L)
 {
   int EditorId = luaL_optinteger(L, 1, -1);
   PSInfo *Info = GetPluginData(L)->Info;
@@ -580,8 +580,8 @@ static int _EditorGetString(lua_State *L, int is_wide)
   return 0;
 }
 
-static int far_EditorGetString  (lua_State *L) { return _EditorGetString(L, 0); }
-static int far_EditorGetStringW (lua_State *L) { return _EditorGetString(L, 1); }
+static int editor_GetString  (lua_State *L) { return _EditorGetString(L, 0); }
+static int editor_GetStringW (lua_State *L) { return _EditorGetString(L, 1); }
 
 static int _EditorSetString(lua_State *L, int is_wide)
 {
@@ -607,10 +607,10 @@ static int _EditorSetString(lua_State *L, int is_wide)
   return 1;
 }
 
-static int far_EditorSetString  (lua_State *L) { return _EditorSetString(L, 0); }
-static int far_EditorSetStringW (lua_State *L) { return _EditorSetString(L, 1); }
+static int editor_SetString  (lua_State *L) { return _EditorSetString(L, 0); }
+static int editor_SetStringW (lua_State *L) { return _EditorSetString(L, 1); }
 
-static int far_EditorInsertString(lua_State *L)
+static int editor_InsertString(lua_State *L)
 {
   PSInfo *Info = GetPluginData(L)->Info;
   int EditorId = luaL_optinteger(L, 1, -1);
@@ -619,7 +619,7 @@ static int far_EditorInsertString(lua_State *L)
   return 1;
 }
 
-static int far_EditorDeleteString(lua_State *L)
+static int editor_DeleteString(lua_State *L)
 {
   PSInfo *Info = GetPluginData(L)->Info;
   int EditorId = luaL_optinteger(L, 1, -1);
@@ -636,10 +636,10 @@ static int _EditorInsertText(lua_State *L, int is_wide)
   return 1;
 }
 
-static int far_EditorInsertText  (lua_State *L) { return _EditorInsertText(L, 0); }
-static int far_EditorInsertTextW (lua_State *L) { return _EditorInsertText(L, 1); }
+static int editor_InsertText  (lua_State *L) { return _EditorInsertText(L, 0); }
+static int editor_InsertTextW (lua_State *L) { return _EditorInsertText(L, 1); }
 
-static int far_EditorDeleteChar(lua_State *L)
+static int editor_DeleteChar(lua_State *L)
 {
   int EditorId = luaL_optinteger(L, 1, -1);
   PSInfo *Info = GetPluginData(L)->Info;
@@ -647,7 +647,7 @@ static int far_EditorDeleteChar(lua_State *L)
   return 1;
 }
 
-static int far_EditorDeleteBlock(lua_State *L)
+static int editor_DeleteBlock(lua_State *L)
 {
   int EditorId = luaL_optinteger(L, 1, -1);
   PSInfo *Info = GetPluginData(L)->Info;
@@ -655,7 +655,7 @@ static int far_EditorDeleteBlock(lua_State *L)
   return 1;
 }
 
-static int far_EditorUndoRedo(lua_State *L)
+static int editor_UndoRedo(lua_State *L)
 {
   int EditorId = luaL_optinteger(L, 1, -1);
   struct EditorUndoRedo eur;
@@ -727,17 +727,17 @@ static int SetKeyBar(lua_State *L, BOOL editor)
   return 1;
 }
 
-static int far_EditorSetKeyBar(lua_State *L)
+static int editor_SetKeyBar(lua_State *L)
 {
   return SetKeyBar(L, TRUE);
 }
 
-static int far_ViewerSetKeyBar(lua_State *L)
+static int viewer_SetKeyBar(lua_State *L)
 {
   return SetKeyBar(L, FALSE);
 }
 
-static int far_EditorSetParam(lua_State *L)
+static int editor_SetParam(lua_State *L)
 {
   int EditorId = luaL_optinteger(L, 1, -1);
   PSInfo *Info = GetPluginData(L)->Info;
@@ -769,7 +769,7 @@ static int far_EditorSetParam(lua_State *L)
   return 1;
 }
 
-static int far_EditorSetPosition(lua_State *L)
+static int editor_SetPosition(lua_State *L)
 {
   int EditorId = luaL_optinteger(L, 1, -1);
   PSInfo *Info = GetPluginData(L)->Info;
@@ -791,7 +791,7 @@ static int far_EditorSetPosition(lua_State *L)
   return 0;
 }
 
-static int far_EditorRedraw(lua_State *L)
+static int editor_Redraw(lua_State *L)
 {
   int EditorId = luaL_optinteger(L, 1, -1);
   PSInfo *Info = GetPluginData(L)->Info;
@@ -800,7 +800,7 @@ static int far_EditorRedraw(lua_State *L)
   return 0;
 }
 
-static int far_EditorExpandTabs(lua_State *L)
+static int editor_ExpandTabs(lua_State *L)
 {
   int EditorId = luaL_optinteger(L, 1, -1);
   PSInfo *Info = GetPluginData(L)->Info;
@@ -838,7 +838,7 @@ static int PushBookmarks(lua_State *L, int count, int command, int EditorId)
   return 1;
 }
 
-static int far_EditorGetBookmarks(lua_State *L)
+static int editor_GetBookmarks(lua_State *L)
 {
   struct EditorInfo ei;
   int EditorId = luaL_optinteger(L, 1, -1);
@@ -848,7 +848,7 @@ static int far_EditorGetBookmarks(lua_State *L)
   return PushBookmarks(L, ei.BookMarkCount, ECTL_GETBOOKMARKS, EditorId);
 }
 
-static int far_EditorGetStackBookmarks(lua_State *L)
+static int editor_GetStackBookmarks(lua_State *L)
 {
   int EditorId = luaL_optinteger(L, 1, -1);
   PSInfo *Info = GetPluginData(L)->Info;
@@ -856,7 +856,7 @@ static int far_EditorGetStackBookmarks(lua_State *L)
   return PushBookmarks(L, count, ECTL_GETSTACKBOOKMARKS, EditorId);
 }
 
-static int far_EditorAddStackBookmark(lua_State *L)
+static int editor_AddStackBookmark(lua_State *L)
 {
   int EditorId = luaL_optinteger(L, 1, -1);
   PSInfo *Info = GetPluginData(L)->Info;
@@ -864,7 +864,7 @@ static int far_EditorAddStackBookmark(lua_State *L)
   return 1;
 }
 
-static int far_EditorClearStackBookmarks(lua_State *L)
+static int editor_ClearStackBookmarks(lua_State *L)
 {
   int EditorId = luaL_optinteger(L, 1, -1);
   PSInfo *Info = GetPluginData(L)->Info;
@@ -872,7 +872,7 @@ static int far_EditorClearStackBookmarks(lua_State *L)
   return 1;
 }
 
-static int far_EditorDeleteStackBookmark(lua_State *L)
+static int editor_DeleteStackBookmark(lua_State *L)
 {
   int EditorId = luaL_optinteger(L, 1, -1);
   INT_PTR num = luaL_optinteger(L, 2, -1);
@@ -881,7 +881,7 @@ static int far_EditorDeleteStackBookmark(lua_State *L)
   return 1;
 }
 
-static int far_EditorNextStackBookmark(lua_State *L)
+static int editor_NextStackBookmark(lua_State *L)
 {
   int EditorId = luaL_optinteger(L, 1, -1);
   PSInfo *Info = GetPluginData(L)->Info;
@@ -889,7 +889,7 @@ static int far_EditorNextStackBookmark(lua_State *L)
   return 1;
 }
 
-static int far_EditorPrevStackBookmark(lua_State *L)
+static int editor_PrevStackBookmark(lua_State *L)
 {
   int EditorId = luaL_optinteger(L, 1, -1);
   PSInfo *Info = GetPluginData(L)->Info;
@@ -897,7 +897,7 @@ static int far_EditorPrevStackBookmark(lua_State *L)
   return 1;
 }
 
-static int far_EditorSetTitle(lua_State *L)
+static int editor_SetTitle(lua_State *L)
 {
   int EditorId = luaL_optinteger(L, 1, -1);
   PSInfo *Info = GetPluginData(L)->Info;
@@ -907,7 +907,7 @@ static int far_EditorSetTitle(lua_State *L)
   return 0;
 }
 
-static int far_EditorQuit(lua_State *L)
+static int editor_Quit(lua_State *L)
 {
   int EditorId = luaL_optinteger(L, 1, -1);
   PSInfo *Info = GetPluginData(L)->Info;
@@ -934,7 +934,7 @@ static int FillEditorSelect(lua_State *L, int pos_table, struct EditorSelect *es
   return 1;
 }
 
-static int far_EditorSelect(lua_State *L)
+static int editor_Select(lua_State *L)
 {
   int EditorId = luaL_optinteger(L, 1, -1);
   PSInfo *Info = GetPluginData(L)->Info;
@@ -960,7 +960,7 @@ static int far_EditorSelect(lua_State *L)
 
 // This function is that long because FAR API does not supply needed
 // information directly.
-static int far_EditorGetSelection(lua_State *L)
+static int editor_GetSelection(lua_State *L)
 {
   int EditorId = luaL_optinteger(L, 1, -1);
   PSInfo *Info = GetPluginData(L)->Info;
@@ -1038,17 +1038,17 @@ static int _EditorTabConvert(lua_State *L, int Operation)
   return 0;
 }
 
-static int far_EditorTabToReal(lua_State *L)
+static int editor_TabToReal(lua_State *L)
 {
   return _EditorTabConvert(L, ECTL_TABTOREAL);
 }
 
-static int far_EditorRealToTab(lua_State *L)
+static int editor_RealToTab(lua_State *L)
 {
   return _EditorTabConvert(L, ECTL_REALTOTAB);
 }
 
-static int far_EditorTurnOffMarkingBlock(lua_State *L)
+static int editor_TurnOffMarkingBlock(lua_State *L)
 {
   int EditorId = luaL_optinteger(L, 1, -1);
   PSInfo *Info = GetPluginData(L)->Info;
@@ -1073,7 +1073,7 @@ static void PushFarColor (lua_State *L, const struct FarColor* Color)
   PutIntToTable(L, "BackgroundColor", Color->BackgroundColor);
 }
 
-static int far_EditorAddColor(lua_State *L)
+static int editor_AddColor(lua_State *L)
 {
   TPluginData *pd = GetPluginData(L);
   struct EditorColor ec;
@@ -1094,7 +1094,7 @@ static int far_EditorAddColor(lua_State *L)
   return 1;
 }
 
-static int far_EditorDelColor(lua_State *L)
+static int editor_DelColor(lua_State *L)
 {
   TPluginData *pd = GetPluginData(L);
   struct EditorDeleteColor edc;
@@ -1108,7 +1108,7 @@ static int far_EditorDelColor(lua_State *L)
   return 1;
 }
 
-static int far_EditorGetColor(lua_State *L)
+static int editor_GetColor(lua_State *L)
 {
   PSInfo *Info = GetPluginData(L)->Info;
   struct EditorColor ec;
@@ -1127,7 +1127,7 @@ static int far_EditorGetColor(lua_State *L)
   return 1;
 }
 
-static int far_EditorSaveFile(lua_State *L)
+static int editor_SaveFile(lua_State *L)
 {
   PSInfo *Info = GetPluginData(L)->Info;
   struct EditorSaveFile esf;
@@ -1178,7 +1178,7 @@ int pushInputRecord(lua_State *L, const INPUT_RECORD* ir)
   return 1;
 }
 
-static int far_EditorReadInput(lua_State *L)
+static int editor_ReadInput(lua_State *L)
 {
   int EditorId = luaL_optinteger(L, 1, -1);
   PSInfo *Info = GetPluginData(L)->Info;
@@ -1239,7 +1239,7 @@ static void FillInputRecord(lua_State *L, int pos, INPUT_RECORD *ir)
   lua_pop(L, 1);
 }
 
-static int far_EditorProcessInput(lua_State *L)
+static int editor_ProcessInput(lua_State *L)
 {
   int EditorId = luaL_optinteger(L, 1, -1);
   luaL_checktype(L, 2, LUA_TTABLE);
@@ -1248,15 +1248,6 @@ static int far_EditorProcessInput(lua_State *L)
   FillInputRecord(L, 2, &ir);
   if (Info->EditorControl(EditorId, ECTL_PROCESSINPUT, 0, &ir))
     return lua_pushboolean(L, 1), 1;
-  return 0;
-}
-
-static int far_EditorProcessKey(lua_State *L)
-{
-  int EditorId = luaL_optinteger(L, 1, -1);
-  INT_PTR key = luaL_checkinteger(L, 2);
-  PSInfo *Info = GetPluginData(L)->Info;
-  Info->EditorControl(EditorId, ECTL_PROCESSKEY, 0, (void*)key);
   return 0;
 }
 
@@ -1612,7 +1603,7 @@ static int far_Message(lua_State *L)
   return 1;
 }
 
-static int far_CtrlCheckPanelsExist(lua_State *L)
+static int panel_CheckPanelsExist(lua_State *L)
 {
   PSInfo *Info = GetPluginData(L)->Info;
   HANDLE handle = OptHandle (L, 1);
@@ -1621,7 +1612,7 @@ static int far_CtrlCheckPanelsExist(lua_State *L)
   return 0;
 }
 
-static int far_CtrlClosePanel(lua_State *L)
+static int panel_ClosePanel(lua_State *L)
 {
   PSInfo *Info = GetPluginData(L)->Info;
   HANDLE handle = OptHandle (L, 1);
@@ -1631,7 +1622,7 @@ static int far_CtrlClosePanel(lua_State *L)
   return 0;
 }
 
-static int far_CtrlGetPanelInfo(lua_State *L)
+static int panel_GetPanelInfo(lua_State *L)
 {
   PSInfo *Info = GetPluginData(L)->Info;
   HANDLE handle = OptHandle (L, 1);
@@ -1693,15 +1684,15 @@ static int get_panel_item(lua_State *L, int command)
   return lua_pushnil(L), 1;
 }
 
-static int far_CtrlGetPanelItem(lua_State *L) {
+static int panel_GetPanelItem(lua_State *L) {
   return get_panel_item(L, FCTL_GETPANELITEM);
 }
 
-static int far_CtrlGetSelectedPanelItem(lua_State *L) {
+static int panel_GetSelectedPanelItem(lua_State *L) {
   return get_panel_item(L, FCTL_GETSELECTEDPANELITEM);
 }
 
-static int far_CtrlGetCurrentPanelItem(lua_State *L) {
+static int panel_GetCurrentPanelItem(lua_State *L) {
   return get_panel_item(L, FCTL_GETCURRENTPANELITEM);
 }
 
@@ -1723,27 +1714,27 @@ static int get_string_info(lua_State *L, int command)
   return lua_pushnil(L), 1;
 }
 
-static int far_CtrlGetPanelDir(lua_State *L) {
+static int panel_GetPanelDir(lua_State *L) {
   return get_string_info(L, FCTL_GETPANELDIR);
 }
 
-static int far_CtrlGetPanelFormat(lua_State *L) {
+static int panel_GetPanelFormat(lua_State *L) {
   return get_string_info(L, FCTL_GETPANELFORMAT);
 }
 
-static int far_CtrlGetPanelHostFile(lua_State *L) {
+static int panel_GetPanelHostFile(lua_State *L) {
   return get_string_info(L, FCTL_GETPANELHOSTFILE);
 }
 
-static int far_CtrlGetColumnTypes(lua_State *L) {
+static int panel_GetColumnTypes(lua_State *L) {
   return get_string_info(L, FCTL_GETCOLUMNTYPES);
 }
 
-static int far_CtrlGetColumnWidths(lua_State *L) {
+static int panel_GetColumnWidths(lua_State *L) {
   return get_string_info(L, FCTL_GETCOLUMNWIDTHS);
 }
 
-static int far_CtrlRedrawPanel(lua_State *L)
+static int panel_RedrawPanel(lua_State *L)
 {
   PSInfo *Info = GetPluginData(L)->Info;
   HANDLE handle = OptHandle (L, 1);
@@ -1787,31 +1778,31 @@ static int SetPanelIntegerProperty(lua_State *L, int command)
   return 1;
 }
 
-static int far_CtrlSetCaseSensitiveSort(lua_State *L) {
+static int panel_SetCaseSensitiveSort(lua_State *L) {
   return SetPanelBooleanProperty(L, FCTL_SETCASESENSITIVESORT);
 }
 
-static int far_CtrlSetNumericSort(lua_State *L) {
+static int panel_SetNumericSort(lua_State *L) {
   return SetPanelBooleanProperty(L, FCTL_SETNUMERICSORT);
 }
 
-static int far_CtrlSetSortOrder(lua_State *L) {
+static int panel_SetSortOrder(lua_State *L) {
   return SetPanelBooleanProperty(L, FCTL_SETSORTORDER);
 }
 
-static int far_CtrlUpdatePanel(lua_State *L) {
+static int panel_UpdatePanel(lua_State *L) {
   return SetPanelBooleanProperty(L, FCTL_UPDATEPANEL);
 }
 
-static int far_CtrlSetSortMode(lua_State *L) {
+static int panel_SetSortMode(lua_State *L) {
   return SetPanelIntegerProperty(L, FCTL_SETSORTMODE);
 }
 
-static int far_CtrlSetViewMode(lua_State *L) {
+static int panel_SetViewMode(lua_State *L) {
   return SetPanelIntegerProperty(L, FCTL_SETVIEWMODE);
 }
 
-static int far_CtrlSetPanelDir(lua_State *L)
+static int panel_SetPanelDir(lua_State *L)
 {
   PSInfo *Info = GetPluginData(L)->Info;
   HANDLE handle = OptHandle (L, 1);
@@ -1827,7 +1818,7 @@ static int far_CtrlSetPanelDir(lua_State *L)
   return 1;
 }
 
-static int far_CtrlGetCmdLine(lua_State *L)
+static int panel_GetCmdLine(lua_State *L)
 {
   PSInfo *Info = GetPluginData(L)->Info;
   HANDLE handle = OptHandle (L, 1);
@@ -1839,7 +1830,7 @@ static int far_CtrlGetCmdLine(lua_State *L)
   return 1;
 }
 
-static int far_CtrlSetCmdLine(lua_State *L)
+static int panel_SetCmdLine(lua_State *L)
 {
   PSInfo *Info = GetPluginData(L)->Info;
   HANDLE handle = OptHandle (L, 1);
@@ -1848,7 +1839,7 @@ static int far_CtrlSetCmdLine(lua_State *L)
   return 1;
 }
 
-static int far_CtrlGetCmdLinePos(lua_State *L)
+static int panel_GetCmdLinePos(lua_State *L)
 {
   PSInfo *Info = GetPluginData(L)->Info;
   HANDLE handle = OptHandle (L, 1);
@@ -1858,7 +1849,7 @@ static int far_CtrlGetCmdLinePos(lua_State *L)
   return 1;
 }
 
-static int far_CtrlSetCmdLinePos(lua_State *L)
+static int panel_SetCmdLinePos(lua_State *L)
 {
   PSInfo *Info = GetPluginData(L)->Info;
   HANDLE handle = OptHandle (L, 1);
@@ -1867,7 +1858,7 @@ static int far_CtrlSetCmdLinePos(lua_State *L)
   return lua_pushboolean(L, ret), 1;
 }
 
-static int far_CtrlInsertCmdLine(lua_State *L)
+static int panel_InsertCmdLine(lua_State *L)
 {
   PSInfo *Info = GetPluginData(L)->Info;
   HANDLE handle = OptHandle (L, 1);
@@ -1876,7 +1867,7 @@ static int far_CtrlInsertCmdLine(lua_State *L)
   return 1;
 }
 
-static int far_CtrlGetCmdLineSelection(lua_State *L)
+static int panel_GetCmdLineSelection(lua_State *L)
 {
   struct CmdLineSelect cms;
   PSInfo *Info = GetPluginData(L)->Info;
@@ -1891,7 +1882,7 @@ static int far_CtrlGetCmdLineSelection(lua_State *L)
   return lua_pushnil(L), 1;
 }
 
-static int far_CtrlSetCmdLineSelection(lua_State *L)
+static int panel_SetCmdLineSelection(lua_State *L)
 {
   struct CmdLineSelect cms;
   PSInfo *Info = GetPluginData(L)->Info;
@@ -1955,17 +1946,17 @@ static int ChangePanelSelection(lua_State *L, BOOL op_set)
   return lua_pushboolean(L,1), 1;
 }
 
-static int far_CtrlSetSelection(lua_State *L) {
+static int panel_SetSelection(lua_State *L) {
   return ChangePanelSelection(L, TRUE);
 }
 
-static int far_CtrlClearSelection(lua_State *L) {
+static int panel_ClearSelection(lua_State *L) {
   return ChangePanelSelection(L, FALSE);
 }
 
 // CtrlSetUserScreen (handle)
 //   handle:       FALSE=INVALID_HANDLE_VALUE, TRUE=lua_State*
-static int far_CtrlSetUserScreen(lua_State *L)
+static int panel_SetUserScreen(lua_State *L)
 {
   PSInfo *Info = GetPluginData(L)->Info;
   HANDLE handle = OptHandle (L, 1);
@@ -1977,7 +1968,7 @@ static int far_CtrlSetUserScreen(lua_State *L)
 
 // CtrlGetUserScreen (handle)
 //   handle:       FALSE=INVALID_HANDLE_VALUE, TRUE=lua_State*
-static int far_CtrlGetUserScreen(lua_State *L)
+static int panel_GetUserScreen(lua_State *L)
 {
   PSInfo *Info = GetPluginData(L)->Info;
   HANDLE handle = OptHandle (L, 1);
@@ -1987,7 +1978,7 @@ static int far_CtrlGetUserScreen(lua_State *L)
   return 0;
 }
 
-static int far_CtrlIsActivePanel(lua_State *L)
+static int panel_IsActivePanel(lua_State *L)
 {
   PSInfo *Info = GetPluginData(L)->Info;
   HANDLE handle = OptHandle (L, 1);
@@ -2890,7 +2881,7 @@ static int far_SetDlgItem(lua_State *L)
   return SetDlgItem(L, hDlg, numitem, 3, Info);
 }
 
-static int far_Editor(lua_State *L)
+static int editor_Editor(lua_State *L)
 {
   PSInfo *Info = GetPluginData(L)->Info;
   const wchar_t* FileName = check_utf8_string(L, 1, NULL);
@@ -2909,7 +2900,7 @@ static int far_Editor(lua_State *L)
   return 1;
 }
 
-static int far_Viewer(lua_State *L)
+static int viewer_Viewer(lua_State *L)
 {
   PSInfo *Info = GetPluginData(L)->Info;
   const wchar_t* FileName = check_utf8_string(L, 1, NULL);
@@ -2925,7 +2916,7 @@ static int far_Viewer(lua_State *L)
   return 1;
 }
 
-static int far_ViewerGetInfo(lua_State *L)
+static int viewer_GetInfo(lua_State *L)
 {
   int ViewerId = luaL_optinteger(L, 1, -1);
   PSInfo *Info = GetPluginData(L)->Info;
@@ -2952,7 +2943,7 @@ static int far_ViewerGetInfo(lua_State *L)
   return 1;
 }
 
-static int far_ViewerQuit(lua_State *L)
+static int viewer_Quit(lua_State *L)
 {
   int ViewerId = luaL_optinteger(L, 1, -1);
   PSInfo *Info = GetPluginData(L)->Info;
@@ -2960,7 +2951,7 @@ static int far_ViewerQuit(lua_State *L)
   return 0;
 }
 
-static int far_ViewerRedraw(lua_State *L)
+static int viewer_Redraw(lua_State *L)
 {
   int ViewerId = luaL_optinteger(L, 1, -1);
   PSInfo *Info = GetPluginData(L)->Info;
@@ -2968,7 +2959,7 @@ static int far_ViewerRedraw(lua_State *L)
   return 0;
 }
 
-static int far_ViewerSelect(lua_State *L)
+static int viewer_Select(lua_State *L)
 {
   PSInfo *Info = GetPluginData(L)->Info;
   struct ViewerSelect vs;
@@ -2979,7 +2970,7 @@ static int far_ViewerSelect(lua_State *L)
   return 1;
 }
 
-static int far_ViewerSetPosition(lua_State *L)
+static int viewer_SetPosition(lua_State *L)
 {
   int ViewerId = luaL_optinteger(L, 1, -1);
   PSInfo *Info = GetPluginData(L)->Info;
@@ -3002,7 +2993,7 @@ static int far_ViewerSetPosition(lua_State *L)
   return 1;
 }
 
-static int far_ViewerSetMode(lua_State *L)
+static int viewer_SetMode(lua_State *L)
 {
   int success;
   struct ViewerSetMode vsm;
@@ -4692,118 +4683,135 @@ static int far_ColorDialog (lua_State *L)
 }
 
 const luaL_reg timer_methods[] = {
-  {"__gc",             timer_Close},
-  {"__tostring",       timer_tostring},
-  {"__index",          timer_index},
-  {"__newindex",       timer_newindex},
+  {"__gc",                timer_Close},
+  {"__tostring",          timer_tostring},
+  {"__index",             timer_index},
+  {"__newindex",          timer_newindex},
   {NULL, NULL},
 };
 
 const luaL_reg filefilter_methods[] = {
-  {"__gc",             filefilter_gc},
-  {"__tostring",       filefilter_tostring},
-  {"FreeFileFilter",   filefilter_Free},
-  {"OpenFiltersMenu",  filefilter_OpenMenu},
-  {"StartingToFilter", filefilter_Starting},
-  {"IsFileInFilter",   filefilter_IsFileInFilter},
+  {"__gc",                filefilter_gc},
+  {"__tostring",          filefilter_tostring},
+  {"FreeFileFilter",      filefilter_Free},
+  {"OpenFiltersMenu",     filefilter_OpenMenu},
+  {"StartingToFilter",    filefilter_Starting},
+  {"IsFileInFilter",      filefilter_IsFileInFilter},
   {NULL, NULL},
 };
 
 const luaL_reg dialog_methods[] = {
-  {"__gc",             far_DialogFree},
-  {"__tostring",       dialog_tostring},
+  {"__gc",                far_DialogFree},
+  {"__tostring",          dialog_tostring},
   {NULL, NULL},
 };
 
 const luaL_reg Settings_methods[] = {
-  {"__gc",             Settings_free},
-  {"__tostring",       Settings_tostring},
-  {"Delete",           Settings_delete},
-  {"Enum",             Settings_enum},
-  {"Free",             Settings_free},
-  {"Get",              Settings_get},
-  {"Set",              Settings_set},
-  {"CreateSubkey",     Settings_createsubkey},
-  {"OpenSubkey",       Settings_opensubkey},
+  {"__gc",                Settings_free},
+  {"__tostring",          Settings_tostring},
+  {"Delete",              Settings_delete},
+  {"Enum",                Settings_enum},
+  {"Free",                Settings_free},
+  {"Get",                 Settings_get},
+  {"Set",                 Settings_set},
+  {"CreateSubkey",        Settings_createsubkey},
+  {"OpenSubkey",          Settings_opensubkey},
+  {NULL, NULL},
+};
+
+const luaL_reg editor_funcs[] = {
+  {"AddColor",            editor_AddColor},
+  {"AddStackBookmark",    editor_AddStackBookmark},
+  {"ClearStackBookmarks", editor_ClearStackBookmarks},
+  {"DelColor",            editor_DelColor},
+  {"DeleteBlock",         editor_DeleteBlock},
+  {"DeleteChar",          editor_DeleteChar},
+  {"DeleteStackBookmark", editor_DeleteStackBookmark},
+  {"DeleteString",        editor_DeleteString},
+  {"Editor",              editor_Editor},
+  {"ExpandTabs",          editor_ExpandTabs},
+  {"GetBookmarks",        editor_GetBookmarks},
+  {"GetColor",            editor_GetColor},
+  {"GetFileName",         editor_GetFileName},
+  {"GetInfo",             editor_GetInfo},
+  {"GetSelection",        editor_GetSelection},
+  {"GetStackBookmarks",   editor_GetStackBookmarks},
+  {"GetString",           editor_GetString},
+  {"GetStringW",          editor_GetStringW},
+  {"InsertString",        editor_InsertString},
+  {"InsertText",          editor_InsertText},
+  {"InsertTextW",         editor_InsertTextW},
+  {"NextStackBookmark",   editor_NextStackBookmark},
+  {"PrevStackBookmark",   editor_PrevStackBookmark},
+  {"ProcessInput",        editor_ProcessInput},
+  {"Quit",                editor_Quit},
+  {"ReadInput",           editor_ReadInput},
+  {"RealToTab",           editor_RealToTab},
+  {"Redraw",              editor_Redraw},
+  {"SaveFile",            editor_SaveFile},
+  {"Select",              editor_Select},
+  {"SetKeyBar",           editor_SetKeyBar},
+  {"SetParam",            editor_SetParam},
+  {"SetPosition",         editor_SetPosition},
+  {"SetString",           editor_SetString},
+  {"SetStringW",          editor_SetStringW},
+  {"SetTitle",            editor_SetTitle},
+  {"TabToReal",           editor_TabToReal},
+  {"TurnOffMarkingBlock", editor_TurnOffMarkingBlock},
+  {"UndoRedo",            editor_UndoRedo},
+  {NULL, NULL},
+};
+
+const luaL_reg viewer_funcs[] = {
+  {"GetInfo",             viewer_GetInfo},
+  {"Quit",                viewer_Quit},
+  {"Redraw",              viewer_Redraw},
+  {"Select",              viewer_Select},
+  {"SetKeyBar",           viewer_SetKeyBar},
+  {"SetMode",             viewer_SetMode},
+  {"SetPosition",         viewer_SetPosition},
+  {"Viewer",              viewer_Viewer},
+  {NULL, NULL},
+};
+
+const luaL_reg panel_funcs[] = {
+//{"Control",             far_Control}, // done as multiple functions
+  {"CheckPanelsExist",    panel_CheckPanelsExist},
+  {"ClearSelection",      panel_ClearSelection},
+  {"ClosePanel",          panel_ClosePanel},
+  {"GetCmdLine",          panel_GetCmdLine},
+  {"GetCmdLinePos",       panel_GetCmdLinePos},
+  {"GetCmdLineSelection", panel_GetCmdLineSelection},
+  {"GetColumnTypes",      panel_GetColumnTypes},
+  {"GetColumnWidths",     panel_GetColumnWidths},
+  {"GetCurrentPanelItem", panel_GetCurrentPanelItem},
+  {"GetPanelDir",         panel_GetPanelDir},
+  {"GetPanelFormat",      panel_GetPanelFormat},
+  {"GetPanelHostFile",    panel_GetPanelHostFile},
+  {"GetPanelInfo",        panel_GetPanelInfo},
+  {"GetPanelItem",        panel_GetPanelItem},
+  {"GetSelectedPanelItem", panel_GetSelectedPanelItem},
+  {"GetUserScreen",       panel_GetUserScreen},
+  {"InsertCmdLine",       panel_InsertCmdLine},
+  {"IsActivePanel",       panel_IsActivePanel},
+  {"RedrawPanel",         panel_RedrawPanel},
+  {"SetCaseSensitiveSort", panel_SetCaseSensitiveSort},
+  {"SetCmdLine",          panel_SetCmdLine},
+  {"SetCmdLinePos",       panel_SetCmdLinePos},
+  {"SetCmdLineSelection", panel_SetCmdLineSelection},
+  {"SetNumericSort",      panel_SetNumericSort},
+  {"SetPanelDir",         panel_SetPanelDir},
+  {"SetSelection",        panel_SetSelection},
+  {"SetSortMode",         panel_SetSortMode},
+  {"SetSortOrder",        panel_SetSortOrder},
+  {"SetUserScreen",       panel_SetUserScreen},
+  {"SetViewMode",         panel_SetViewMode},
+  {"UpdatePanel",         panel_UpdatePanel},
   {NULL, NULL},
 };
 
 const luaL_reg far_funcs[] = {
   {"PluginStartupInfo",   far_PluginStartupInfo},
-
-  {"EditorAddColor",      far_EditorAddColor},
-  {"EditorAddStackBookmark",    far_EditorAddStackBookmark},
-  {"EditorClearStackBookmarks", far_EditorClearStackBookmarks},
-  {"EditorDelColor",      far_EditorDelColor},
-  {"EditorDeleteStackBookmark", far_EditorDeleteStackBookmark},
-  {"EditorGetStackBookmarks",   far_EditorGetStackBookmarks},
-  {"EditorNextStackBookmark",   far_EditorNextStackBookmark},
-  {"EditorPrevStackBookmark",   far_EditorPrevStackBookmark},
-  {"EditorDeleteBlock",   far_EditorDeleteBlock},
-  {"EditorDeleteChar",    far_EditorDeleteChar},
-  {"EditorDeleteString",  far_EditorDeleteString},
-  {"EditorExpandTabs",    far_EditorExpandTabs},
-  {"EditorGetBookmarks",  far_EditorGetBookmarks},
-  {"EditorGetColor",      far_EditorGetColor},
-  {"EditorGetInfo",       far_EditorGetInfo},
-  {"EditorGetString",     far_EditorGetString},
-  {"EditorGetStringW",    far_EditorGetStringW},
-  {"EditorInsertString",  far_EditorInsertString},
-  {"EditorInsertText",    far_EditorInsertText},
-  {"EditorInsertTextW",   far_EditorInsertTextW},
-  {"EditorProcessInput",  far_EditorProcessInput},
-  {"EditorProcessKey",    far_EditorProcessKey},
-  {"EditorQuit",          far_EditorQuit},
-  {"EditorReadInput",     far_EditorReadInput},
-  {"EditorRealToTab",     far_EditorRealToTab},
-  {"EditorRedraw",        far_EditorRedraw},
-  {"EditorSaveFile",      far_EditorSaveFile},
-  {"EditorSelect",        far_EditorSelect},
-  {"EditorSetKeyBar",     far_EditorSetKeyBar},
-  {"EditorSetParam",      far_EditorSetParam},
-  {"EditorSetPosition",   far_EditorSetPosition},
-  {"EditorSetString",     far_EditorSetString},
-  {"EditorSetStringW",    far_EditorSetStringW},
-  {"EditorSetTitle",      far_EditorSetTitle},
-  {"EditorTabToReal",     far_EditorTabToReal},
-  {"EditorTurnOffMarkingBlock", far_EditorTurnOffMarkingBlock},
-  {"EditorGetFileName",   far_EditorGetFileName},
-  {"EditorUndoRedo",      far_EditorUndoRedo},
-
-//{"Control",             far_Control}, // done as multiple functions
-  {"CtrlCheckPanelsExist",far_CtrlCheckPanelsExist},
-  {"CtrlClosePanel",      far_CtrlClosePanel},
-
-  {"CtrlGetCmdLine",      far_CtrlGetCmdLine},
-  {"CtrlGetCmdLinePos",   far_CtrlGetCmdLinePos},
-  {"CtrlGetCmdLineSelection", far_CtrlGetCmdLineSelection},
-  {"CtrlInsertCmdLine",   far_CtrlInsertCmdLine},
-  {"CtrlSetCmdLine",      far_CtrlSetCmdLine},
-  {"CtrlSetCmdLinePos",   far_CtrlSetCmdLinePos},
-  {"CtrlSetCmdLineSelection", far_CtrlSetCmdLineSelection},
-
-  {"CtrlGetPanelInfo",    far_CtrlGetPanelInfo},
-  {"CtrlGetUserScreen",   far_CtrlGetUserScreen},
-  {"CtrlRedrawPanel",     far_CtrlRedrawPanel},
-  {"CtrlSetNumericSort",  far_CtrlSetNumericSort},
-  {"CtrlSetCaseSensitiveSort",  far_CtrlSetCaseSensitiveSort},
-  {"CtrlSetPanelDir",     far_CtrlSetPanelDir},
-  {"CtrlSetSelection",    far_CtrlSetSelection},
-  {"CtrlClearSelection",  far_CtrlClearSelection},
-  {"CtrlSetSortMode",     far_CtrlSetSortMode},
-  {"CtrlSetSortOrder",    far_CtrlSetSortOrder},
-  {"CtrlSetUserScreen",   far_CtrlSetUserScreen},
-  {"CtrlSetViewMode",     far_CtrlSetViewMode},
-  {"CtrlUpdatePanel",     far_CtrlUpdatePanel},
-  {"CtrlGetPanelItem",    far_CtrlGetPanelItem},
-  {"CtrlGetSelectedPanelItem", far_CtrlGetSelectedPanelItem},
-  {"CtrlGetCurrentPanelItem",  far_CtrlGetCurrentPanelItem},
-  {"CtrlGetPanelDir",     far_CtrlGetPanelDir},
-  {"CtrlGetPanelFormat",  far_CtrlGetPanelFormat},
-  {"CtrlGetPanelHostFile",far_CtrlGetPanelHostFile},
-  {"CtrlGetColumnTypes",  far_CtrlGetColumnTypes},
-  {"CtrlGetColumnWidths", far_CtrlGetColumnWidths},
-  {"CtrlIsActivePanel",   far_CtrlIsActivePanel},
 
   {"DialogInit",          far_DialogInit},
   {"DialogRun",           far_DialogRun},
@@ -4811,7 +4819,6 @@ const luaL_reg far_funcs[] = {
   {"SendDlgMessage",      far_SendDlgMessage},
   {"GetDlgItem",          far_GetDlgItem},
   {"SetDlgItem",          far_SetDlgItem},
-  {"Editor",              far_Editor},
   {"GetDirList",          far_GetDirList},
   {"GetMsg",              far_GetMsg},
   {"GetPluginDirList",    far_GetPluginDirList},
@@ -4820,14 +4827,6 @@ const luaL_reg far_funcs[] = {
   {"RestoreScreen",       far_RestoreScreen},
   {"SaveScreen",          far_SaveScreen},
   {"Text",                far_Text},
-  {"Viewer",              far_Viewer},
-  {"ViewerGetInfo",       far_ViewerGetInfo},
-  {"ViewerQuit",          far_ViewerQuit},
-  {"ViewerRedraw",        far_ViewerRedraw},
-  {"ViewerSelect",        far_ViewerSelect},
-  {"ViewerSetKeyBar",     far_ViewerSetKeyBar},
-  {"ViewerSetPosition",   far_ViewerSetPosition},
-  {"ViewerSetMode",       far_ViewerSetMode},
   {"ShowHelp",            far_ShowHelp},
   {"InputBox",            far_InputBox},
   {"AdvControl",          far_AdvControl},
@@ -4850,7 +4849,6 @@ const luaL_reg far_funcs[] = {
   {"SetRegKey",           far_SetRegKey},
   {"GetRegKey",           far_GetRegKey},
   {"DeleteRegKey",        far_DeleteRegKey},
-  {"EditorGetSelection",  far_EditorGetSelection},
   {"CopyToClipboard",     far_CopyToClipboard},
   {"PasteFromClipboard",  far_PasteFromClipboard},
   {"FarInputRecordToName",far_FarInputRecordToName},
@@ -4925,9 +4923,8 @@ const luaL_reg win_funcs[] = {
   {"Utf8ToOem",           ustring_Utf8ToOem},
   {"Utf8ToUtf16",         ustring_Utf8ToUtf16},
   {"Uuid",                ustring_Uuid},
-
-  {"sub",                 ustring_sub},
-  {"len",                 ustring_len},
+  {"subW",                ustring_sub},
+  {"lenW",                ustring_len},
 
   {NULL, NULL}
 };
@@ -4964,6 +4961,10 @@ static int luaopen_far (lua_State *L)
   lua_setfield(L, -3, "Flags");
   lua_setfield(L, LUA_REGISTRYINDEX, FAR_FLAGSTABLE);
   SetFarColors(L);
+
+  luaL_register(L, "editor", editor_funcs);
+  luaL_register(L, "viewer", viewer_funcs);
+  luaL_register(L, "panel",  panel_funcs);
 
   luaL_newmetatable(L, FarFileFilterType);
   lua_pushvalue(L,-1);
