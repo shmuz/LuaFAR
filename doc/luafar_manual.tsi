@@ -2056,7 +2056,7 @@ id=153
 lv=3
 dt=Text
 nm=far.AdvControl
-mtime=3517906733
+mtime=3524312523
 <article>
 #_Result = far.AdvControl (Command, Param1, Param2)
 #_
@@ -2086,9 +2086,12 @@ mtime=3517906733
 #_    Result:  integer
 #_
 #_ACTL_SETCURRENTWINDOW,
-#_ACTL_WAITKEY,
 #_ACTL_SYNCHRO:
 #_    Param1:  integer
+#_    Result:  integer
+#_
+#_ACTL_WAITKEY:
+#_    Param2:  table InputRecord, or string (e.g. "CtrlF12"), or nil (for any key)
 #_    Result:  integer
 #_
 #_ACTL_GETCOLOR:
@@ -2158,7 +2161,7 @@ mtime=3517906733
 #_  AdvControl
 #_
 #_@@@
-#_<lua>Links = { FarColor="427.html" }</lua>
+#_<lua>Links = { FarColor="427.html", InputRecord="187.html" }</lua>
 #_
 </article>
 </node>
@@ -10115,7 +10118,7 @@ id=195
 lv=1
 dt=Text
 nm=Far Manager 3.0 Plugin SDK
-mtime=3513584627
+mtime=3524282308
 <article>
 #_<markdown>
 #_    Copyright © 1996 Eugene Roshal
@@ -10146,9 +10149,9 @@ mtime=3513584627
 #_
 #_    EXCEPTION:
 #_    Far Manager plugins that use only the following header files from this
-#_    distribution (none or any): farcolor.hpp, farkeys.hpp, plugin.hpp,
-#_    farcolorW.pas, farkeysW.pas and pluginW.pas; can be distributed under any other
-#_    possible license with no implications from the above license on them.
+#_    distribution (none or any): farcolor.hpp, plugin.hpp, farcolorW.pas and
+#_    pluginW.pas; can be distributed under any other possible license with no
+#_    implications from the above license on them.
 #_
 </article>
 </node>

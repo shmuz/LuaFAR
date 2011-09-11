@@ -109,19 +109,18 @@ int _Gmatch(lua_State *L, int is_wide)
   const wchar_t* Text = is_wide ? check_utf16_string(L, 1, &len) : check_utf8_string(L, 1, &len);
   const wchar_t* pat = check_regex_pattern(L, 2, 3);
   FARAPIREGEXPCONTROL RegExpControl = GetRegExpControl(L);
-  TFarRegex* fr = push_far_regex(L, RegExpControl, pat);
-  struct RegExpSearch* pData = (struct RegExpSearch*)lua_newuserdata(L, sizeof(struct RegExpSearch));
+  TFarRegex* fr = push_far_regex(L, RegExpControl, pat); // upvalue 1
+  struct RegExpSearch* pData = (struct RegExpSearch*)lua_newuserdata(L, sizeof(struct RegExpSearch)); // upvalue 2
   memset(pData, 0, sizeof(struct RegExpSearch));
   pData->Text = Text;
   pData->Position = 0;
   pData->Length = len;
   pData->Count = RegExpControl(fr->hnd, RECTL_BRACKETSCOUNT, 0, 0);
-  pData->Match = (struct RegExpMatch*)lua_newuserdata(L, pData->Count*sizeof(struct RegExpMatch));
-  pData->Match[0].end = -1; //also pData->Match to prevent it being gc'ed
-  if (is_wide)
-    lua_pushcclosure(L, regex_gmatch_closureW, 3);
-  else
-    lua_pushcclosure(L, regex_gmatch_closure, 3);
+  /* upvalues 3 and 4 must be kept to prevent values from being garbage-collected */
+  pData->Match = (struct RegExpMatch*)lua_newuserdata(L, pData->Count*sizeof(struct RegExpMatch)); // upvalue 3
+  pData->Match[0].end = -1;
+  lua_pushvalue(L, 1); // upvalue 4
+  lua_pushcclosure(L, is_wide ? regex_gmatch_closureW : regex_gmatch_closure, 4);
   return 1;
 }
 

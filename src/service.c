@@ -1239,6 +1239,21 @@ static void FillInputRecord(lua_State *L, int pos, INPUT_RECORD *ir)
   lua_pop(L, 1);
 }
 
+static void OptInputRecord (lua_State* L, TPluginData *pd, int pos, INPUT_RECORD* ir)
+{
+  if (lua_istable(L, pos))
+    FillInputRecord(L, pos, ir);
+  else if (lua_type(L, pos) == LUA_TSTRING) {
+    wchar_t* name = check_utf8_string(L, pos, NULL);
+    if (!pd->FSF->FarNameToInputRecord(name, ir))
+      luaL_argerror(L, pos, "invalid key");
+  }
+  else {
+    memset(ir, 0, sizeof(INPUT_RECORD));
+    ir->EventType = KEY_EVENT;
+  }
+}
+
 static int editor_ProcessInput(lua_State *L)
 {
   int EditorId = luaL_optinteger(L, 1, -1);
@@ -1334,7 +1349,10 @@ static int far_Menu(lua_State *L)
     if (GetBoolFromTable(L, "hidden"))    pItem->Flags |= MIF_HIDDEN;
     //-------------------------------------------------------------------------
     lua_getfield(L, -1, "AccelKey");
-    if (lua_isnumber(L,-1)) pItem->AccelKey = lua_tointeger(L,-1);
+    if (lua_istable(L, -1)) {
+      pItem->AccelKey.VirtualKeyCode = GetOptIntFromTable(L, "VirtualKeyCode", 0);
+      pItem->AccelKey.ControlKeyState = GetOptIntFromTable(L, "ControlKeyState", 0);
+    }
     lua_pop(L, 1);
   }
   if (SelectIndex > 0 && SelectIndex <= ItemsNumber)
@@ -3548,6 +3566,7 @@ static int far_AdvControl (lua_State *L)
   struct WindowType wt;
   SMALL_RECT sr;
   COORD coord;
+  INPUT_RECORD ir;
 
   switch (Command) {
     default:
@@ -3569,8 +3588,14 @@ static int far_AdvControl (lua_State *L)
       break;
 
     case ACTL_SETCURRENTWINDOW:
-    case ACTL_WAITKEY:
       Param1 = luaL_checkinteger(L, 2);
+      break;
+
+    case ACTL_WAITKEY:
+      if (!lua_isnoneornil(L, 3)) {
+        OptInputRecord(L, pd, 3, &ir);
+        Param2 = &ir;
+      }
       break;
 
     case ACTL_GETCOLOR:
@@ -3722,21 +3747,6 @@ static int far_AdvControl (lua_State *L)
   return 1;
 }
 
-static void CheckAKey (lua_State* L, TPluginData *pd, int pos, INPUT_RECORD* ir)
-{
-  if (lua_istable(L, pos))
-    FillInputRecord(L, pos, ir);
-  else if (lua_type(L, pos) == LUA_TSTRING) {
-    wchar_t* name = check_utf8_string(L, pos, NULL);
-    if (!pd->FSF->FarNameToInputRecord(name, ir))
-      luaL_argerror(L, pos, "invalid key");
-  }
-  else {
-    memset(ir, 0, sizeof(INPUT_RECORD));
-    ir->EventType = KEY_EVENT;
-  }
-}
-
 static int far_MacroLoadAll (lua_State* L)
 {
   TPluginData *pd = GetPluginData(L);
@@ -3774,7 +3784,7 @@ static int MacroSendString (lua_State* L, int Param1)
 
   smt->SequenceText = check_utf8_string(L, 1, NULL);
   smt->Flags = CheckFlags(L, 2);
-  CheckAKey(L, pd, 3, &smt->AKey);
+  OptInputRecord(L, pd, 3, &smt->AKey);
   if (Param1 == MSSC_POST) {
     lua_pushboolean(L, pd->Info->MacroControl(pd->PluginId, MCTL_SENDSTRING, Param1, smt));
   }
@@ -3830,7 +3840,7 @@ static int far_MacroAdd (lua_State* L)
   luaL_checktype(L, 1, LUA_TFUNCTION);
   data.SequenceText = check_utf8_string(L, 2, NULL);
   data.Flags = CheckFlags(L, 3);
-  CheckAKey(L, pd, 4, &data.AKey);
+  OptInputRecord(L, pd, 4, &data.AKey);
   data.Description = opt_utf8_string(L, 5, L"");
 
   lua_pushvalue(L, 1);
