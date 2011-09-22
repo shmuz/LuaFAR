@@ -2704,6 +2704,19 @@ INT_PTR LF_DlgProc (lua_State *L, HANDLE hDlg, int Msg, int Param1, void *Param2
     PutIntToTable(L, "Y", coord->Y);
   }
 
+  else if (Msg == DN_GETVALUE) {
+    struct TFarGetValue *fgv = (struct TFarGetValue*) Param2;
+    lua_newtable(L);
+    PutIntToTable(L, "GetType", fgv->GetType);
+    PutIntToTable(L, "ValType", fgv->Val.type);
+    if (fgv->Val.type == FMVT_INTEGER)
+      PutFlagsToTable(L, "Value", fgv->Val.Value.i);
+    else if (fgv->Val.type == FMVT_STRING)
+      PutWStrToTable(L, "Value", fgv->Val.Value.s, -1);
+    else if (fgv->Val.type == FMVT_DOUBLE)
+      PutNumToTable(L, "Value", fgv->Val.Value.d);
+  }
+
   else
     lua_pushinteger (L, (INT_PTR)Param2); //+6
 
@@ -2744,6 +2757,28 @@ INT_PTR LF_DlgProc (lua_State *L, HANDLE hDlg, int Msg, int Param1, void *Param2
     if ((ret = (INT_PTR)utf8_to_utf16(L, -1, NULL)) != 0) {
       lua_pushvalue(L, -1);                // keep stack balanced
       lua_setfield(L, -3, "helpstring");   // protect from garbage collector
+    }
+  }
+
+  else if (Msg == DN_GETVALUE) {
+    if ((ret = lua_istable(L,-1)) != 0) {
+      struct TFarGetValue *fgv = (struct TFarGetValue*) Param2;
+      fgv->Val.type = GetOptIntFromTable(L, "ValType", FMVT_UNKNOWN);
+      lua_getfield(L, -1, "Value");
+      if (fgv->Val.type == FMVT_INTEGER)
+        fgv->Val.Value.i = get_env_flag (L, -1, NULL);
+      else if (fgv->Val.type == FMVT_STRING) {
+        if ((fgv->Val.Value.s = utf8_to_utf16(L, -1, NULL)) != 0) {
+          lua_pushvalue(L, -1);                   // keep stack balanced
+          lua_setfield(L, -4, "getvaluestring");  // protect from garbage collector
+        }
+        else ret = 0;
+      }
+      else if (fgv->Val.type == FMVT_DOUBLE)
+        fgv->Val.Value.d = lua_tonumber(L, -1);
+      else
+        ret = 0;
+      lua_pop(L, 1);
     }
   }
 

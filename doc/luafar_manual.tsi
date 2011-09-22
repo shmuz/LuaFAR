@@ -5483,6 +5483,37 @@ mtime=3477135407
 </article>
 </node>
 <node>
+id=454
+lv=3
+dt=Text
+nm=DN_GETVALUE
+ctime=3525638668
+mtime=3525668226
+<article>
+#_**Param1**
+#_    integer; according to Far API 
+#_
+#_**Param2**
+#_    table
+#_      GetType: integer
+#_      ValType: integer (enum *FARMACROVARTYPE*)
+#_      Value:   nil, flags, string, or number (depends on ValType)
+#_
+#_**Return**
+#_    table
+#_      ValType: integer (enum *FARMACROVARTYPE*)
+#_      Value:   flags, string, or number (depends on ValType)
+#_
+#_**Note**
+#_    If the returned value is not a table containing valid values,
+#_    then 0 is returned to Far.
+#_
+#_@@@
+#_
+#_
+</article>
+</node>
+<node>
 id=306
 lv=3
 dt=Text
