@@ -35,6 +35,7 @@ struct FarStandardFunctions FSF;
 GUID PluginId;
 TPluginData PluginData = { &Info, &FSF, &PluginId, DlgProc, MacroCallback, NULL, NULL };
 wchar_t PluginName[512], PluginDir[512];
+int Init1_Done = 0, Init2_Done = 0; // Ensure intializations are done only once
 //---------------------------------------------------------------------------
 
 BOOL WINAPI DllMain (HANDLE hDll, DWORD dwReason, LPVOID lpReserved)
@@ -69,7 +70,10 @@ int __declspec(dllexport) luaopen_luaplug (lua_State *L)
 void LUAPLUG GetGlobalInfoW(struct GlobalInfo *globalInfo)
 {
   if (LS) {
-    LF_InitLuaState1(LS, FUNC_OPENLIBS);
+    if (!Init1_Done) {
+      LF_InitLuaState1(LS, FUNC_OPENLIBS);
+      Init1_Done = 1;
+    }
     if (LF_GetGlobalInfo(LS, globalInfo, PluginDir))
       PluginId = globalInfo->Guid;
     else {
@@ -82,7 +86,8 @@ void LUAPLUG GetGlobalInfoW(struct GlobalInfo *globalInfo)
 
 void LUAPLUG SetStartupInfoW(const struct PluginStartupInfo *aInfo)
 {
-  if (LS) {
+  if (LS && !Init2_Done) {
+    Init2_Done = 1;
     Info = *aInfo;
     FSF = *aInfo->FSF;
     Info.FSF = &FSF;

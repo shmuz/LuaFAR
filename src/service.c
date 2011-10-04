@@ -9,6 +9,10 @@
 #include "ustring.h"
 #include "version.h"
 
+#ifndef LUADLL
+#define LUADLL "lua5.1.dll"
+#endif
+
 typedef struct PluginStartupInfo PSInfo;
 typedef unsigned __int64 UINT64;
 
@@ -553,10 +557,15 @@ static int _EditorGetString(lua_State *L, int is_wide)
 
   if (res) {
     if (fast == 2) {
-      if (is_wide)
+      if (is_wide) {
         push_utf16_string (L, egs.StringText, egs.StringLength);
-      else
+        push_utf16_string (L, egs.StringEOL, -1);
+      }
+      else {
         push_utf8_string (L, egs.StringText, egs.StringLength);
+        push_utf8_string (L, egs.StringEOL, -1);
+      }
+      return 2;
     }
     else {
       lua_createtable(L, 0, 6);
@@ -1752,6 +1761,10 @@ static int panel_GetColumnWidths(lua_State *L) {
   return get_string_info(L, FCTL_GETCOLUMNWIDTHS);
 }
 
+static int panel_GetPanelPrefix(lua_State *L) {
+  return get_string_info(L, FCTL_GETPANELPREFIX);
+}
+
 static int panel_RedrawPanel(lua_State *L)
 {
   PSInfo *Info = GetPluginData(L)->Info;
@@ -2517,8 +2530,8 @@ static int far_SendDlgMessage (lua_State *L)
     case DM_LISTGETTITLES:
       flt.Title = buf;
       flt.Bottom = buf + sizeof(buf)/2;
-      flt.TitleLen = sizeof(buf)/2;
-      flt.BottomLen = sizeof(buf)/2;
+      flt.TitleSize = sizeof(buf)/2;
+      flt.BottomSize = sizeof(buf)/2;
       res = Info->SendDlgMessage (hDlg, Msg, Param1, &flt);
       if (res) {
         lua_createtable(L,0,2);
@@ -4835,6 +4848,7 @@ const luaL_reg panel_funcs[] = {
   {"GetPanelHostFile",    panel_GetPanelHostFile},
   {"GetPanelInfo",        panel_GetPanelInfo},
   {"GetPanelItem",        panel_GetPanelItem},
+  {"GetPanelPrefix",      panel_GetPanelPrefix},
   {"GetSelectedPanelItem", panel_GetSelectedPanelItem},
   {"GetUserScreen",       panel_GetUserScreen},
   {"InsertCmdLine",       panel_InsertCmdLine},
@@ -5164,13 +5178,28 @@ static const luaL_Reg lualibs[] = {
   {NULL, NULL}
 };
 
-
 static void luaL_openlibs2 (lua_State *L) {
   const luaL_Reg *lib = lualibs;
   for (; lib->func; lib++) {
     lua_pushcfunction(L, lib->func);
     lua_pushstring(L, lib->name);
     lua_call(L, 1, 0);
+  }
+
+  // Try to load LuaJIT 2.0 libraries. This is done dynamically to ensure that
+  // LuaFAR works with either Lua 5.1 or LuaJIT 2.0
+  HMODULE hLib = GetModuleHandle(LUADLL);
+  if (hLib) {
+    static const char* names[] = { "luaopen_bit", "luaopen_ffi", "luaopen_jit", NULL };
+    const char** pName;
+    for (pName=names; *pName; pName++) {
+      lua_CFunction func = (lua_CFunction) GetProcAddress(hLib, *pName);
+      if (func) {
+        lua_pushcfunction(L, func);
+        lua_pushstring(L, *pName + 8); // skip "luaopen_" prefix
+        lua_call(L, 1, 0);
+      }
+    }
   }
 }
 

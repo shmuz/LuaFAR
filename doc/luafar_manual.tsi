@@ -3001,6 +3001,31 @@ nm=panel.GetPanelItem
 </article>
 </node>
 <node>
+id=455
+lv=3
+dt=Text
+nm=panel.GetPanelPrefix
+ctime=3525948213
+mtime=3525950289
+<article>
+#_Prefix = panel.GetPanelPrefix ([handle], whatpanel)
+#_
+#_**Parameters:**
+#_  handle:    panel handle, or nil
+#_  whatpanel: 1=active panel; 0=passive panel;
+#_
+#_**Returns:**
+#_  Prefix:  string, or nil
+#_
+#_**Far API used:**
+#_  Control, FCTL_GETPANELPREFIX
+#_
+#_@@@
+#_
+#_
+</article>
+</node>
+<node>
 id=254
 lv=3
 dt=Text
@@ -3847,13 +3872,15 @@ id=31
 lv=3
 dt=Text
 nm=editor.GetString
-mtime=3512374210
+mtime=3526702606
 <article>
 #_**Note:**
 #_--This function is an extension over its prototype in Far API.
 #_--There are concerns with regards to its API.
 #_
 #_LineInfo = editor.GetString (EditorId, StringNumber, Mode)
+#_    or
+#_StringText, StringEOL = editor.GetString (EditorId, StringNumber, 2)
 #_
 #_**Parameters:**
 #_  EditorId:     integer (default=-1)
@@ -3861,8 +3888,7 @@ mtime=3512374210
 #_  Mode:         integer (0=normal; 1=fast; 2=fastest; default=0)
 #_
 #_**Returns:**
-#_  LineInfo: table (mode<2), or string (mode==2), or nil
-#_    (if mode==2, only StringText is returned)
+#_  LineInfo: table (mode<2), or 2 strings (mode==2), or nil
 #_    fields of LineInfo:
 #_      StringNumber: integer, 0-based
 #_      StringText:   string
@@ -4278,13 +4304,13 @@ id=44
 lv=3
 dt=Text
 nm=editor.SetString
-mtime=3507542532
+mtime=3526712409
 <article>
 #_result = editor.SetString (EditorId, StringNumber, StringText, StringEOL)
 #_
 #_**Parameters:**
 #_  EditorId:     integer, or nil
-#_  StringNumber: integer, or nil
+#_  StringNumber: integer (0-based), or nil
 #_  StringText:   string
 #_  StringEOL:    string, or nil
 #_
@@ -7061,7 +7087,7 @@ id=185
 lv=3
 dt=Text
 nm=far.CPluginStartupInfo
-mtime=3510766460
+mtime=3526661259
 <article>
 #_Info = far.CPluginStartupInfo()
 #_
@@ -7072,8 +7098,8 @@ mtime=3510766460
 #_  Info: light userdata (a pointer to struct PluginStartupInfo)
 #_
 #_**Description:**
-#_  The function gives access to Far Standard Functions (FSF)
-#_  to DLL's other than the plugin DLL.
+#_  The function is used to give access to Far functions to DLL's other
+#_  than the plugin DLL.
 #_
 #_@@@
 #_

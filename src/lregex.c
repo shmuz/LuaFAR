@@ -72,13 +72,8 @@ int _regex_gmatch_closure(lua_State *L, int is_wide)
   TFarRegex* fr = (TFarRegex*)lua_touserdata(L, lua_upvalueindex(1));
   struct RegExpSearch* pData = (struct RegExpSearch*)lua_touserdata(L, lua_upvalueindex(2));
   FARAPIREGEXPCONTROL RegExpControl = GetRegExpControl(L);
-  int prev_end = pData->Match[0].end;
-  while (RegExpControl(fr->hnd, RECTL_SEARCHEX, 0, pData)) {
-    if (pData->Match[0].end == prev_end) {
-      if (++pData->Position > pData->Length)
-        break;
-      continue;
-    }
+
+  if ((pData->Position <= pData->Length) && RegExpControl(fr->hnd, RECTL_SEARCHEX, 0, pData)) {
     int i, skip = pData->Count>1 ? 1 : 0;
     for(i=skip; i<pData->Count; i++) {
       if (pData->Match[i].start >= 0) {

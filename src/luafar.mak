@@ -5,8 +5,8 @@ include ../config.mak
 ARCH= -m32
 CC= gcc
 CFLAGS= -O2 -W -Wall -I$(INC_FAR) -I$(INC_LUA) -DBUILD_DLL -DWINVER=0x500 \
-        $(ARCH)
-MYLDFLAGS= -L$(LUADLLPATH) -l$(LUADLLNAME) -shared $(ARCH) -s -lrpcrt4
+        -DLUADLL=\"$(LUADLLNAME).dll\" $(ARCH)
+MYLDFLAGS= -L$(PATH_EXE) -l$(LUADLLNAME) -shared $(ARCH) -s -lrpcrt4
 
 ifeq ($(ARCH),-m64)
   RESTARGET= -F pe-x86-64
