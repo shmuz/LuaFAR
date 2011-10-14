@@ -3461,23 +3461,14 @@ static int far_LIsUpper (lua_State *L)
 static int convert_buf (lua_State *L, int command)
 {
   struct FarStandardFunctions *FSF = GetPluginData(L)->FSF;
-  const wchar_t* src = check_utf8_string(L, 1, NULL);
   int len;
-  if (lua_isnoneornil(L,2))
-    len = wcslen(src);
-  else if (lua_isnumber(L,2)) {
-    len = lua_tointeger(L,2);
-    if (len < 0) len = 0;
-  }
-  else
-    return luaL_typerror(L, 3, "optional number");
-  wchar_t* dest = (wchar_t*)lua_newuserdata(L, (len+1)*sizeof(wchar_t));
-  wcsncpy(dest, src, len+1);
+  wchar_t* dest = check_utf8_string(L, 1, &len);
   if (command=='l')
     FSF->LLowerBuf(dest,len);
   else
     FSF->LUpperBuf(dest,len);
-  return push_utf8_string(L, dest, -1), 1;
+  push_utf8_string(L, dest, len);
+  return 1;
 }
 
 static int far_LLowerBuf (lua_State *L) {
