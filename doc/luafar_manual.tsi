@@ -5884,7 +5884,7 @@ lv=3
 dt=Text
 nm=obj:Enum
 ctime=3507637655
-mtime=3507643194
+mtime=3528578487
 <article>
 #_result = obj:Enum (Root)
 #_
@@ -5894,13 +5894,20 @@ mtime=3507643194
 #_**Returns:**
 #_  result: table (array of tables), or nil
 #_    Each table in the array has the following fields:
-#_      Name: string
-#_      Type: integer
+#_      if *obj* was created with plugin's GUID:
+#_        Name:     string
+#_        Type:     integer
+#_      if *obj* was created with Far's GUID:
+#_        Name:     string
+#_        Param:    string
+#_        PluginId: string (GUID)
+#_        File:     string
+#_        Time:     number (number of milliseconds elapsed since January 1, 1601)
+#_        Lock:     boolean
 #_
 #_**Far API used:**
 #_  SettingsControl
 #_
-#_@@@
 #_
 </article>
 </node>

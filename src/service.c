@@ -2718,16 +2718,16 @@ INT_PTR LF_DlgProc (lua_State *L, HANDLE hDlg, int Msg, int Param1, void *Param2
   }
 
   else if (Msg == DN_GETVALUE) {
-    struct TFarGetValue *fgv = (struct TFarGetValue*) Param2;
+    struct FarGetValue *fgv = (struct FarGetValue*) Param2;
     lua_newtable(L);
-    PutIntToTable(L, "GetType", fgv->GetType);
-    PutIntToTable(L, "ValType", fgv->Val.type);
-    if (fgv->Val.type == FMVT_INTEGER)
-      PutFlagsToTable(L, "Value", fgv->Val.Value.i);
-    else if (fgv->Val.type == FMVT_STRING)
-      PutWStrToTable(L, "Value", fgv->Val.Value.s, -1);
-    else if (fgv->Val.type == FMVT_DOUBLE)
-      PutNumToTable(L, "Value", fgv->Val.Value.d);
+    PutIntToTable(L, "GetType", fgv->Type);
+    PutIntToTable(L, "ValType", fgv->Value.Type);
+    if (fgv->Value.Type == FMVT_INTEGER)
+      PutFlagsToTable(L, "Value", fgv->Value.Value.Integer);
+    else if (fgv->Value.Type == FMVT_STRING)
+      PutWStrToTable(L, "Value", fgv->Value.Value.String, -1);
+    else if (fgv->Value.Type == FMVT_DOUBLE)
+      PutNumToTable(L, "Value", fgv->Value.Value.Double);
   }
 
   else
@@ -2775,20 +2775,20 @@ INT_PTR LF_DlgProc (lua_State *L, HANDLE hDlg, int Msg, int Param1, void *Param2
 
   else if (Msg == DN_GETVALUE) {
     if ((ret = lua_istable(L,-1)) != 0) {
-      struct TFarGetValue *fgv = (struct TFarGetValue*) Param2;
-      fgv->Val.type = GetOptIntFromTable(L, "ValType", FMVT_UNKNOWN);
+      struct FarGetValue *fgv = (struct FarGetValue*) Param2;
+      fgv->Value.Type = GetOptIntFromTable(L, "ValType", FMVT_UNKNOWN);
       lua_getfield(L, -1, "Value");
-      if (fgv->Val.type == FMVT_INTEGER)
-        fgv->Val.Value.i = get_env_flag (L, -1, NULL);
-      else if (fgv->Val.type == FMVT_STRING) {
-        if ((fgv->Val.Value.s = utf8_to_utf16(L, -1, NULL)) != 0) {
+      if (fgv->Value.Type == FMVT_INTEGER)
+        fgv->Value.Value.Integer = get_env_flag (L, -1, NULL);
+      else if (fgv->Value.Type == FMVT_STRING) {
+        if ((fgv->Value.Value.String = utf8_to_utf16(L, -1, NULL)) != 0) {
           lua_pushvalue(L, -1);                   // keep stack balanced
           lua_setfield(L, -4, "getvaluestring");  // protect from garbage collector
         }
         else ret = 0;
       }
-      else if (fgv->Val.type == FMVT_DOUBLE)
-        fgv->Val.Value.d = lua_tonumber(L, -1);
+      else if (fgv->Value.Type == FMVT_DOUBLE)
+        fgv->Value.Value.Double = lua_tonumber(L, -1);
       else
         ret = 0;
       lua_pop(L, 1);
@@ -3945,7 +3945,7 @@ static void pushSystemTime (lua_State *L, const SYSTEMTIME *st)
 
 static void pushFileTime (lua_State *L, const FILETIME *ft)
 {
-  long long llFileTime = ft->dwLowDateTime + 0x100000000ll * ft->dwHighDateTime;
+  long long llFileTime = ft->dwLowDateTime + 0x100000000LL * ft->dwHighDateTime;
   llFileTime /= 10000;
   lua_pushnumber(L, (double)llFileTime);
 }
@@ -4508,6 +4508,12 @@ static int win_ShellExecute (lua_State *L)
   return 1;
 }
 
+typedef struct {
+  HANDLE Handle;
+  BOOL IsFarSettings;
+} FarSettingsUdata;
+
+
 static int far_CreateSettings (lua_State *L)
 {
   TPluginData *pd = GetPluginData(L);
@@ -4521,7 +4527,9 @@ static int far_CreateSettings (lua_State *L)
 
   lua_getfield(L, LUA_REGISTRYINDEX, SettingsHandles);
 
-  *(HANDLE*)lua_newuserdata(L, sizeof(HANDLE)) = fsc.Handle;
+  FarSettingsUdata *udata = (FarSettingsUdata*)lua_newuserdata(L, sizeof(FarSettingsUdata));
+  udata->Handle = fsc.Handle;
+  udata->IsFarSettings = !memcmp(&fsc.Guid, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0", 16);
   luaL_getmetatable(L, SettingsType);
   lua_setmetatable(L, -2);
 
@@ -4531,25 +4539,25 @@ static int far_CreateSettings (lua_State *L)
   return 1;
 }
 
-static HANDLE* GetSettingsHandle (lua_State *L, int pos)
+static FarSettingsUdata* GetSettingsUdata (lua_State *L, int pos)
 {
   return luaL_checkudata(L, pos, SettingsType);
 }
 
-static HANDLE CheckSettings (lua_State *L, int pos)
+static FarSettingsUdata* CheckSettings (lua_State *L, int pos)
 {
-  HANDLE *h = GetSettingsHandle(L, pos);
-  if (*h == INVALID_HANDLE_VALUE) {
+  FarSettingsUdata* udata = GetSettingsUdata(L, pos);
+  if (udata->Handle == INVALID_HANDLE_VALUE) {
     const char* s = lua_pushfstring(L, "attempt to access a closed %s", SettingsType);
     luaL_argerror(L, pos, s);
   }
-  return *h;
+  return udata;
 }
 
 static int Settings_set (lua_State *L)
 {
   struct FarSettingsItem fsi;
-  HANDLE h = CheckSettings(L, 1);
+  FarSettingsUdata* udata = CheckSettings(L, 1);
   fsi.Root = luaL_checkinteger(L, 2);
   fsi.Name = opt_utf8_string(L, 3, NULL);
   fsi.Type = (enum FARSETTINGSTYPES) check_env_flag(L, 4);
@@ -4564,7 +4572,7 @@ static int Settings_set (lua_State *L)
   else
     return lua_pushboolean(L,0), 1;
 
-  int res = Info->SettingsControl(h, SCTL_SET, 0, &fsi);
+  int res = Info->SettingsControl(udata->Handle, SCTL_SET, 0, &fsi);
   lua_pushboolean(L, res);
   return 1;
 }
@@ -4572,12 +4580,12 @@ static int Settings_set (lua_State *L)
 static int Settings_get (lua_State *L)
 {
   struct FarSettingsItem fsi;
-  HANDLE h = CheckSettings(L, 1);
+  FarSettingsUdata* udata = CheckSettings(L, 1);
   fsi.Root = luaL_checkinteger(L, 2);
   fsi.Name = check_utf8_string(L, 3, NULL);
   fsi.Type = (enum FARSETTINGSTYPES) check_env_flag(L, 4);
   PSInfo *Info = GetPluginData(L)->Info;
-  if (Info->SettingsControl(h, SCTL_GET, 0, &fsi)) {
+  if (Info->SettingsControl(udata->Handle, SCTL_GET, 0, &fsi)) {
     if (fsi.Type == FST_QWORD)
       push64(L, fsi.Value.Number);
     else if (fsi.Type == FST_STRING)
@@ -4595,24 +4603,24 @@ static int Settings_get (lua_State *L)
 static int Settings_delete (lua_State *L)
 {
   struct FarSettingsValue fsv;
-  HANDLE h = CheckSettings(L, 1);
+  FarSettingsUdata* udata = CheckSettings(L, 1);
   fsv.Root = luaL_checkinteger(L, 2);
   fsv.Value = opt_utf8_string(L, 3, NULL);
   PSInfo *Info = GetPluginData(L)->Info;
-  lua_pushboolean(L, Info->SettingsControl(h, SCTL_DELETE, 0, &fsv));
+  lua_pushboolean(L, Info->SettingsControl(udata->Handle, SCTL_DELETE, 0, &fsv));
   return 1;
 }
 
 static int Settings_createsubkey (lua_State *L)
 {
   struct FarSettingsValue fsv;
-  HANDLE h = CheckSettings(L, 1);
+  FarSettingsUdata* udata = CheckSettings(L, 1);
   fsv.Root = luaL_checkinteger(L, 2);
   fsv.Value = check_utf8_string(L, 3, NULL);
   const wchar_t *description = opt_utf8_string(L, 4, NULL);
   PSInfo *Info = GetPluginData(L)->Info;
 
-  int subkey = Info->SettingsControl(h, SCTL_CREATESUBKEY, 0, &fsv);
+  int subkey = Info->SettingsControl(udata->Handle, SCTL_CREATESUBKEY, 0, &fsv);
   if (subkey != 0) {
     if (description != NULL) {
       struct FarSettingsItem fsi;
@@ -4620,7 +4628,7 @@ static int Settings_createsubkey (lua_State *L)
       fsi.Name = NULL;
       fsi.Type = FST_STRING;
       fsi.Value.String = description;
-      Info->SettingsControl(h, SCTL_SET, 0, &fsi);
+      Info->SettingsControl(udata->Handle, SCTL_SET, 0, &fsi);
     }
     lua_pushinteger(L, subkey);
   }
@@ -4632,12 +4640,12 @@ static int Settings_createsubkey (lua_State *L)
 static int Settings_opensubkey (lua_State *L)
 {
   struct FarSettingsValue fsv;
-  HANDLE h = CheckSettings(L, 1);
+  FarSettingsUdata* udata = CheckSettings(L, 1);
   fsv.Root = luaL_checkinteger(L, 2);
   fsv.Value = check_utf8_string(L, 3, NULL);
   PSInfo *Info = GetPluginData(L)->Info;
 
-  int subkey = Info->SettingsControl(h, SCTL_OPENSUBKEY, 0, &fsv);
+  int subkey = Info->SettingsControl(udata->Handle, SCTL_OPENSUBKEY, 0, &fsv);
   if (subkey != 0)
     lua_pushinteger(L, subkey);
   else
@@ -4648,16 +4656,29 @@ static int Settings_opensubkey (lua_State *L)
 static int Settings_enum (lua_State *L)
 {
   struct FarSettingsEnum fse;
-  HANDLE h = CheckSettings(L, 1);
+  FarSettingsUdata* udata = CheckSettings(L, 1);
   fse.Root = luaL_checkinteger(L, 2);
   PSInfo *Info = GetPluginData(L)->Info;
-  if (Info->SettingsControl(h, SCTL_ENUM, 0, &fse)) {
+  if (Info->SettingsControl(udata->Handle, SCTL_ENUM, 0, &fse)) {
     size_t i;
     lua_createtable(L, fse.Count, 0);
     for (i=0; i < fse.Count; i++) {
-      lua_createtable(L, 0, 2);
-      PutWStrToTable(L, "Name", fse.Items[i].Name, -1);
-      PutIntToTable(L, "Type", fse.Items[i].Type);
+      if (udata->IsFarSettings) {
+        const struct FarSettingsHistory *fsh = fse.Value.Histories + i;
+        lua_createtable(L, 0, 6);
+        if (fsh->Name) PutWStrToTable(L, "Name", fsh->Name, -1);
+        if (fsh->Param) PutWStrToTable(L, "Param", fsh->Param, -1);
+        PutLStrToTable(L, "PluginId", &fsh->PluginId, sizeof(GUID));
+        if (fsh->File) PutWStrToTable(L, "File", fsh->File, -1);
+        pushFileTime(L, &fsh->Time);
+        lua_setfield(L, -2, "Time");
+        PutBoolToTable(L, "Lock", fsh->Lock);
+      }
+      else {
+        lua_createtable(L, 0, 2);
+        PutWStrToTable(L, "Name", fse.Value.Items[i].Name, -1);
+        PutIntToTable(L, "Type", fse.Value.Items[i].Type);
+      }
       lua_rawseti(L, -2, i+1);
     }
   }
@@ -4668,11 +4689,11 @@ static int Settings_enum (lua_State *L)
 
 static int Settings_free (lua_State *L)
 {
-  HANDLE* h = GetSettingsHandle(L, 1);
-  if (*h != INVALID_HANDLE_VALUE) {
+  FarSettingsUdata* udata = GetSettingsUdata(L, 1);
+  if (udata->Handle != INVALID_HANDLE_VALUE) {
     PSInfo *Info = GetPluginData(L)->Info;
-    Info->SettingsControl(*h, SCTL_FREE, 0, 0);
-    *h = INVALID_HANDLE_VALUE;
+    Info->SettingsControl(udata->Handle, SCTL_FREE, 0, 0);
+    udata->Handle = INVALID_HANDLE_VALUE;
 
     lua_getfield(L, LUA_REGISTRYINDEX, SettingsHandles);
     lua_pushvalue(L, 1);
@@ -4698,9 +4719,9 @@ int far_FreeSettings (lua_State *L)
 
 static int Settings_tostring (lua_State *L)
 {
-  HANDLE* h = GetSettingsHandle(L, 1);
-  if (*h != INVALID_HANDLE_VALUE)
-    lua_pushfstring(L, "%s (%p)", SettingsType, *h);
+  FarSettingsUdata* udata = GetSettingsUdata(L, 1);
+  if (udata->Handle != INVALID_HANDLE_VALUE)
+    lua_pushfstring(L, "%s (%p)", SettingsType, udata->Handle);
   else
     lua_pushfstring(L, "%s (closed)", SettingsType);
   return 1;
@@ -5238,7 +5259,7 @@ void LF_InitLuaState2 (lua_State *L, TPluginData *aInfo)
 
 lua_State* LF_LuaOpen()
 {
-  return lua_open();
+  return luaL_newstate();
 }
 
 void LF_LuaClose (lua_State* L)
