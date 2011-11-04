@@ -1744,30 +1744,6 @@ mtime=3514278205
 </article>
 </node>
 <node>
-id=112
-lv=3
-dt=Text
-nm=export.ProcessPanelEvent
-mtime=3518458893
-<article>
-#_result = export.ProcessPanelEvent (object, handle, Event, Param)
-#_
-#_**Parameters:**
-#_  object: plugin object
-#_  handle: panel handle
-#_  Event:  integer
-#_  Param:  nil
-#_
-#_**Returns:**
-#_  result: boolean
-#_
-#_@@@
-#_
-#_
-#_
-</article>
-</node>
-<node>
 id=113
 lv=3
 dt=Text
@@ -1812,6 +1788,54 @@ mtime=3509018935
 #_<lua> Links = {
 #_  ['InputRecord']="187.html",
 #_} </lua>
+#_
+</article>
+</node>
+<node>
+id=112
+lv=3
+dt=Text
+nm=export.ProcessPanelEvent
+mtime=3518458893
+<article>
+#_result = export.ProcessPanelEvent (object, handle, Event, Param)
+#_
+#_**Parameters:**
+#_  object: plugin object
+#_  handle: panel handle
+#_  Event:  integer
+#_  Param:  nil
+#_
+#_**Returns:**
+#_  result: boolean
+#_
+#_@@@
+#_
+#_
+#_
+</article>
+</node>
+<node>
+id=457
+lv=3
+dt=Text
+nm=export.ProcessPanelInput
+ctime=3528882615
+mtime=3528882963
+<article>
+#_result = export.ProcessPanelInput (object, handle, rec)
+#_
+#_**Parameters:**
+#_  object: plugin object
+#_  handle: panel handle
+#_  rec:    table InputRecord
+#_
+#_**Returns:**
+#_  result: boolean
+#_
+#_@@@
+#_<lua> Links = { InputRecord="187.html", } </lua>
+#_
 #_
 </article>
 </node>
@@ -8944,6 +8968,36 @@ mtime=3508317882
 #_When the length is 16, the function makes conversion from binary
 #_to string GUID representation, otherwise it tries to convert from
 #_string GUID representation to binary one.
+#_
+</article>
+</node>
+<node>
+id=456
+lv=1
+dt=Text
+nm=win.WideCharToMultiByte
+ctime=3528638377
+mtime=3528778037
+<article>
+#_str_out = win.WideCharToMultiByte (str_in, codepage [, flags])
+#_
+#_**Parameters:**
+#_  str_in   : string in UTF-16LE encoding
+#_  codepage : integer
+#_  flags    : string, a combination of 0 or more of the following
+#_             characters:
+#_               'c' -> WC_COMPOSITECHECK
+#_               'd' -> WC_DISCARDNS
+#_               's' -> WC_SEPCHARS
+#_               'f' -> WC_DEFAULTCHAR
+#_
+#_**Returns:**
+#_  str_out  : string in *codepage* encoding.
+#_
+#_**Windows API used:**
+#_  WideCharToMultiByte
+#_
+#_@@@
 #_
 </article>
 </node>

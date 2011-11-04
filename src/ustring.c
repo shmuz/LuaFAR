@@ -193,13 +193,13 @@ wchar_t* oem_to_utf16 (lua_State *L, int pos, int* pTrgSize)
 }
 
 char* push_multibyte_string (lua_State* L, UINT CodePage, const wchar_t* str,
-  int numchars)
+  int numchars, DWORD dwFlags)
 {
   if (str == NULL) { lua_pushnil(L); return NULL; }
 
   int targetSize = WideCharToMultiByte(
     CodePage, // UINT CodePage,
-    0,        // DWORD dwFlags,
+    dwFlags,  // DWORD dwFlags,
     str,      // LPCWSTR lpWideCharStr,
     numchars, // int cchWideChar,
     NULL,     // LPSTR lpMultiByteStr,
@@ -211,7 +211,7 @@ char* push_multibyte_string (lua_State* L, UINT CodePage, const wchar_t* str,
     luaL_error(L, "invalid UTF-16 string");
   }
   char *target = (char*)lua_newuserdata(L, targetSize+1);
-  WideCharToMultiByte(CodePage, 0, str, numchars, target, targetSize, NULL, NULL);
+  WideCharToMultiByte(CodePage, dwFlags, str, numchars, target, targetSize, NULL, NULL);
   if (numchars == -1)
     --targetSize;
   lua_pushlstring(L, target, targetSize);
@@ -221,12 +221,32 @@ char* push_multibyte_string (lua_State* L, UINT CodePage, const wchar_t* str,
 
 char* push_utf8_string (lua_State* L, const wchar_t* str, int numchars)
 {
-  return push_multibyte_string(L, CP_UTF8, str, numchars);
+  return push_multibyte_string(L, CP_UTF8, str, numchars, 0);
 }
 
 char* push_oem_string (lua_State* L, const wchar_t* str, int numchars)
 {
-  return push_multibyte_string(L, CP_OEMCP, str, numchars);
+  return push_multibyte_string(L, CP_OEMCP, str, numchars, 0);
+}
+
+int ustring_WideCharToMultiByte (lua_State *L)
+{
+  size_t numchars;
+  const wchar_t* src = (const wchar_t*)luaL_checklstring(L, 1, &numchars);
+  numchars /= sizeof(wchar_t);
+  UINT codepage = luaL_checkinteger(L, 2);
+  DWORD dwFlags = 0;
+  if (lua_isstring(L, 3)) {
+    const char *s = lua_tostring(L, 3);
+    for (; *s; s++) {
+      if      (*s == 'c') dwFlags |= WC_COMPOSITECHECK;
+      else if (*s == 'd') dwFlags |= WC_DISCARDNS;
+      else if (*s == 's') dwFlags |= WC_SEPCHARS;
+      else if (*s == 'f') dwFlags |= WC_DEFAULTCHAR;
+    }
+  }
+  push_multibyte_string(L, codepage, src, numchars, dwFlags);
+  return 1;
 }
 
 int ustring_MultiByteToWideChar (lua_State *L)
@@ -571,8 +591,9 @@ int ustring_len(lua_State *L)
 
 const wchar_t* check_utf16_string(lua_State *L, int pos, int *len)
 {
-  const wchar_t* s = (const wchar_t*)luaL_checklstring(L, pos, (size_t*)len);
-  if (len) *len /= sizeof(wchar_t);
+  size_t ln;
+  const wchar_t* s = (const wchar_t*)luaL_checklstring(L, pos, &ln);
+  if (len) *len = ln / sizeof(wchar_t);
   return s;
 }
 

@@ -53,6 +53,7 @@ int ustring_GetLogicalDriveStrings (lua_State *L);
 int ustring_GetOEMCP (lua_State* L);
 int ustring_GlobalMemoryStatus (lua_State *L);
 int ustring_MultiByteToWideChar (lua_State *L);
+int ustring_WideCharToMultiByte (lua_State *L);
 int ustring_OemToUtf8 (lua_State *L);
 int ustring_SHGetFolderPath(lua_State *L);
 int ustring_SearchPath (lua_State *L);

@@ -1515,18 +1515,12 @@ int LF_Message(lua_State *L,
       if (ptr[pos] == L' ' || ptr[pos] == L'\t') {    // is it a space?
         *pItems++ = ptr;                              // -> split here
         ptr[pos] = 0;
-        ++num_items;
         ptr += pos+1;
-        pos = 0;
-        lastSpace = lastDelim = -1;
       }
       else if (lastSpace != -1) {                   // is lastSpace valid?
         *pItems++ = ptr;                            // -> split at lastSpace
         ptr[lastSpace] = 0;
-        ++num_items;
         ptr += lastSpace+1;
-        pos = 0;
-        lastSpace = lastDelim = -1;
       }
       else {                                        // line allocation is needed
         int len = lastDelim != -1 ? lastDelim+1 : pos;
@@ -1534,11 +1528,11 @@ int LF_Message(lua_State *L,
         *pItems++ = *q = (wchar_t*) malloc((len+1)*sizeof(wchar_t));
         wcsncpy(*q, ptr, len);
         (*q)[len] = '\0';
-        ++num_items;
         ptr += len;
-        pos = 0;
-        lastSpace = lastDelim = -1;
       }
+      ++num_items;
+      pos = 0;
+      lastSpace = lastDelim = -1;
     }
   }
 
@@ -1601,6 +1595,7 @@ void LF_Error(lua_State *L, const wchar_t* aMsg)
 //             if absent or nil, then one button "OK" is used).
 // 4-th param: flags
 // 5-th param: help topic
+// 6-th param: Id
 // Return: -1 if escape pressed, else - button number chosen (0 based).
 static int far_Message(lua_State *L)
 {
@@ -4994,6 +4989,7 @@ const luaL_reg win_funcs[] = {
   {"Utf8ToOem",           ustring_Utf8ToOem},
   {"Utf8ToUtf16",         ustring_Utf8ToUtf16},
   {"Uuid",                ustring_Uuid},
+  {"WideCharToMultiByte", ustring_WideCharToMultiByte},
   {"subW",                ustring_sub},
   {"lenW",                ustring_len},
 
@@ -5200,7 +5196,7 @@ static void luaL_openlibs2 (lua_State *L) {
 
   // Try to load LuaJIT 2.0 libraries. This is done dynamically to ensure that
   // LuaFAR works with either Lua 5.1 or LuaJIT 2.0
-  HMODULE hLib = GetModuleHandle(LUADLL);
+  HMODULE hLib = GetModuleHandleA(LUADLL);
   if (hLib) {
     static const char* names[] = { "luaopen_bit", "luaopen_ffi", "luaopen_jit", NULL };
     const char** pName;
