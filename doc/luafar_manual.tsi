@@ -2487,7 +2487,7 @@ id=64
 lv=3
 dt=Text
 nm=far.Menu
-mtime=3523261889
+mtime=3530715212
 <article>
 #_Item, Position = far.Menu (Properties, Items [, BreakKeys])
 #_
@@ -2513,7 +2513,7 @@ mtime=3523261889
 #_        disable:      boolean
 #_        grayed:       boolean
 #_        hidden:       boolean
-#_        AccelKey:     integer
+#_        AccelKey:     table FarKey
 #_
 #_  BreakKeys: table (array of break key items)
 #_      a break key item is a table;
@@ -2542,9 +2542,10 @@ mtime=3523261889
 #_visible state.
 #_
 #_**Far API used:**
-#_  Menu, FMENU_USEEXT
+#_  Menu
 #_
 #_@@@
+#_<lua> Links = { FarKey="445.html" } </lua>
 #_
 </article>
 </node>

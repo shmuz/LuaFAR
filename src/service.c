@@ -1487,52 +1487,38 @@ int LF_Message(lua_State *L,
   // Message lines
   wchar_t* allocLines[MAX_ITEMS];       // array of pointers to allocated lines
   int nAlloc = 0;                       // number of allocated lines
-  int lastSpace = -1, lastDelim = -1;   // positions; -1 stands for "invalid"
+  wchar_t *lastSpace = NULL, *lastDelim = NULL;
 
-  int pos;
   wchar_t* MsgCopy = wcsdup(aMsg);
-  ptr = MsgCopy;
-  for (pos=0; num_items < MAX_ITEMS; ) {
-    if (ptr[pos] == 0) {     // end of the entire message
-      *pItems++ = ptr;
+  wchar_t *start=MsgCopy, *pos=MsgCopy;
+  while (num_items < MAX_ITEMS) {
+    if (*pos == 0) {                       // end of the entire message
+      *pItems++ = start;
       ++num_items;
       break;
     }
-    if (ptr[pos] == '\n') {     // end of a message line
-      *pItems++ = ptr;
-      ptr[pos] = '\0';
+    else if (*pos == '\n') {               // end of a message line
+      *pItems++ = start;
+      *pos = '\0';
       ++num_items;
-      ptr += pos+1;
-      pos = 0;
-      lastSpace = lastDelim = -1;
+      start = ++pos;
+      lastSpace = lastDelim = NULL;
     }
-    else if (pos < MAXLEN) {    // characters inside the message
-      if (ptr[pos] == L' ' || ptr[pos] == L'\t') lastSpace = pos;
-      else if (!isalnum(ptr[pos]) && ptr[pos] != L'_') lastDelim = pos;
+    else if (pos-start <= MAXLEN) {        // characters inside the line
+      if (*pos == L' ' || *pos == L'\t') lastSpace = pos;
+      else if (!isalnum(*pos) && *pos != L'_') lastDelim = pos;
       pos++;
     }
-    else {                      // the 1-st character beyond the message
-      if (ptr[pos] == L' ' || ptr[pos] == L'\t') {    // is it a space?
-        *pItems++ = ptr;                              // -> split here
-        ptr[pos] = 0;
-        ptr += pos+1;
-      }
-      else if (lastSpace != -1) {                   // is lastSpace valid?
-        *pItems++ = ptr;                            // -> split at lastSpace
-        ptr[lastSpace] = 0;
-        ptr += lastSpace+1;
-      }
-      else {                                        // line allocation is needed
-        int len = lastDelim != -1 ? lastDelim+1 : pos;
-        wchar_t** q = &allocLines[nAlloc++];
-        *pItems++ = *q = (wchar_t*) malloc((len+1)*sizeof(wchar_t));
-        wcsncpy(*q, ptr, len);
-        (*q)[len] = '\0';
-        ptr += len;
-      }
+    else {                                 // the 1-st character beyond the line
+      pos = lastSpace ? lastSpace+1 : lastDelim ? lastDelim+1 : pos;
+      int len = pos - start;
+      wchar_t** q = &allocLines[nAlloc++]; // line allocation is needed
+      *pItems++ = *q = (wchar_t*) malloc((len+1)*sizeof(wchar_t));
+      wcsncpy(*q, start, len);
+      (*q)[len] = L'\0';
       ++num_items;
-      pos = 0;
-      lastSpace = lastDelim = -1;
+      start = pos;
+      lastSpace = lastDelim = NULL;
     }
   }
 
