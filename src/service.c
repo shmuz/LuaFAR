@@ -1504,7 +1504,7 @@ int LF_Message(lua_State *L,
       start = ++pos;
       lastSpace = lastDelim = NULL;
     }
-    else if (pos-start <= MAXLEN) {        // characters inside the line
+    else if (pos-start < MAXLEN) {         // characters inside the line
       if (*pos == L' ' || *pos == L'\t') lastSpace = pos;
       else if (!isalnum(*pos) && *pos != L'_') lastDelim = pos;
       pos++;

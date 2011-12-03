@@ -41,27 +41,29 @@ void SetFarColors (lua_State *L)
 local function get_insert (in_dir, src)
   local tb = { sTmpFile, }
   for _,v in ipairs(extract_enums(src)) do
-    if v:match("^%s*#") then table.insert(tb, v.."\n")
-    else table.insert(tb, ('  printf("%s=%%u,", (unsigned int)%s);\n'):format(v,v))
+    if v:match("^%s*#") then table.insert(tb, v)
+    else table.insert(tb, ('  printf("%s=%%u,", (unsigned int)%s);'):format(v,v))
     end
   end
   table.insert(tb, "  return 0;\n}\n")
 
   local fp = assert(io.open("tmp.c", "w"))
-  fp:write(table.concat(tb))
+  fp:write(table.concat(tb, "\n"))
   fp:close()
-  assert(0 == os.execute(("gcc -o tmp.exe -DWINVER=0x500 -I%s tmp.c"):format(in_dir)))
+
+  -- Note 1: "-m32" makes possible to cross-compile LuaFAR for 64-bit target on 32-bit OS.
+  -- Note 2: "-DWINVER=0x601" corresponds to Windows 7.
+  assert(0 == os.execute("gcc -o tmp.exe -m32 -DWINVER=0x601 -I"..in_dir.." tmp.c"))
 
   fp = assert(io.popen("tmp.exe"))
   local str = fp:read("*all")
   fp:close()
-
   os.remove "tmp.exe"
   os.remove "tmp.c"
   return str
 end
 
-local function makefarcolors (in_dir, out_file, notall)
+local function makefarcolors (in_dir, out_file)
   local fp = assert(io.open(in_dir.."\\farcolor.hpp"))
   local src = fp:read("*all")
   fp:close()
@@ -72,7 +74,7 @@ local function makefarcolors (in_dir, out_file, notall)
   fp:close()
 end
 
-local in_dir, out_file, notall = ...
+local in_dir, out_file = ...
 assert(in_dir, "input directory not specified")
 assert(out_file, "output file not specified")
 makefarcolors(in_dir, out_file)
