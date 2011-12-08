@@ -6343,7 +6343,7 @@ id=211
 lv=3
 dt=Text
 nm=far.FarRecursiveSearch
-mtime=3507818395
+mtime=3532506264
 <article>
 #_far.FarRecursiveSearch (InitDir, Mask, UserFunc [, Flags])
 #_
@@ -6361,8 +6361,7 @@ mtime=3507818395
 #_  passed to it:
 #_      (1) a FindData table, and
 #_      (2) the full pathname of the found file.
-#_  If *UserFunc* returns *false* or *nil*, then the search
-#_  is stopped.
+#_  If *UserFunc* returns *true* then the search is stopped.
 #_
 #_**Far API used:**
 #_  FSF.FarRecursiveSearch
@@ -7719,6 +7718,7 @@ id=90
 lv=2
 dt=Text
 nm=FindData
+mtime=3532170865
 <article>
 #_<markdown>
 #_**`FindData`** is a table with the following predefined fields:
@@ -7740,12 +7740,14 @@ nm=FindData
 #_is set, otherwise it is not.
 #_
 #_          a - archive
-#_          r - read only
-#_          h - hidden
-#_          s - system file
-#_          d - directory
 #_          c - compressed
+#_          d - directory
+#_          e - reparse point
+#_          h - hidden
 #_          o - offline
+#_          p - sparse file
+#_          r - read only
+#_          s - system file
 #_          t - temporary
 #_
 #_1. **`LastWriteTime`**, **`LastAccessTime`** and **`CreationTime`**

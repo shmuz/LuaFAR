@@ -3524,7 +3524,7 @@ static int WINAPI FrsUserFunc (const struct PluginPanelItem *FData, const wchar_
   PutFarFindData(L, FData);
   push_utf8_string(L, FullName, -1);
   int err = lua_pcall(L, 2, 1, 0);
-  int proceed = !err && lua_toboolean(L, -1);
+  int proceed = !(err || lua_toboolean(L, -1));
   if (err)
     LF_Error(L, check_utf8_string(L, -1, NULL));
   lua_pop(L, 1);

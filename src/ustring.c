@@ -488,6 +488,8 @@ void PushAttrString(lua_State *L, int attr)
   if(attr & FILE_ATTRIBUTE_COMPRESSED) *p++ = 'c';
   if(attr & FILE_ATTRIBUTE_OFFLINE)    *p++ = 'o';
   if(attr & FILE_ATTRIBUTE_TEMPORARY)  *p++ = 't';
+  if(attr & FILE_ATTRIBUTE_SPARSE_FILE)   *p++ = 'p';
+  if(attr & FILE_ATTRIBUTE_REPARSE_POINT) *p++ = 'e';
   *p = '\0';
   lua_pushstring(L, buf);
 }
@@ -511,6 +513,8 @@ int DecodeAttributes(const char* str)
     else if (c == 'c' || c == 'C') attr |= FILE_ATTRIBUTE_COMPRESSED;
     else if (c == 'o' || c == 'O') attr |= FILE_ATTRIBUTE_OFFLINE;
     else if (c == 't' || c == 'T') attr |= FILE_ATTRIBUTE_TEMPORARY;
+    else if (c == 'p' || c == 'P') attr |= FILE_ATTRIBUTE_SPARSE_FILE;
+    else if (c == 'e' || c == 'E') attr |= FILE_ATTRIBUTE_REPARSE_POINT;
   }
   return attr;
 }
