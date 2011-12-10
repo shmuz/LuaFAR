@@ -6822,10 +6822,10 @@ nm=Regular expression functions
 id=271
 lv=3
 dt=Text
-nm=far.find, far.findW
-mtime=3524033915
+nm=regex.find, regex.findW
+mtime=3532684645
 <article>
-#_from, to [,c1 [,c2]...] = far.find (s, pattern, [init], [cflags])
+#_from, to [,c1 [,c2]...] = regex.find (s, pattern, [init], [cflags])
 #_
 #_**Parameters:**
 #_  s       :  string
@@ -6845,7 +6845,7 @@ mtime=3524033915
 #_  -- *cflags* : compilation flags;
 #_
 #_**Note:**
-#_*far.findW* receives its 1-st argument and returns captures in
+#_*regex.findW* receives its 1-st argument and returns captures in
 #_UTF-16LE encoding.
 #_
 #_**Far API used:**
@@ -6858,10 +6858,10 @@ mtime=3524033915
 id=269
 lv=3
 dt=Text
-nm=far.gmatch, far.gmatchW
-mtime=3524033924
+nm=regex.gmatch, regex.gmatchW
+mtime=3532684657
 <article>
-#_for c1 [,c2 ...] in far.gmatch (s, pattern [, cflags]) do
+#_for c1 [,c2 ...] in regex.gmatch (s, pattern [, cflags]) do
 #_  ......
 #_end
 #_
@@ -6880,7 +6880,7 @@ mtime=3524033924
 #_  -- *cflags* : optional 3-rd parameter: compilation flags;
 #_
 #_**Note:**
-#_*far.gmatchW* receives its 1-st argument and returns captures in
+#_*regex.gmatchW* receives its 1-st argument and returns captures in
 #_UTF-16LE encoding.
 #_
 #_**Far API used:**
@@ -6893,10 +6893,10 @@ mtime=3524033924
 id=270
 lv=3
 dt=Text
-nm=far.gsub, far.gsubW
-mtime=3524033935
+nm=regex.gsub, regex.gsubW
+mtime=3532684667
 <article>
-#_res, nmatch, nrep = far.gsub (s, pattern, repl, [n], [cflags])
+#_res, nmatch, nrep = regex.gsub (s, pattern, repl, [n], [cflags])
 #_
 #_**Parameters:**
 #_  s:        string
@@ -6917,7 +6917,7 @@ mtime=3524033935
 #_  -- *nrep*   : 3-rd return value: number of replacements made;
 #_
 #_**Note:**
-#_*far.gsubW* receives its 1-st argument and returns captures in
+#_*regex.gsubW* receives its 1-st argument and returns captures in
 #_UTF-16LE encoding.
 #_
 #_**Far API used:**
@@ -6931,10 +6931,10 @@ mtime=3524033935
 id=272
 lv=3
 dt=Text
-nm=far.match, far.matchW
-mtime=3524033962
+nm=regex.match, regex.matchW
+mtime=3532684676
 <article>
-#_c1 [,c2]...] = far.match (s, pattern, [init], [cflags])
+#_c1 [,c2]...] = regex.match (s, pattern, [init], [cflags])
 #_
 #_**Parameters:**
 #_  s       :  string
@@ -6952,7 +6952,7 @@ mtime=3524033962
 #_  -- *cflags* : optional 4-th parameter: compilation flags;
 #_
 #_**Note:**
-#_*far.matchW* receives its 1-st argument and returns captures in
+#_*regex.matchW* receives its 1-st argument and returns captures in
 #_UTF-16LE encoding.
 #_
 #_**Far API used:**
@@ -6965,10 +6965,10 @@ mtime=3524033962
 id=266
 lv=3
 dt=Text
-nm=far.regex
-mtime=3524034285
+nm=regex.new
+mtime=3532684281
 <article>
-#_regex_object = far.regex (pattern [, cflags])
+#_regex_object = regex.new (pattern [, cflags])
 #_
 #_**Parameters:**
 #_  pattern:      string

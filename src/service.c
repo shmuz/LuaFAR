@@ -5233,9 +5233,9 @@ void LF_InitLuaState2 (lua_State *L, TPluginData *aInfo)
   lua_pushcfunction(L, luaopen_far);
   lua_call(L, 0, 0);
 
-  // open "regex" library in "far" namespace
+  // open "regex" library
   lua_pushcfunction(L, luaopen_regex);
-  lua_pushliteral(L, "far");
+  lua_pushliteral(L, "regex");
   lua_call(L, 1, 0);
 }
 

@@ -21,7 +21,7 @@ TFarRegex* CheckFarRegex(lua_State *L, int pos)
   return fr;
 }
 
-int regex_gc(lua_State *L)
+int method_gc(lua_State *L)
 {
   TFarRegex* fr = CheckFarRegex(L, 1);
   if (fr->hnd != INVALID_HANDLE_VALUE) {
@@ -32,7 +32,7 @@ int regex_gc(lua_State *L)
   return 0;
 }
 
-int regex_tostring(lua_State *L)
+int method_tostring(lua_State *L)
 {
   TFarRegex* fr = CheckFarRegex(L, 1);
   lua_pushfstring(L, "%s (%p)", TYPE_REGEX, fr);
@@ -119,8 +119,8 @@ int _Gmatch(lua_State *L, int is_wide)
   return 1;
 }
 
-int far_Gmatch  (lua_State *L) { return _Gmatch(L, 0); }
-int far_GmatchW (lua_State *L) { return _Gmatch(L, 1); }
+int func_Gmatch  (lua_State *L) { return _Gmatch(L, 0); }
+int func_GmatchW (lua_State *L) { return _Gmatch(L, 1); }
 
 int rx_find_match(lua_State *L, int op_find, int is_function, int is_wide)
 {
@@ -174,7 +174,7 @@ int rx_find_match(lua_State *L, int op_find, int is_function, int is_wide)
   return lua_pushnil(L), 1;
 }
 
-int regex_bracketscount (lua_State *L)
+int method_bracketscount (lua_State *L)
 {
   TFarRegex* fr = CheckFarRegex(L, 1);
   FARAPIREGEXPCONTROL RegExpControl = GetRegExpControl(L);
@@ -376,55 +376,55 @@ int rx_gsub (lua_State *L, int is_function, int is_wide)
   return 3;
 }
 
-int far_Regex (lua_State *L)
+int func_New (lua_State *L)
 {
   const wchar_t* pat = check_regex_pattern(L, 1, 2);
   push_far_regex(L, GetRegExpControl(L), pat);
   return 1;
 }
 
-int regex_find   (lua_State *L)  { return rx_find_match(L, 1, 0, 0); }
-int far_Find     (lua_State *L)  { return rx_find_match(L, 1, 1, 0); }
-int regex_findW  (lua_State *L)  { return rx_find_match(L, 1, 0, 1); }
-int far_FindW    (lua_State *L)  { return rx_find_match(L, 1, 1, 1); }
+int method_find   (lua_State *L)  { return rx_find_match(L, 1, 0, 0); }
+int func_find     (lua_State *L)  { return rx_find_match(L, 1, 1, 0); }
+int method_findW  (lua_State *L)  { return rx_find_match(L, 1, 0, 1); }
+int func_findW    (lua_State *L)  { return rx_find_match(L, 1, 1, 1); }
 
-int regex_match  (lua_State *L)  { return rx_find_match(L, 0, 0, 0); }
-int far_Match    (lua_State *L)  { return rx_find_match(L, 0, 1, 0); }
-int regex_matchW (lua_State *L)  { return rx_find_match(L, 0, 0, 1); }
-int far_MatchW   (lua_State *L)  { return rx_find_match(L, 0, 1, 1); }
+int method_match  (lua_State *L)  { return rx_find_match(L, 0, 0, 0); }
+int func_match    (lua_State *L)  { return rx_find_match(L, 0, 1, 0); }
+int method_matchW (lua_State *L)  { return rx_find_match(L, 0, 0, 1); }
+int func_matchW   (lua_State *L)  { return rx_find_match(L, 0, 1, 1); }
 
-int regex_gsub   (lua_State *L)  { return rx_gsub(L, 0, 0); }
-int far_Gsub     (lua_State *L)  { return rx_gsub(L, 1, 0); }
-int regex_gsubW  (lua_State *L)  { return rx_gsub(L, 0, 1); }
-int far_GsubW    (lua_State *L)  { return rx_gsub(L, 1, 1); }
+int method_gsub   (lua_State *L)  { return rx_gsub(L, 0, 0); }
+int func_gsub     (lua_State *L)  { return rx_gsub(L, 1, 0); }
+int method_gsubW  (lua_State *L)  { return rx_gsub(L, 0, 1); }
+int func_gsubW    (lua_State *L)  { return rx_gsub(L, 1, 1); }
 
 const luaL_reg regex_methods[] = {
-  {"find",          regex_find},
-  {"gsub",          regex_gsub},
-  {"match",         regex_match},
+  {"find",          method_find},
+  {"gsub",          method_gsub},
+  {"match",         method_match},
 
-  {"findW",         regex_findW},
-  {"gsubW",         regex_gsubW},
-  {"matchW",        regex_matchW},
+  {"findW",         method_findW},
+  {"gsubW",         method_gsubW},
+  {"matchW",        method_matchW},
 
-  {"bracketscount", regex_bracketscount},
-  {"__gc",          regex_gc},
-  {"__tostring",    regex_tostring},
+  {"bracketscount", method_bracketscount},
+  {"__gc",          method_gc},
+  {"__tostring",    method_tostring},
   {NULL, NULL}
 };
 
 const luaL_reg regex_functions[] = {
-  {"regex",         far_Regex},
+  {"new",           func_New},
 
-  {"find",          far_Find},
-  {"gmatch",        far_Gmatch},
-  {"gsub",          far_Gsub},
-  {"match",         far_Match},
+  {"find",          func_find},
+  {"gmatch",        func_Gmatch},
+  {"gsub",          func_gsub},
+  {"match",         func_match},
 
-  {"findW",         far_FindW},
-  {"gmatchW",       far_GmatchW},
-  {"gsubW",         far_GsubW},
-  {"matchW",        far_MatchW},
+  {"findW",         func_findW},
+  {"gmatchW",       func_GmatchW},
+  {"gsubW",         func_gsubW},
+  {"matchW",        func_matchW},
 };
 
 int luaopen_regex (lua_State *L)
