@@ -7,22 +7,8 @@ id=91
 lv=0
 dt=Text
 nm=Manual of LuaFAR 3.0.0
-mtime=3512990572
+mtime=3532769479
 <article>
-#_<markdown>
-#_
-#_[Introduction](126.html)<br>
-#_[What's new](149.html)<br>
-#_[What's new in Unicode version](255.html)<br>
-#_[Incompatibilities with the Previous Version](119.html)<br>
-#_[LuaFAR `bit64` library](405.html)<br>
-#_[LuaFAR `far` library and exported functions](131.html)<br>
-#_[LuaFAR `win` library](430.html)<br>
-#_[LuaFAR C-interface](128.html)<br>
-#_[Selene Unicode library](250.html)<br>
-#_[Third party software used](194.html)<br>
-#_
-#_
 </article>
 </node>
 <node>
@@ -1221,25 +1207,16 @@ nm=Version 0.4
 </article>
 </node>
 <node>
-id=131
+id=92
 lv=0
 dt=Text
-nm=LuaFAR far library and exported functions
-mtime=3507631286
-<article>
-</article>
-</node>
-<node>
-id=92
-lv=1
-dt=Text
-nm=Exported functions
+nm=LuaFAR plugin-exported functions
 <article>
 </article>
 </node>
 <node>
 id=122
-lv=2
+lv=1
 dt=Text
 nm=Common functions
 <article>
@@ -1247,7 +1224,7 @@ nm=Common functions
 </node>
 <node>
 id=94
-lv=3
+lv=2
 dt=Text
 nm=export.ClosePanel
 mtime=3509018829
@@ -1267,7 +1244,7 @@ mtime=3509018829
 </node>
 <node>
 id=96
-lv=3
+lv=2
 dt=Text
 nm=export.Configure
 mtime=3509018837
@@ -1287,7 +1264,7 @@ mtime=3509018837
 </node>
 <node>
 id=98
-lv=3
+lv=2
 dt=Text
 nm=export.ExitFAR
 mtime=3509018842
@@ -1306,7 +1283,7 @@ mtime=3509018842
 </node>
 <node>
 id=402
-lv=3
+lv=2
 dt=Text
 nm=export.GetGlobalInfo
 ctime=3506281912
@@ -1334,7 +1311,7 @@ mtime=3515075300
 </node>
 <node>
 id=103
-lv=3
+lv=2
 dt=Text
 nm=export.GetMinFarVersion
 <article>
@@ -1346,7 +1323,7 @@ nm=export.GetMinFarVersion
 </node>
 <node>
 id=104
-lv=3
+lv=2
 dt=Text
 nm=export.GetOpenPanelInfo
 mtime=3509018860
@@ -1388,7 +1365,7 @@ mtime=3509018860
 </node>
 <node>
 id=105
-lv=3
+lv=2
 dt=Text
 nm=export.GetPluginInfo
 mtime=3509018866
@@ -1420,7 +1397,7 @@ mtime=3509018866
 </node>
 <node>
 id=319
-lv=3
+lv=2
 dt=Text
 nm=export.ProcessSynchroEvent
 ctime=3480185395
@@ -1442,7 +1419,7 @@ mtime=3509018871
 </node>
 <node>
 id=118
-lv=3
+lv=2
 dt=Text
 nm=export.SetStartupInfo
 mtime=3510177042
@@ -1463,7 +1440,7 @@ mtime=3510177042
 </node>
 <node>
 id=123
-lv=2
+lv=1
 dt=Text
 nm=Panel specific functions
 <article>
@@ -1471,7 +1448,7 @@ nm=Panel specific functions
 </node>
 <node>
 id=425
-lv=3
+lv=2
 dt=Text
 nm=export.Analyse
 ctime=3507872410
@@ -1495,7 +1472,7 @@ mtime=3509018881
 </node>
 <node>
 id=95
-lv=3
+lv=2
 dt=Text
 nm=export.Compare
 mtime=3509018885
@@ -1520,7 +1497,7 @@ mtime=3509018885
 </node>
 <node>
 id=97
-lv=3
+lv=2
 dt=Text
 nm=export.DeleteFiles
 mtime=3509018889
@@ -1544,7 +1521,7 @@ mtime=3509018889
 </node>
 <node>
 id=365
-lv=3
+lv=2
 dt=Text
 nm=export.FreeCustomData
 ctime=3485765946
@@ -1558,7 +1535,7 @@ mtime=3485765967
 </node>
 <node>
 id=99
-lv=3
+lv=2
 dt=Text
 nm=export.FreeFindData
 <article>
@@ -1570,7 +1547,7 @@ nm=export.FreeFindData
 </node>
 <node>
 id=100
-lv=3
+lv=2
 dt=Text
 nm=export.FreeVirtualFindData
 <article>
@@ -1582,7 +1559,7 @@ nm=export.FreeVirtualFindData
 </node>
 <node>
 id=364
-lv=3
+lv=2
 dt=Text
 nm=export.GetCustomData
 ctime=3485765841
@@ -1606,7 +1583,7 @@ mtime=3509018899
 </node>
 <node>
 id=101
-lv=3
+lv=2
 dt=Text
 nm=export.GetFiles
 mtime=3509018904
@@ -1633,7 +1610,7 @@ mtime=3509018904
 </node>
 <node>
 id=102
-lv=3
+lv=2
 dt=Text
 nm=export.GetFindData
 mtime=3509018910
@@ -1658,7 +1635,7 @@ mtime=3509018910
 </node>
 <node>
 id=106
-lv=3
+lv=2
 dt=Text
 nm=export.GetVirtualFindData
 mtime=3509018914
@@ -1681,7 +1658,7 @@ mtime=3509018914
 </node>
 <node>
 id=107
-lv=3
+lv=2
 dt=Text
 nm=export.MakeDirectory
 mtime=3509018919
@@ -1704,7 +1681,7 @@ mtime=3509018919
 </node>
 <node>
 id=109
-lv=3
+lv=2
 dt=Text
 nm=export.Open
 mtime=3514278205
@@ -1745,7 +1722,7 @@ mtime=3514278205
 </node>
 <node>
 id=113
-lv=3
+lv=2
 dt=Text
 nm=export.ProcessHostFile
 mtime=3509018931
@@ -1769,7 +1746,7 @@ mtime=3509018931
 </node>
 <node>
 id=114
-lv=3
+lv=2
 dt=Text
 nm=export.ProcessKey
 mtime=3509018935
@@ -1793,7 +1770,7 @@ mtime=3509018935
 </node>
 <node>
 id=112
-lv=3
+lv=2
 dt=Text
 nm=export.ProcessPanelEvent
 mtime=3518458893
@@ -1817,7 +1794,7 @@ mtime=3518458893
 </node>
 <node>
 id=457
-lv=3
+lv=2
 dt=Text
 nm=export.ProcessPanelInput
 ctime=3528882615
@@ -1841,7 +1818,7 @@ mtime=3528882963
 </node>
 <node>
 id=115
-lv=3
+lv=2
 dt=Text
 nm=export.PutFiles
 mtime=3509018940
@@ -1866,7 +1843,7 @@ mtime=3509018940
 </node>
 <node>
 id=116
-lv=3
+lv=2
 dt=Text
 nm=export.SetDirectory
 mtime=3509018944
@@ -1888,7 +1865,7 @@ mtime=3509018944
 </node>
 <node>
 id=117
-lv=3
+lv=2
 dt=Text
 nm=export.SetFindList
 mtime=3509018950
@@ -1911,7 +1888,7 @@ mtime=3509018950
 </node>
 <node>
 id=124
-lv=2
+lv=1
 dt=Text
 nm=Editor specific functions
 <article>
@@ -1919,7 +1896,7 @@ nm=Editor specific functions
 </node>
 <node>
 id=110
-lv=3
+lv=2
 dt=Text
 nm=export.ProcessEditorEvent
 mtime=3509018955
@@ -1939,7 +1916,7 @@ mtime=3509018955
 </node>
 <node>
 id=111
-lv=3
+lv=2
 dt=Text
 nm=export.ProcessEditorInput
 mtime=3522051184
@@ -1960,7 +1937,7 @@ mtime=3522051184
 </node>
 <node>
 id=125
-lv=2
+lv=1
 dt=Text
 nm=Viewer specific functions
 <article>
@@ -1968,7 +1945,7 @@ nm=Viewer specific functions
 </node>
 <node>
 id=127
-lv=3
+lv=2
 dt=Text
 nm=export.ProcessViewerEvent
 mtime=3509018963
@@ -1988,7 +1965,7 @@ mtime=3509018963
 </node>
 <node>
 id=220
-lv=2
+lv=1
 dt=Text
 nm=Dialog specific functions
 <article>
@@ -1996,7 +1973,7 @@ nm=Dialog specific functions
 </node>
 <node>
 id=221
-lv=3
+lv=2
 dt=Text
 nm=export.ProcessDialogEvent
 mtime=3509018968
@@ -2028,7 +2005,7 @@ mtime=3509018968
 </node>
 <node>
 id=151
-lv=2
+lv=1
 dt=Text
 nm=Other functions
 <article>
@@ -2036,7 +2013,7 @@ nm=Other functions
 </node>
 <node>
 id=150
-lv=3
+lv=2
 dt=Text
 nm=export.OnError
 mtime=3509028535
@@ -2060,16 +2037,17 @@ mtime=3509028535
 </article>
 </node>
 <node>
-id=1
-lv=1
+id=131
+lv=0
 dt=Text
-nm=Service functions
+nm=LuaFAR Far libraries
+mtime=3507631286
 <article>
 </article>
 </node>
 <node>
 id=78
-lv=2
+lv=1
 dt=Text
 nm=Common functions
 <article>
@@ -2077,7 +2055,7 @@ nm=Common functions
 </node>
 <node>
 id=153
-lv=3
+lv=2
 dt=Text
 nm=far.AdvControl
 mtime=3524312523
@@ -2191,7 +2169,7 @@ mtime=3524312523
 </node>
 <node>
 id=53
-lv=3
+lv=2
 dt=Text
 nm=far.GetDirList
 mtime=3478185727
@@ -2215,7 +2193,7 @@ mtime=3478185727
 </node>
 <node>
 id=58
-lv=3
+lv=2
 dt=Text
 nm=far.GetMsg
 <article>
@@ -2236,7 +2214,7 @@ nm=far.GetMsg
 </node>
 <node>
 id=60
-lv=3
+lv=2
 dt=Text
 nm=far.GetPluginDirList
 mtime=3507552662
@@ -2260,7 +2238,7 @@ mtime=3507552662
 </node>
 <node>
 id=446
-lv=3
+lv=2
 dt=Text
 nm=far.MacroAdd
 ctime=3523354795
@@ -2308,7 +2286,7 @@ mtime=3523358448
 </node>
 <node>
 id=415
-lv=3
+lv=2
 dt=Text
 nm=far.MacroCheck
 ctime=3507633625
@@ -2338,7 +2316,7 @@ mtime=3523358353
 </node>
 <node>
 id=447
-lv=3
+lv=2
 dt=Text
 nm=far.MacroDelete
 ctime=3523354806
@@ -2364,7 +2342,7 @@ mtime=3523357280
 </node>
 <node>
 id=413
-lv=3
+lv=2
 dt=Text
 nm=far.MacroGetArea
 ctime=3507633603
@@ -2387,7 +2365,7 @@ mtime=3523362800
 </node>
 <node>
 id=412
-lv=3
+lv=2
 dt=Text
 nm=far.MacroGetState
 ctime=3507633589
@@ -2411,7 +2389,7 @@ mtime=3523362887
 </node>
 <node>
 id=410
-lv=3
+lv=2
 dt=Text
 nm=far.MacroLoadAll
 ctime=3507631227
@@ -2434,7 +2412,7 @@ mtime=3523362830
 </node>
 <node>
 id=414
-lv=3
+lv=2
 dt=Text
 nm=far.MacroPost
 ctime=3507633616
@@ -2460,7 +2438,7 @@ mtime=3523358392
 </node>
 <node>
 id=411
-lv=3
+lv=2
 dt=Text
 nm=far.MacroSaveAll
 ctime=3507633579
@@ -2484,7 +2462,7 @@ mtime=3523362847
 </node>
 <node>
 id=64
-lv=3
+lv=2
 dt=Text
 nm=far.Menu
 mtime=3530715212
@@ -2551,7 +2529,7 @@ mtime=3530715212
 </node>
 <node>
 id=334
-lv=3
+lv=2
 dt=Text
 nm=far.PluginsControl
 ctime=3480350595
@@ -2578,7 +2556,7 @@ mtime=3507818176
 </node>
 <node>
 id=69
-lv=3
+lv=2
 dt=Text
 nm=far.RestoreScreen
 <article>
@@ -2599,7 +2577,7 @@ nm=far.RestoreScreen
 </node>
 <node>
 id=70
-lv=3
+lv=2
 dt=Text
 nm=far.SaveScreen
 <article>
@@ -2623,7 +2601,7 @@ nm=far.SaveScreen
 </node>
 <node>
 id=74
-lv=3
+lv=2
 dt=Text
 nm=far.ShowHelp
 mtime=3507818182
@@ -2648,7 +2626,7 @@ mtime=3507818182
 </node>
 <node>
 id=76
-lv=3
+lv=2
 dt=Text
 nm=far.Text
 mtime=3521831927
@@ -2675,9 +2653,9 @@ mtime=3521831927
 </node>
 <node>
 id=453
-lv=2
+lv=1
 dt=Text
-nm=Panel specific functions
+nm=Panel functions
 ctime=3523954698
 mtime=3523954698
 <article>
@@ -2685,7 +2663,7 @@ mtime=3523954698
 </node>
 <node>
 id=145
-lv=3
+lv=2
 dt=Text
 nm=panel.CheckPanelsExist
 mtime=3507873382
@@ -2707,7 +2685,7 @@ mtime=3507873382
 </node>
 <node>
 id=330
-lv=3
+lv=2
 dt=Text
 nm=panel.ClearSelection
 ctime=3480322277
@@ -2735,7 +2713,7 @@ mtime=3507873394
 </node>
 <node>
 id=4
-lv=3
+lv=2
 dt=Text
 nm=panel.ClosePanel
 mtime=3507873011
@@ -2758,7 +2736,7 @@ mtime=3507873011
 </node>
 <node>
 id=5
-lv=3
+lv=2
 dt=Text
 nm=panel.GetCmdLine
 <article>
@@ -2780,7 +2758,7 @@ nm=panel.GetCmdLine
 </node>
 <node>
 id=6
-lv=3
+lv=2
 dt=Text
 nm=panel.GetCmdLinePos
 mtime=3480330205
@@ -2802,7 +2780,7 @@ mtime=3480330205
 </node>
 <node>
 id=331
-lv=3
+lv=2
 dt=Text
 nm=panel.GetCmdLineSelection
 ctime=3480326038
@@ -2826,7 +2804,7 @@ mtime=3480330696
 </node>
 <node>
 id=258
-lv=3
+lv=2
 dt=Text
 nm=panel.GetColumnTypes
 <article>
@@ -2848,7 +2826,7 @@ nm=panel.GetColumnTypes
 </node>
 <node>
 id=259
-lv=3
+lv=2
 dt=Text
 nm=panel.GetColumnWidths
 <article>
@@ -2870,7 +2848,7 @@ nm=panel.GetColumnWidths
 </node>
 <node>
 id=252
-lv=3
+lv=2
 dt=Text
 nm=panel.GetCurrentPanelItem
 <article>
@@ -2893,7 +2871,7 @@ nm=panel.GetCurrentPanelItem
 </node>
 <node>
 id=260
-lv=3
+lv=2
 dt=Text
 nm=panel.GetPanelDir
 <article>
@@ -2916,7 +2894,7 @@ nm=panel.GetPanelDir
 </node>
 <node>
 id=381
-lv=3
+lv=2
 dt=Text
 nm=panel.GetPanelFormat
 ctime=3492068593
@@ -2941,7 +2919,7 @@ mtime=3492068684
 </node>
 <node>
 id=382
-lv=3
+lv=2
 dt=Text
 nm=panel.GetPanelHostFile
 ctime=3492068606
@@ -2966,7 +2944,7 @@ mtime=3492068724
 </node>
 <node>
 id=7
-lv=3
+lv=2
 dt=Text
 nm=panel.GetPanelInfo
 mtime=3507818145
@@ -3003,7 +2981,7 @@ mtime=3507818145
 </node>
 <node>
 id=253
-lv=3
+lv=2
 dt=Text
 nm=panel.GetPanelItem
 <article>
@@ -3027,7 +3005,7 @@ nm=panel.GetPanelItem
 </node>
 <node>
 id=455
-lv=3
+lv=2
 dt=Text
 nm=panel.GetPanelPrefix
 ctime=3525948213
@@ -3052,7 +3030,7 @@ mtime=3525950289
 </node>
 <node>
 id=254
-lv=3
+lv=2
 dt=Text
 nm=panel.GetSelectedPanelItem
 <article>
@@ -3076,7 +3054,7 @@ nm=panel.GetSelectedPanelItem
 </node>
 <node>
 id=228
-lv=3
+lv=2
 dt=Text
 nm=panel.GetUserScreen
 <article>
@@ -3098,7 +3076,7 @@ nm=panel.GetUserScreen
 </node>
 <node>
 id=9
-lv=3
+lv=2
 dt=Text
 nm=panel.InsertCmdLine
 <article>
@@ -3121,7 +3099,7 @@ nm=panel.InsertCmdLine
 </node>
 <node>
 id=320
-lv=3
+lv=2
 dt=Text
 nm=panel.IsActivePanel
 ctime=3480215162
@@ -3145,7 +3123,7 @@ mtime=3480215301
 </node>
 <node>
 id=10
-lv=3
+lv=2
 dt=Text
 nm=panel.RedrawPanel
 <article>
@@ -3171,7 +3149,7 @@ nm=panel.RedrawPanel
 </node>
 <node>
 id=395
-lv=3
+lv=2
 dt=Text
 nm=panel.SetCaseSensitiveSort
 ctime=3501391498
@@ -3196,7 +3174,7 @@ mtime=3501391568
 </node>
 <node>
 id=11
-lv=3
+lv=2
 dt=Text
 nm=panel.SetCmdLine
 <article>
@@ -3219,7 +3197,7 @@ nm=panel.SetCmdLine
 </node>
 <node>
 id=12
-lv=3
+lv=2
 dt=Text
 nm=panel.SetCmdLinePos
 mtime=3480451106
@@ -3242,7 +3220,7 @@ mtime=3480451106
 </node>
 <node>
 id=332
-lv=3
+lv=2
 dt=Text
 nm=panel.SetCmdLineSelection
 ctime=3480326063
@@ -3267,7 +3245,7 @@ mtime=3480451070
 </node>
 <node>
 id=146
-lv=3
+lv=2
 dt=Text
 nm=panel.SetNumericSort
 <article>
@@ -3290,7 +3268,7 @@ nm=panel.SetNumericSort
 </node>
 <node>
 id=13
-lv=3
+lv=2
 dt=Text
 nm=panel.SetPanelDir
 <article>
@@ -3313,7 +3291,7 @@ nm=panel.SetPanelDir
 </node>
 <node>
 id=14
-lv=3
+lv=2
 dt=Text
 nm=panel.SetSelection
 mtime=3480322462
@@ -3341,7 +3319,7 @@ mtime=3480322462
 </node>
 <node>
 id=147
-lv=3
+lv=2
 dt=Text
 nm=panel.SetSortMode
 mtime=3507818152
@@ -3365,7 +3343,7 @@ mtime=3507818152
 </node>
 <node>
 id=148
-lv=3
+lv=2
 dt=Text
 nm=panel.SetSortOrder
 <article>
@@ -3389,7 +3367,7 @@ nm=panel.SetSortOrder
 </node>
 <node>
 id=15
-lv=3
+lv=2
 dt=Text
 nm=panel.SetUserScreen
 <article>
@@ -3410,7 +3388,7 @@ nm=panel.SetUserScreen
 </node>
 <node>
 id=16
-lv=3
+lv=2
 dt=Text
 nm=panel.SetViewMode
 <article>
@@ -3434,7 +3412,7 @@ nm=panel.SetViewMode
 </node>
 <node>
 id=17
-lv=3
+lv=2
 dt=Text
 nm=panel.UpdatePanel
 <article>
@@ -3458,15 +3436,15 @@ nm=panel.UpdatePanel
 </node>
 <node>
 id=79
-lv=2
+lv=1
 dt=Text
-nm=Editor specific functions
+nm=Editor functions
 <article>
 </article>
 </node>
 <node>
 id=22
-lv=3
+lv=2
 dt=Text
 nm=editor.AddColor
 mtime=3515169452
@@ -3495,7 +3473,7 @@ mtime=3515169452
 </node>
 <node>
 id=223
-lv=3
+lv=2
 dt=Text
 nm=editor.AddStackBookmark
 mtime=3507542580
@@ -3516,7 +3494,7 @@ mtime=3507542580
 </node>
 <node>
 id=224
-lv=3
+lv=2
 dt=Text
 nm=editor.ClearStackBookmarks
 mtime=3507542594
@@ -3537,7 +3515,7 @@ mtime=3507542594
 </node>
 <node>
 id=444
-lv=3
+lv=2
 dt=Text
 nm=editor.DelColor
 ctime=3515093666
@@ -3562,7 +3540,7 @@ mtime=3515093738
 </node>
 <node>
 id=23
-lv=3
+lv=2
 dt=Text
 nm=editor.DeleteBlock
 mtime=3507542607
@@ -3584,7 +3562,7 @@ mtime=3507542607
 </node>
 <node>
 id=24
-lv=3
+lv=2
 dt=Text
 nm=editor.DeleteChar
 mtime=3507542619
@@ -3606,7 +3584,7 @@ mtime=3507542619
 </node>
 <node>
 id=225
-lv=3
+lv=2
 dt=Text
 nm=editor.DeleteStackBookmark
 mtime=3507542643
@@ -3628,7 +3606,7 @@ mtime=3507542643
 </node>
 <node>
 id=25
-lv=3
+lv=2
 dt=Text
 nm=editor.DeleteString
 mtime=3507542669
@@ -3650,7 +3628,7 @@ mtime=3507542669
 </node>
 <node>
 id=21
-lv=3
+lv=2
 dt=Text
 nm=editor.Editor
 mtime=3523943381
@@ -3683,7 +3661,7 @@ mtime=3523943381
 </node>
 <node>
 id=27
-lv=3
+lv=2
 dt=Text
 nm=editor.ExpandTabs
 mtime=3507542701
@@ -3706,7 +3684,7 @@ mtime=3507542701
 </node>
 <node>
 id=136
-lv=3
+lv=2
 dt=Text
 nm=editor.GetBookmarks
 mtime=3507542713
@@ -3738,7 +3716,7 @@ mtime=3507542713
 </node>
 <node>
 id=28
-lv=3
+lv=2
 dt=Text
 nm=editor.GetColor
 mtime=3508691626
@@ -3766,7 +3744,7 @@ mtime=3508691626
 </node>
 <node>
 id=261
-lv=3
+lv=2
 dt=Text
 nm=editor.GetFileName
 mtime=3507542738
@@ -3789,7 +3767,7 @@ mtime=3507542738
 </node>
 <node>
 id=29
-lv=3
+lv=2
 dt=Text
 nm=editor.GetInfo
 mtime=3507542754
@@ -3830,7 +3808,7 @@ mtime=3507542754
 </node>
 <node>
 id=30
-lv=3
+lv=2
 dt=Text
 nm=editor.GetSelection
 mtime=3507542774
@@ -3862,7 +3840,7 @@ mtime=3507542774
 </node>
 <node>
 id=230
-lv=3
+lv=2
 dt=Text
 nm=editor.GetStackBookmarks
 mtime=3507542793
@@ -3894,7 +3872,7 @@ mtime=3507542793
 </node>
 <node>
 id=31
-lv=3
+lv=2
 dt=Text
 nm=editor.GetString
 mtime=3526702606
@@ -3936,7 +3914,7 @@ mtime=3526702606
 </node>
 <node>
 id=448
-lv=3
+lv=2
 dt=Text
 nm=editor.GetStringW
 ctime=3523911376
@@ -3951,7 +3929,7 @@ mtime=3523911537
 </node>
 <node>
 id=32
-lv=3
+lv=2
 dt=Text
 nm=editor.InsertString
 mtime=3507542843
@@ -3974,7 +3952,7 @@ mtime=3507542843
 </node>
 <node>
 id=33
-lv=3
+lv=2
 dt=Text
 nm=editor.InsertText
 mtime=3507542869
@@ -3997,7 +3975,7 @@ mtime=3507542869
 </node>
 <node>
 id=450
-lv=3
+lv=2
 dt=Text
 nm=editor.InsertTextW
 ctime=3523911742
@@ -4013,7 +3991,7 @@ mtime=3523911803
 </node>
 <node>
 id=227
-lv=3
+lv=2
 dt=Text
 nm=editor.NextStackBookmark
 mtime=3507542898
@@ -4034,7 +4012,7 @@ mtime=3507542898
 </node>
 <node>
 id=226
-lv=3
+lv=2
 dt=Text
 nm=editor.PrevStackBookmark
 mtime=3507542972
@@ -4055,7 +4033,7 @@ mtime=3507542972
 </node>
 <node>
 id=36
-lv=3
+lv=2
 dt=Text
 nm=editor.ProcessInput
 mtime=3507543023
@@ -4084,7 +4062,7 @@ mtime=3507543023
 </node>
 <node>
 id=37
-lv=3
+lv=2
 dt=Text
 nm=editor.Quit
 mtime=3507543136
@@ -4106,7 +4084,7 @@ mtime=3507543136
 </node>
 <node>
 id=38
-lv=3
+lv=2
 dt=Text
 nm=editor.ReadInput
 mtime=3507543149
@@ -4130,7 +4108,7 @@ mtime=3507543149
 </node>
 <node>
 id=39
-lv=3
+lv=2
 dt=Text
 nm=editor.RealToTab
 mtime=3507543159
@@ -4155,7 +4133,7 @@ mtime=3507543159
 </node>
 <node>
 id=40
-lv=3
+lv=2
 dt=Text
 nm=editor.Redraw
 mtime=3507543169
@@ -4177,7 +4155,7 @@ mtime=3507543169
 </node>
 <node>
 id=41
-lv=3
+lv=2
 dt=Text
 nm=editor.SaveFile
 mtime=3507543178
@@ -4201,7 +4179,7 @@ mtime=3507543178
 </node>
 <node>
 id=42
-lv=3
+lv=2
 dt=Text
 nm=editor.Select
 mtime=3507818224
@@ -4236,7 +4214,7 @@ mtime=3507818224
 </node>
 <node>
 id=139
-lv=3
+lv=2
 dt=Text
 nm=editor.SetKeyBar
 mtime=3507547801
@@ -4264,7 +4242,7 @@ mtime=3507547801
 </node>
 <node>
 id=140
-lv=3
+lv=2
 dt=Text
 nm=editor.SetParam
 mtime=3507818234
@@ -4290,7 +4268,7 @@ mtime=3507818234
 </node>
 <node>
 id=43
-lv=3
+lv=2
 dt=Text
 nm=editor.SetPosition
 mtime=3507543264
@@ -4326,7 +4304,7 @@ mtime=3507543264
 </node>
 <node>
 id=44
-lv=3
+lv=2
 dt=Text
 nm=editor.SetString
 mtime=3526712409
@@ -4351,7 +4329,7 @@ mtime=3526712409
 </node>
 <node>
 id=449
-lv=3
+lv=2
 dt=Text
 nm=editor.SetStringW
 ctime=3523911625
@@ -4367,7 +4345,7 @@ mtime=3523911700
 </node>
 <node>
 id=45
-lv=3
+lv=2
 dt=Text
 nm=editor.SetTitle
 mtime=3507543302
@@ -4391,7 +4369,7 @@ mtime=3507543302
 </node>
 <node>
 id=48
-lv=3
+lv=2
 dt=Text
 nm=editor.TabToReal
 mtime=3507543313
@@ -4416,7 +4394,7 @@ mtime=3507543313
 </node>
 <node>
 id=137
-lv=3
+lv=2
 dt=Text
 nm=editor.TurnOffMarkingBlock
 mtime=3507543324
@@ -4439,7 +4417,7 @@ mtime=3507543324
 </node>
 <node>
 id=283
-lv=3
+lv=2
 dt=Text
 nm=editor.UndoRedo
 ctime=3476902749
@@ -4464,15 +4442,15 @@ mtime=3507818238
 </node>
 <node>
 id=80
-lv=2
+lv=1
 dt=Text
-nm=Viewer specific functions
+nm=Viewer functions
 <article>
 </article>
 </node>
 <node>
 id=132
-lv=3
+lv=2
 dt=Text
 nm=viewer.GetInfo
 mtime=3507624277
@@ -4506,7 +4484,7 @@ mtime=3507624277
 </node>
 <node>
 id=134
-lv=3
+lv=2
 dt=Text
 nm=viewer.Quit
 mtime=3507624360
@@ -4528,7 +4506,7 @@ mtime=3507624360
 </node>
 <node>
 id=135
-lv=3
+lv=2
 dt=Text
 nm=viewer.Redraw
 mtime=3507624410
@@ -4550,7 +4528,7 @@ mtime=3507624410
 </node>
 <node>
 id=144
-lv=3
+lv=2
 dt=Text
 nm=viewer.Select
 mtime=3507624477
@@ -4574,7 +4552,7 @@ mtime=3507624477
 </node>
 <node>
 id=141
-lv=3
+lv=2
 dt=Text
 nm=viewer.SetKeyBar
 mtime=3507624927
@@ -4602,7 +4580,7 @@ mtime=3507624927
 </node>
 <node>
 id=229
-lv=3
+lv=2
 dt=Text
 nm=viewer.SetMode
 mtime=3507818253
@@ -4627,7 +4605,7 @@ mtime=3507818253
 </node>
 <node>
 id=142
-lv=3
+lv=2
 dt=Text
 nm=viewer.SetPosition
 mtime=3507818286
@@ -4659,7 +4637,7 @@ mtime=3507818286
 </node>
 <node>
 id=77
-lv=3
+lv=2
 dt=Text
 nm=viewer.Viewer
 mtime=3523944710
@@ -4690,15 +4668,15 @@ mtime=3523944710
 </node>
 <node>
 id=81
-lv=2
+lv=1
 dt=Text
-nm=Dialog API functions
+nm=Dialog functions
 <article>
 </article>
 </node>
 <node>
 id=435
-lv=3
+lv=2
 dt=Text
 nm=far.ColorDialog
 ctime=3511465011
@@ -4726,7 +4704,7 @@ mtime=3511507793
 </node>
 <node>
 id=219
-lv=3
+lv=2
 dt=Text
 nm=far.DefDlgProc
 mtime=3507818290
@@ -4749,7 +4727,7 @@ mtime=3507818290
 </node>
 <node>
 id=20
-lv=3
+lv=2
 dt=Text
 nm=far.Dialog
 mtime=3512059153
@@ -4778,7 +4756,7 @@ mtime=3512059153
 </node>
 <node>
 id=380
-lv=3
+lv=2
 dt=Text
 nm=far.DialogFree
 ctime=3490426732
@@ -4806,7 +4784,7 @@ mtime=3490521200
 </node>
 <node>
 id=378
-lv=3
+lv=2
 dt=Text
 nm=far.DialogInit
 ctime=3490426716
@@ -4847,7 +4825,7 @@ mtime=3507818322
 </node>
 <node>
 id=379
-lv=3
+lv=2
 dt=Text
 nm=far.DialogRun
 ctime=3490426724
@@ -4871,7 +4849,7 @@ mtime=3490427035
 </node>
 <node>
 id=54
-lv=3
+lv=2
 dt=Text
 nm=far.GetDlgItem
 mtime=3492005390
@@ -4901,7 +4879,7 @@ mtime=3492005390
 </node>
 <node>
 id=62
-lv=3
+lv=2
 dt=Text
 nm=far.InputBox
 mtime=3519542187
@@ -4934,7 +4912,7 @@ mtime=3519542187
 </node>
 <node>
 id=65
-lv=3
+lv=2
 dt=Text
 nm=far.Message
 mtime=3519542294
@@ -4983,7 +4961,7 @@ mtime=3519542294
 </node>
 <node>
 id=71
-lv=3
+lv=2
 dt=Text
 nm=far.SendDlgMessage
 mtime=3520792714
@@ -5191,7 +5169,7 @@ mtime=3520792714
 </node>
 <node>
 id=72
-lv=3
+lv=2
 dt=Text
 nm=far.SetDlgItem
 mtime=3492005393
@@ -5221,9 +5199,9 @@ mtime=3492005393
 </node>
 <node>
 id=285
-lv=2
+lv=1
 dt=Text
-nm=Dialog API Events
+nm=Dialog Events
 ctime=3477040474
 mtime=3517903754
 <article>
@@ -5261,7 +5239,7 @@ mtime=3517903754
 </node>
 <node>
 id=297
-lv=3
+lv=2
 dt=Text
 nm=DN_BTNCLICK
 ctime=3477111575
@@ -5282,7 +5260,7 @@ mtime=3477128221
 </node>
 <node>
 id=298
-lv=3
+lv=2
 dt=Text
 nm=DN_CLOSE
 ctime=3477111575
@@ -5304,7 +5282,7 @@ mtime=3477128999
 </node>
 <node>
 id=409
-lv=3
+lv=2
 dt=Text
 nm=DN_CONTROLINPUT
 ctime=3507553254
@@ -5328,7 +5306,7 @@ mtime=3507553599
 </node>
 <node>
 id=299
-lv=3
+lv=2
 dt=Text
 nm=DN_CTLCOLORDIALOG
 ctime=3477111575
@@ -5352,7 +5330,7 @@ mtime=3517904357
 </node>
 <node>
 id=300
-lv=3
+lv=2
 dt=Text
 nm=DN_CTLCOLORDLGITEM
 ctime=3477111575
@@ -5376,7 +5354,7 @@ mtime=3517904325
 </node>
 <node>
 id=286
-lv=3
+lv=2
 dt=Text
 nm=DN_CTLCOLORDLGLIST
 ctime=3477040544
@@ -5400,7 +5378,7 @@ mtime=3517898033
 </node>
 <node>
 id=301
-lv=3
+lv=2
 dt=Text
 nm=DN_DRAGGED
 ctime=3477111575
@@ -5422,7 +5400,7 @@ mtime=3477133365
 </node>
 <node>
 id=302
-lv=3
+lv=2
 dt=Text
 nm=DN_DRAWDIALOG
 ctime=3477111575
@@ -5444,7 +5422,7 @@ mtime=3477133526
 </node>
 <node>
 id=303
-lv=3
+lv=2
 dt=Text
 nm=DN_DRAWDIALOGDONE
 ctime=3477111575
@@ -5466,7 +5444,7 @@ mtime=3477133567
 </node>
 <node>
 id=287
-lv=3
+lv=2
 dt=Text
 nm=DN_DRAWDLGITEM
 ctime=3477040579
@@ -5490,7 +5468,7 @@ mtime=3477135140
 </node>
 <node>
 id=288
-lv=3
+lv=2
 dt=Text
 nm=DN_EDITCHANGE
 ctime=3477040592
@@ -5513,7 +5491,7 @@ mtime=3477135273
 </node>
 <node>
 id=304
-lv=3
+lv=2
 dt=Text
 nm=DN_ENTERIDLE
 ctime=3477111575
@@ -5535,7 +5513,7 @@ mtime=3477135407
 </node>
 <node>
 id=454
-lv=3
+lv=2
 dt=Text
 nm=DN_GETVALUE
 ctime=3525638668
@@ -5566,7 +5544,7 @@ mtime=3525668226
 </node>
 <node>
 id=306
-lv=3
+lv=2
 dt=Text
 nm=DN_GOTFOCUS
 ctime=3477111575
@@ -5588,7 +5566,7 @@ mtime=3477137091
 </node>
 <node>
 id=289
-lv=3
+lv=2
 dt=Text
 nm=DN_HELP
 ctime=3477040601
@@ -5610,7 +5588,7 @@ mtime=3477153723
 </node>
 <node>
 id=307
-lv=3
+lv=2
 dt=Text
 nm=DN_HOTKEY
 ctime=3477111575
@@ -5632,7 +5610,7 @@ mtime=3477137752
 </node>
 <node>
 id=308
-lv=3
+lv=2
 dt=Text
 nm=DN_INITDIALOG
 ctime=3477111575
@@ -5654,7 +5632,7 @@ mtime=3501423628
 </node>
 <node>
 id=408
-lv=3
+lv=2
 dt=Text
 nm=DN_INPUT
 ctime=3507553234
@@ -5679,7 +5657,7 @@ mtime=3507709772
 </node>
 <node>
 id=310
-lv=3
+lv=2
 dt=Text
 nm=DN_KILLFOCUS
 ctime=3477111575
@@ -5701,7 +5679,7 @@ mtime=3477138131
 </node>
 <node>
 id=311
-lv=3
+lv=2
 dt=Text
 nm=DN_LISTCHANGE
 ctime=3477111575
@@ -5723,7 +5701,7 @@ mtime=3477138149
 </node>
 <node>
 id=312
-lv=3
+lv=2
 dt=Text
 nm=DN_LISTHOTKEY
 ctime=3477111575
@@ -5745,7 +5723,7 @@ mtime=3477138161
 </node>
 <node>
 id=292
-lv=3
+lv=2
 dt=Text
 nm=DN_RESIZECONSOLE
 ctime=3477040640
@@ -5768,7 +5746,7 @@ mtime=3477138715
 </node>
 <node>
 id=403
-lv=2
+lv=1
 dt=Text
 nm=Far Settings Control
 ctime=3507042743
@@ -5789,7 +5767,7 @@ mtime=3513280592
 </node>
 <node>
 id=416
-lv=3
+lv=2
 dt=Text
 nm=far.CreateSettings
 ctime=3507637218
@@ -5812,7 +5790,7 @@ mtime=3512813880
 </node>
 <node>
 id=443
-lv=3
+lv=2
 dt=Text
 nm=far.FreeSettings
 ctime=3513437113
@@ -5847,7 +5825,7 @@ mtime=3513437664
 </node>
 <node>
 id=422
-lv=3
+lv=2
 dt=Text
 nm=obj:CreateSubkey
 ctime=3507637684
@@ -5878,7 +5856,7 @@ mtime=3513280434
 </node>
 <node>
 id=417
-lv=3
+lv=2
 dt=Text
 nm=obj:Delete
 ctime=3507637642
@@ -5905,7 +5883,7 @@ mtime=3512975378
 </node>
 <node>
 id=418
-lv=3
+lv=2
 dt=Text
 nm=obj:Enum
 ctime=3507637655
@@ -5938,7 +5916,7 @@ mtime=3528578487
 </node>
 <node>
 id=419
-lv=3
+lv=2
 dt=Text
 nm=obj:Free
 ctime=3507637668
@@ -5966,7 +5944,7 @@ mtime=3513280678
 </node>
 <node>
 id=420
-lv=3
+lv=2
 dt=Text
 nm=obj:Get
 ctime=3507637674
@@ -5994,7 +5972,7 @@ mtime=3513106776
 </node>
 <node>
 id=442
-lv=3
+lv=2
 dt=Text
 nm=obj:OpenSubkey
 ctime=3513150721
@@ -6021,7 +5999,7 @@ mtime=3513280638
 </node>
 <node>
 id=421
-lv=3
+lv=2
 dt=Text
 nm=obj:Set
 ctime=3507637679
@@ -6052,7 +6030,7 @@ mtime=3513143858
 </node>
 <node>
 id=322
-lv=2
+lv=1
 dt=Text
 nm=File Filter Control
 ctime=3480243081
@@ -6098,7 +6076,7 @@ mtime=3480252933
 </node>
 <node>
 id=323
-lv=3
+lv=2
 dt=Text
 nm=far.CreateFileFilter
 ctime=3480243198
@@ -6130,7 +6108,7 @@ mtime=3507818385
 </node>
 <node>
 id=324
-lv=3
+lv=2
 dt=Text
 nm=f:FreeFileFilter
 ctime=3480243269
@@ -6158,7 +6136,7 @@ mtime=3481258596
 </node>
 <node>
 id=325
-lv=3
+lv=2
 dt=Text
 nm=f:OpenFiltersMenu
 ctime=3480243300
@@ -6182,7 +6160,7 @@ mtime=3480252058
 </node>
 <node>
 id=326
-lv=3
+lv=2
 dt=Text
 nm=f:StartingToFilter
 ctime=3480243319
@@ -6206,7 +6184,7 @@ mtime=3480252113
 </node>
 <node>
 id=327
-lv=3
+lv=2
 dt=Text
 nm=f:IsFileInFilter
 ctime=3480243336
@@ -6231,7 +6209,7 @@ mtime=3480252400
 </node>
 <node>
 id=82
-lv=2
+lv=1
 dt=Text
 nm=Far Standard Functions
 <article>
@@ -6239,7 +6217,7 @@ nm=Far Standard Functions
 </node>
 <node>
 id=284
-lv=3
+lv=2
 dt=Text
 nm=far.ConvertPath
 ctime=3476911603
@@ -6265,7 +6243,7 @@ mtime=3507818389
 </node>
 <node>
 id=3
-lv=3
+lv=2
 dt=Text
 nm=far.CopyToClipboard
 <article>
@@ -6287,34 +6265,40 @@ nm=far.CopyToClipboard
 </node>
 <node>
 id=186
-lv=3
+lv=2
 dt=Text
 nm=far.FarInputRecordToName
-mtime=3519359011
+mtime=3532768412
 <article>
-#_Name = far.FarInputRecordToName (Input)
+#_KeyComb = far.FarInputRecordToName (Input)
+#_Ctrl,Alt,Shift,Key = far.FarInputRecordToName (Input, true)
 #_
 #_**Parameters:**
-#_  Input: table InputRecord
-#_         (Field *EventType* is mandatory, other fields
-#_         are optional. If some field is missing, the default
-#_         value of 0/false is used, except for *wRepeatCount*
-#_         that defaults to 1).
+#_  Input:    table InputRecord
+#_            (Field *EventType* is mandatory, other fields
+#_            are optional. If some field is missing, the default
+#_            value of 0/false is used, except for *RepeatCount*
+#_            that defaults to 1).
 #_
 #_**Returns:**
-#_  Name:  string, or nil
+#_  KeyComb:  string
+#_  Ctrl:     "Ctrl", "RCtrl", or ""
+#_  Alt:      "Alt", "RAlt", or ""
+#_  Shift:    "Shift", or ""
+#_  Key:      key without key-modifiers, or ""
 #_
 #_**Far API used:**
 #_  FSF.FarInputRecordToName
 #_
 #_@@@
-#_<lua> Links = { ["\\bInputRecord\\b"]="187.html", } </lua>
+#_<lua> Links = { ["\\bInputRecord\\b"]="187.html", }
+#_</lua>
 #_
 </article>
 </node>
 <node>
 id=426
-lv=3
+lv=2
 dt=Text
 nm=far.FarNameToInputRecord
 ctime=3508525223
@@ -6340,7 +6324,7 @@ mtime=3519359123
 </node>
 <node>
 id=211
-lv=3
+lv=2
 dt=Text
 nm=far.FarRecursiveSearch
 mtime=3532506264
@@ -6373,7 +6357,7 @@ mtime=3532506264
 </node>
 <node>
 id=262
-lv=3
+lv=2
 dt=Text
 nm=far.GetCurrentDirectory
 <article>
@@ -6395,7 +6379,7 @@ nm=far.GetCurrentDirectory
 </node>
 <node>
 id=56
-lv=3
+lv=2
 dt=Text
 nm=far.GetFileOwner
 <article>
@@ -6417,7 +6401,7 @@ nm=far.GetFileOwner
 </node>
 <node>
 id=59
-lv=3
+lv=2
 dt=Text
 nm=far.GetNumberOfLinks
 <article>
@@ -6438,7 +6422,7 @@ nm=far.GetNumberOfLinks
 </node>
 <node>
 id=199
-lv=3
+lv=2
 dt=Text
 nm=far.GetPathRoot
 <article>
@@ -6459,7 +6443,7 @@ nm=far.GetPathRoot
 </node>
 <node>
 id=200
-lv=3
+lv=2
 dt=Text
 nm=far.GetReparsePointInfo
 <article>
@@ -6480,7 +6464,7 @@ nm=far.GetReparsePointInfo
 </node>
 <node>
 id=201
-lv=3
+lv=2
 dt=Text
 nm=far.LIsAlpha
 <article>
@@ -6501,7 +6485,7 @@ nm=far.LIsAlpha
 </node>
 <node>
 id=202
-lv=3
+lv=2
 dt=Text
 nm=far.LIsAlphanum
 <article>
@@ -6522,7 +6506,7 @@ nm=far.LIsAlphanum
 </node>
 <node>
 id=203
-lv=3
+lv=2
 dt=Text
 nm=far.LIsLower
 <article>
@@ -6543,7 +6527,7 @@ nm=far.LIsLower
 </node>
 <node>
 id=204
-lv=3
+lv=2
 dt=Text
 nm=far.LIsUpper
 <article>
@@ -6564,7 +6548,7 @@ nm=far.LIsUpper
 </node>
 <node>
 id=205
-lv=3
+lv=2
 dt=Text
 nm=far.LLowerBuf
 <article>
@@ -6585,7 +6569,7 @@ nm=far.LLowerBuf
 </node>
 <node>
 id=188
-lv=3
+lv=2
 dt=Text
 nm=far.LStricmp
 <article>
@@ -6606,7 +6590,7 @@ nm=far.LStricmp
 </node>
 <node>
 id=189
-lv=3
+lv=2
 dt=Text
 nm=far.LStrnicmp
 <article>
@@ -6628,7 +6612,7 @@ nm=far.LStrnicmp
 </node>
 <node>
 id=206
-lv=3
+lv=2
 dt=Text
 nm=far.LUpperBuf
 <article>
@@ -6649,7 +6633,7 @@ nm=far.LUpperBuf
 </node>
 <node>
 id=208
-lv=3
+lv=2
 dt=Text
 nm=far.MkLink
 mtime=3507818400
@@ -6674,7 +6658,7 @@ mtime=3507818400
 </node>
 <node>
 id=207
-lv=3
+lv=2
 dt=Text
 nm=far.MkTemp
 <article>
@@ -6695,7 +6679,7 @@ nm=far.MkTemp
 </node>
 <node>
 id=67
-lv=3
+lv=2
 dt=Text
 nm=far.PasteFromClipboard
 <article>
@@ -6717,7 +6701,7 @@ nm=far.PasteFromClipboard
 </node>
 <node>
 id=190
-lv=3
+lv=2
 dt=Text
 nm=far.ProcessName
 mtime=3507818405
@@ -6742,7 +6726,7 @@ mtime=3507818405
 </node>
 <node>
 id=209
-lv=3
+lv=2
 dt=Text
 nm=far.TruncPathStr
 <article>
@@ -6764,7 +6748,7 @@ nm=far.TruncPathStr
 </node>
 <node>
 id=210
-lv=3
+lv=2
 dt=Text
 nm=far.TruncStr
 <article>
@@ -6786,7 +6770,7 @@ nm=far.TruncStr
 </node>
 <node>
 id=335
-lv=3
+lv=2
 dt=Text
 nm=far.XLat
 ctime=3480362672
@@ -6812,7 +6796,7 @@ mtime=3511946413
 </node>
 <node>
 id=273
-lv=2
+lv=1
 dt=Text
 nm=Regular expression functions
 <article>
@@ -6820,7 +6804,7 @@ nm=Regular expression functions
 </node>
 <node>
 id=271
-lv=3
+lv=2
 dt=Text
 nm=regex.find, regex.findW
 mtime=3532684645
@@ -6856,7 +6840,7 @@ mtime=3532684645
 </node>
 <node>
 id=269
-lv=3
+lv=2
 dt=Text
 nm=regex.gmatch, regex.gmatchW
 mtime=3532684657
@@ -6891,7 +6875,7 @@ mtime=3532684657
 </node>
 <node>
 id=270
-lv=3
+lv=2
 dt=Text
 nm=regex.gsub, regex.gsubW
 mtime=3532684667
@@ -6929,7 +6913,7 @@ mtime=3532684667
 </node>
 <node>
 id=272
-lv=3
+lv=2
 dt=Text
 nm=regex.match, regex.matchW
 mtime=3532684676
@@ -6963,7 +6947,7 @@ mtime=3532684676
 </node>
 <node>
 id=266
-lv=3
+lv=2
 dt=Text
 nm=regex.new
 mtime=3532684281
@@ -6999,7 +6983,7 @@ mtime=3532684281
 </node>
 <node>
 id=377
-lv=4
+lv=3
 dt=Text
 nm=method bracketscount
 ctime=3489988958
@@ -7021,7 +7005,7 @@ mtime=3489990041
 </node>
 <node>
 id=267
-lv=4
+lv=3
 dt=Text
 nm=method find, findW
 mtime=3524034062
@@ -7050,7 +7034,7 @@ mtime=3524034062
 </node>
 <node>
 id=386
-lv=4
+lv=3
 dt=Text
 nm=method gsub, gsubW
 ctime=3497976622
@@ -7080,7 +7064,7 @@ mtime=3524034123
 </node>
 <node>
 id=268
-lv=4
+lv=3
 dt=Text
 nm=method match, matchW
 mtime=3524034111
@@ -7107,7 +7091,7 @@ mtime=3524034111
 </node>
 <node>
 id=83
-lv=2
+lv=1
 dt=Text
 nm=Other functions
 <article>
@@ -7115,7 +7099,7 @@ nm=Other functions
 </node>
 <node>
 id=185
-lv=3
+lv=2
 dt=Text
 nm=far.CPluginStartupInfo
 mtime=3526661259
@@ -7138,7 +7122,7 @@ mtime=3526661259
 </node>
 <node>
 id=18
-lv=3
+lv=2
 dt=Text
 nm=far.DeleteRegKey
 <article>
@@ -7164,7 +7148,7 @@ nm=far.DeleteRegKey
 </node>
 <node>
 id=61
-lv=3
+lv=2
 dt=Text
 nm=far.GetRegKey
 <article>
@@ -7199,7 +7183,7 @@ nm=far.GetRegKey
 </node>
 <node>
 id=191
-lv=3
+lv=2
 dt=Text
 nm=far.LuafarVersion
 mtime=3512121053
@@ -7235,7 +7219,7 @@ mtime=3512121053
 </node>
 <node>
 id=280
-lv=3
+lv=2
 dt=Text
 nm=far.MakeMenuItems
 ctime=3476605549
@@ -7264,7 +7248,7 @@ mtime=3476625213
 </node>
 <node>
 id=68
-lv=3
+lv=2
 dt=Text
 nm=far.PluginStartupInfo
 mtime=3507540816
@@ -7292,7 +7276,7 @@ mtime=3507540816
 </node>
 <node>
 id=73
-lv=3
+lv=2
 dt=Text
 nm=far.SetRegKey
 <article>
@@ -7322,7 +7306,7 @@ nm=far.SetRegKey
 </node>
 <node>
 id=282
-lv=3
+lv=2
 dt=Text
 nm=far.Show
 ctime=3476617735
@@ -7351,7 +7335,7 @@ mtime=3476624928
 </node>
 <node>
 id=346
-lv=3
+lv=2
 dt=Text
 nm=far.Timer
 ctime=3482124061
@@ -7405,7 +7389,7 @@ mtime=3520022259
 </node>
 <node>
 id=352
-lv=4
+lv=3
 dt=Text
 nm=Properties
 ctime=3482328762
@@ -7415,7 +7399,7 @@ mtime=3482328762
 </node>
 <node>
 id=354
-lv=5
+lv=4
 dt=Text
 nm=Closed
 ctime=3482328782
@@ -7429,7 +7413,7 @@ mtime=3482491340
 </node>
 <node>
 id=350
-lv=5
+lv=4
 dt=Text
 nm=Enabled
 ctime=3482328603
@@ -7452,7 +7436,7 @@ mtime=3482345154
 </node>
 <node>
 id=351
-lv=5
+lv=4
 dt=Text
 nm=Interval
 ctime=3482328655
@@ -7473,7 +7457,7 @@ mtime=3482344791
 </node>
 <node>
 id=355
-lv=4
+lv=3
 dt=Text
 nm=Methods
 ctime=3482328881
@@ -7483,7 +7467,7 @@ mtime=3482328881
 </node>
 <node>
 id=357
-lv=5
+lv=4
 dt=Text
 nm=Close
 ctime=3482328964
@@ -7512,7 +7496,7 @@ mtime=3482491377
 </node>
 <node>
 id=356
-lv=4
+lv=3
 dt=Text
 nm=Events
 ctime=3482328885
@@ -7522,7 +7506,7 @@ mtime=3482328885
 </node>
 <node>
 id=353
-lv=5
+lv=4
 dt=Text
 nm=OnTimer
 ctime=3482328777
@@ -7541,7 +7525,7 @@ mtime=3482450614
 </node>
 <node>
 id=439
-lv=2
+lv=1
 dt=Text
 nm=Tables
 ctime=3512119935
@@ -7551,7 +7535,7 @@ mtime=3512119935
 </node>
 <node>
 id=437
-lv=3
+lv=2
 dt=Text
 nm=far.Colors
 ctime=3512119667
@@ -7575,7 +7559,7 @@ mtime=3512120926
 </node>
 <node>
 id=57
-lv=3
+lv=2
 dt=Text
 nm=far.Flags
 mtime=3512058652
@@ -7775,33 +7759,32 @@ id=187
 lv=2
 dt=Text
 nm=InputRecord
-mtime=3508525401
+mtime=3532719927
 <article>
 #_**The table has the following fields:**
 #_
 #_  EventType:         integer
 #_
 #_  *--if EventType is KEY_EVENT or FARMACRO_KEY_EVENT:*
-#_  bKeyDown:          boolean
-#_  wRepeatCount:      integer
-#_  wVirtualKeyCode:   integer
-#_  wVirtualScanCode:  integer
-#_  AsciiChar:         integer
-#_  UnicodeChar:       integer
-#_  dwControlKeyState: integer
+#_  KeyDown:          boolean
+#_  RepeatCount:      integer
+#_  VirtualKeyCode:   integer
+#_  VirtualScanCode:  integer
+#_  UnicodeChar:      integer
+#_  ControlKeyState:  integer
 #_
 #_  *--if EventType is MOUSE_EVENT:*
 #_  see MouseEventRecord
 #_
 #_  *--if EventType is WINDOW_BUFFER_SIZE_EVENT:*
-#_  dwSizeX            integer
-#_  dwSizeY            integer
+#_  SizeX             integer
+#_  SizeY             integer
 #_
 #_  *--if EventType is MENU_EVENT:*
-#_  dwCommandId        integer
+#_  CommandId         integer
 #_
 #_  *--if EventType is FOCUS_EVENT:*
-#_  bSetFocus          boolean
+#_  SetFocus          boolean
 #_
 #_@@@
 #_<lua> Links = {
@@ -7839,15 +7822,15 @@ lv=2
 dt=Text
 nm=MouseEventRecord
 ctime=3477138206
-mtime=3477138526
+mtime=3532719874
 <article>
 #_**The table has the following fields:**
 #_
-#_  dwMousePositionX   :  integer
-#_  dwMousePositionY   :  integer
-#_  dwButtonState      :  integer
-#_  dwControlKeyState  :  integer
-#_  dwEventFlags       :  integer
+#_  MousePositionX   :  integer
+#_  MousePositionY   :  integer
+#_  ButtonState      :  integer
+#_  ControlKeyState  :  integer
+#_  EventFlags       :  integer
 #_
 #_
 </article>
@@ -7938,10 +7921,20 @@ nm=ViewerInfo.CurMode
 </article>
 </node>
 <node>
-id=405
+id=458
 lv=0
+dt=RTF
+nm=Additional libraries
+ctime=3532768921
+mtime=3532768921
+<article>
+</article>
+</node>
+<node>
+id=405
+lv=1
 dt=Text
-nm=LuaFAR bit64 library
+nm=bit64
 ctime=3507278228
 mtime=3509708996
 <article>
@@ -7970,9 +7963,9 @@ mtime=3509708996
 </node>
 <node>
 id=430
-lv=0
+lv=1
 dt=Text
-nm=LuaFAR win library
+nm=win
 ctime=3509087872
 mtime=3509095202
 <article>
@@ -7983,7 +7976,7 @@ mtime=3509095202
 </node>
 <node>
 id=274
-lv=1
+lv=2
 dt=Text
 nm=win.CompareString
 <article>
@@ -8022,7 +8015,7 @@ nm=win.CompareString
 </node>
 <node>
 id=360
-lv=1
+lv=2
 dt=Text
 nm=win.CopyFile
 ctime=3484575029
@@ -8047,7 +8040,7 @@ mtime=3484575702
 </node>
 <node>
 id=372
-lv=1
+lv=2
 dt=Text
 nm=win.CreateDir
 ctime=3488896876
@@ -8077,7 +8070,7 @@ mtime=3488897730
 </node>
 <node>
 id=361
-lv=1
+lv=2
 dt=Text
 nm=win.DeleteFile
 ctime=3484575113
@@ -8100,7 +8093,7 @@ mtime=3484575728
 </node>
 <node>
 id=394
-lv=1
+lv=2
 dt=Text
 nm=win.EnumSystemCodePages
 ctime=3500809326
@@ -8125,7 +8118,7 @@ mtime=3500809371
 </node>
 <node>
 id=51
-lv=1
+lv=2
 dt=Text
 nm=win.ExtractKey
 <article>
@@ -8150,7 +8143,7 @@ nm=win.ExtractKey
 </node>
 <node>
 id=215
-lv=1
+lv=2
 dt=Text
 nm=win.FileTimeToSystemTime
 <article>
@@ -8175,7 +8168,7 @@ nm=win.FileTimeToSystemTime
 </node>
 <node>
 id=391
-lv=1
+lv=2
 dt=Text
 nm=win.GetACP
 ctime=3500653631
@@ -8198,11 +8191,11 @@ mtime=3500653738
 </node>
 <node>
 id=359
-lv=1
+lv=2
 dt=Text
 nm=win.GetConsoleScreenBufferInfo
 ctime=3483001149
-mtime=3483001574
+mtime=3532720056
 <article>
 #_info = win.GetConsoleScreenBufferInfo ()
 #_
@@ -8212,17 +8205,17 @@ mtime=3483001574
 #_**Returns:**
 #_  info : table, or nil
 #_    fields of *info*:
-#_      dwSizeX:              integer
-#_      dwSizeY:              integer
-#_      dwCursorPositionX:    integer
-#_      dwCursorPositionY:    integer
-#_      wAttributes:          integer
-#_      srWindowLeft:         integer
-#_      srWindowTop:          integer
-#_      srWindowRight:        integer
-#_      srWindowBottom:       integer
-#_      dwMaximumWindowSizeX: integer
-#_      dwMaximumWindowSizeY: integer
+#_      SizeX:              integer
+#_      SizeY:              integer
+#_      CursorPositionX:    integer
+#_      CursorPositionY:    integer
+#_      Attributes:         integer
+#_      WindowLeft:         integer
+#_      WindowTop:          integer
+#_      WindowRight:        integer
+#_      WindowBottom:       integer
+#_      MaximumWindowSizeX: integer
+#_      MaximumWindowSizeY: integer
 #_
 #_**Windows API used:**
 #_  GetStdHandle(STD_OUTPUT_HANDLE), GetConsoleScreenBufferInfo
@@ -8233,7 +8226,7 @@ mtime=3483001574
 </node>
 <node>
 id=393
-lv=1
+lv=2
 dt=Text
 nm=win.GetCPInfo
 ctime=3500809281
@@ -8263,7 +8256,7 @@ mtime=3500809349
 </node>
 <node>
 id=398
-lv=1
+lv=2
 dt=Text
 nm=win.GetDriveType
 ctime=3504253206
@@ -8294,7 +8287,7 @@ mtime=3504253386
 </node>
 <node>
 id=152
-lv=1
+lv=2
 dt=Text
 nm=win.GetEnv
 <article>
@@ -8316,7 +8309,7 @@ nm=win.GetEnv
 </node>
 <node>
 id=433
-lv=1
+lv=2
 dt=Text
 nm=win.GetFileAttr
 ctime=3511264574
@@ -8340,7 +8333,7 @@ mtime=3511269317
 </node>
 <node>
 id=213
-lv=1
+lv=2
 dt=Text
 nm=win.GetFileInfo
 mtime=3509094971
@@ -8377,7 +8370,7 @@ mtime=3509094971
 </node>
 <node>
 id=397
-lv=1
+lv=2
 dt=Text
 nm=win.GetLogicalDriveStrings
 ctime=3504246962
@@ -8401,7 +8394,7 @@ mtime=3504247079
 </node>
 <node>
 id=392
-lv=1
+lv=2
 dt=Text
 nm=win.GetOEMCP
 ctime=3500653643
@@ -8425,7 +8418,7 @@ mtime=3500653766
 </node>
 <node>
 id=217
-lv=1
+lv=2
 dt=Text
 nm=win.GetSystemTime
 mtime=3510474846
@@ -8452,7 +8445,7 @@ mtime=3510474846
 </node>
 <node>
 id=212
-lv=1
+lv=2
 dt=Text
 nm=win.GetTimeZoneInformation
 <article>
@@ -8482,7 +8475,7 @@ nm=win.GetTimeZoneInformation
 </node>
 <node>
 id=315
-lv=1
+lv=2
 dt=Text
 nm=win.GetVirtualKeys
 ctime=3477369087
@@ -8517,7 +8510,7 @@ mtime=3522050567
 </node>
 <node>
 id=431
-lv=1
+lv=2
 dt=Text
 nm=win.GlobalMemoryStatus
 ctime=3509698664
@@ -8552,7 +8545,7 @@ mtime=3509699035
 </node>
 <node>
 id=452
-lv=1
+lv=2
 dt=Text
 nm=win.lenW
 ctime=3523918278
@@ -8576,7 +8569,7 @@ mtime=3523940191
 </node>
 <node>
 id=362
-lv=1
+lv=2
 dt=Text
 nm=win.MoveFile
 ctime=3484575124
@@ -8605,7 +8598,7 @@ mtime=3484631380
 </node>
 <node>
 id=370
-lv=1
+lv=2
 dt=Text
 nm=win.MultiByteToWideChar
 ctime=3487755325
@@ -8635,7 +8628,7 @@ mtime=3500869003
 </node>
 <node>
 id=256
-lv=1
+lv=2
 dt=Text
 nm=win.OemToUtf8
 <article>
@@ -8653,7 +8646,7 @@ nm=win.OemToUtf8
 </node>
 <node>
 id=373
-lv=1
+lv=2
 dt=Text
 nm=win.RemoveDir
 ctime=3488896891
@@ -8676,7 +8669,7 @@ mtime=3488897675
 </node>
 <node>
 id=363
-lv=1
+lv=2
 dt=Text
 nm=win.RenameFile
 ctime=3484723553
@@ -8689,7 +8682,7 @@ mtime=3484723622
 </node>
 <node>
 id=429
-lv=1
+lv=2
 dt=Text
 nm=win.SearchPath
 ctime=3509085619
@@ -8715,7 +8708,7 @@ mtime=3509095033
 </node>
 <node>
 id=192
-lv=1
+lv=2
 dt=Text
 nm=win.SetEnv
 <article>
@@ -8737,7 +8730,7 @@ nm=win.SetEnv
 </node>
 <node>
 id=434
-lv=1
+lv=2
 dt=Text
 nm=win.SetFileAttr
 ctime=3511264583
@@ -8762,7 +8755,7 @@ mtime=3511265301
 </node>
 <node>
 id=440
-lv=1
+lv=2
 dt=Text
 nm=win.SHGetFolderPath
 ctime=3512504855
@@ -8786,7 +8779,7 @@ mtime=3512540211
 </node>
 <node>
 id=428
-lv=1
+lv=2
 dt=Text
 nm=win.ShellExecute
 ctime=3509050121
@@ -8815,7 +8808,7 @@ mtime=3509086519
 </node>
 <node>
 id=432
-lv=1
+lv=2
 dt=Text
 nm=win.Sleep
 ctime=3510764612
@@ -8838,7 +8831,7 @@ mtime=3510764708
 </node>
 <node>
 id=451
-lv=1
+lv=2
 dt=Text
 nm=win.subW
 ctime=3523918268
@@ -8866,7 +8859,7 @@ mtime=3523940177
 </node>
 <node>
 id=216
-lv=1
+lv=2
 dt=Text
 nm=win.SystemTimeToFileTime
 <article>
@@ -8890,7 +8883,7 @@ nm=win.SystemTimeToFileTime
 </node>
 <node>
 id=264
-lv=1
+lv=2
 dt=Text
 nm=win.Utf16ToUtf8
 mtime=3491909511
@@ -8909,7 +8902,7 @@ mtime=3491909511
 </node>
 <node>
 id=257
-lv=1
+lv=2
 dt=Text
 nm=win.Utf8ToOem
 <article>
@@ -8928,7 +8921,7 @@ nm=win.Utf8ToOem
 </node>
 <node>
 id=265
-lv=1
+lv=2
 dt=Text
 nm=win.Utf8ToUtf16
 mtime=3491909525
@@ -8947,7 +8940,7 @@ mtime=3491909525
 </node>
 <node>
 id=399
-lv=1
+lv=2
 dt=Text
 nm=win.Uuid
 ctime=3505937334
@@ -8976,7 +8969,7 @@ mtime=3508317882
 </node>
 <node>
 id=456
-lv=1
+lv=2
 dt=Text
 nm=win.WideCharToMultiByte
 ctime=3528638377
@@ -9006,7 +8999,7 @@ mtime=3528778037
 </node>
 <node>
 id=275
-lv=1
+lv=2
 dt=Text
 nm=win.wcscmp
 <article>
@@ -9024,6 +9017,99 @@ nm=win.wcscmp
 #_  wcscmp, wcsicmp
 #_
 #_@@@
+#_
+</article>
+</node>
+<node>
+id=250
+lv=1
+dt=Text
+nm=Selene Unicode
+mtime=3514823822
+<article>
+#_<markdown>
+#_There are four string-like ctype closures: **`unicode.ascii`**,
+#_**`latin1`**, **`utf8`** and **`grapheme`**.
+#_
+#_**`ascii`** and **`latin1`** are single-byte like `string`,
+#_but use the unicode table for upper/lower and character classes.
+#_`ascii` does not touch bytes `> 127` on `upper`/`lower`.
+#_
+#_**`ascii`** or **`latin1`** can be used as locale-independent
+#_string replacement. (There is a compile switch to do this
+#_automatically for `ascii`).
+#_
+#_**`utf8`** operates on UTF-8 sequences as of RFC 3629:
+#_1 byte `0-7F`, 2 byte `80-7FF`, 3 byte `800-FFFF`,
+#_4 byte `1000-10FFFF` (not exclusing UTF-16 surrogate characters).
+#_Any byte not part of such a sequence is treated as it's (Latin-1)
+#_value.
+#_
+#_**`grapheme`** takes care of grapheme clusters, which are characters
+#_followed by "grapheme extension" characters (`Mn+Me`) like combining diacritical marks.
+#_
+#_**Calls are:**
+#_
+#_      len(str)
+#_      sub(str, start [,end=-1])
+#_      byte(str, start [,end=-1])
+#_      lower(str)
+#_      upper(str)
+#_      char(i [,j...])
+#_      reverse(str)
+#_
+#_Same as in `string`: `rep`, `format`, `dump`
+#_
+#_TODO: use char count with `%s` in `format`? (`sub` does the job)
+#_
+#_TODO: `grapheme.byte`: only first code of any cluster?
+#_
+#_* `find`, `gfind`, `gsub`: done, but need thorough testing ...:
+#_  `ascii` does not match them on any `%class` (but on `.`,
+#_  literals and ranges).
+#_* Behaviour of `%class` with class not ASCII is undefined.
+#_* Frontier `%f` currently disabled -- should we?
+#_
+#_**Character classes are:**
+#_
+#_      %a L* (Lu+Ll+Lt+Lm+Lo)
+#_      %c Cc
+#_      %d 0-9
+#_      %l Ll
+#_      %n N* (Nd+Nl+No, new)
+#_      %p P* (Pc+Pd+Ps+Pe+Pi+Pf+Po)
+#_      %s Z* (Zs+Zl+Zp) plus the controls 9-13 (HT,LF,VT,FF,CR)
+#_      %u Lu (also Lt ?)
+#_      %w %a+%n+Pc (e.g. '_')
+#_      %x 0-9A-Za-z
+#_      %z the 0 byte
+#_
+#_c.f.<br>
+#_[http://www.unicode.org/reports/tr44/tr44-6.html#Property_Values](http://www.unicode.org/reports/tr44/tr44-6.html#Property_Values)
+#_[http://unicode.org/Public/UNIDATA/UnicodeData.txt](http://unicode.org/Public/UNIDATA/UnicodeData.txt)
+#_
+#_**NOTE:**
+#_
+#_* `find` positions are in bytes for all ctypes!
+#_* use `ascii.sub` to cut found ranges! This is a) faster,
+#_  b) more reliable
+#_
+#_**`utf8`** behaviour:
+#_
+#_* `match` is by codes, code ranges are supported
+#_
+#_**`grapheme`** behaviour:
+#_
+#_* any `%class`, '`.`' and range match includes any following grapheme
+#_  extensions.
+#_* Ranges apply to single code points only.
+#_* If a `[]` enumeration contains a grapheme cluster, this matches
+#_  only the exact same cluster.
+#_* However, a literal single '`o`' standalone or in an `[]`
+#_  enumeration will match just that '`o`', even if it has a
+#_  extension in the string. Consequently, grapheme match positions
+#_  are not always cluster positions.
+#_
 #_
 </article>
 </node>
@@ -10119,99 +10205,6 @@ mtime=3510176888
 #_This mechanism allows the default script to be either embedded into the application or external.
 #_
 #_@@@
-#_
-</article>
-</node>
-<node>
-id=250
-lv=0
-dt=Text
-nm=Selene Unicode library
-mtime=3514823822
-<article>
-#_<markdown>
-#_There are four string-like ctype closures: **`unicode.ascii`**,
-#_**`latin1`**, **`utf8`** and **`grapheme`**.
-#_
-#_**`ascii`** and **`latin1`** are single-byte like `string`,
-#_but use the unicode table for upper/lower and character classes.
-#_`ascii` does not touch bytes `> 127` on `upper`/`lower`.
-#_
-#_**`ascii`** or **`latin1`** can be used as locale-independent
-#_string replacement. (There is a compile switch to do this
-#_automatically for `ascii`).
-#_
-#_**`utf8`** operates on UTF-8 sequences as of RFC 3629:
-#_1 byte `0-7F`, 2 byte `80-7FF`, 3 byte `800-FFFF`,
-#_4 byte `1000-10FFFF` (not exclusing UTF-16 surrogate characters).
-#_Any byte not part of such a sequence is treated as it's (Latin-1)
-#_value.
-#_
-#_**`grapheme`** takes care of grapheme clusters, which are characters
-#_followed by "grapheme extension" characters (`Mn+Me`) like combining diacritical marks.
-#_
-#_**Calls are:**
-#_
-#_      len(str)
-#_      sub(str, start [,end=-1])
-#_      byte(str, start [,end=-1])
-#_      lower(str)
-#_      upper(str)
-#_      char(i [,j...])
-#_      reverse(str)
-#_
-#_Same as in `string`: `rep`, `format`, `dump`
-#_
-#_TODO: use char count with `%s` in `format`? (`sub` does the job)
-#_
-#_TODO: `grapheme.byte`: only first code of any cluster?
-#_
-#_* `find`, `gfind`, `gsub`: done, but need thorough testing ...:
-#_  `ascii` does not match them on any `%class` (but on `.`,
-#_  literals and ranges).
-#_* Behaviour of `%class` with class not ASCII is undefined.
-#_* Frontier `%f` currently disabled -- should we?
-#_
-#_**Character classes are:**
-#_
-#_      %a L* (Lu+Ll+Lt+Lm+Lo)
-#_      %c Cc
-#_      %d 0-9
-#_      %l Ll
-#_      %n N* (Nd+Nl+No, new)
-#_      %p P* (Pc+Pd+Ps+Pe+Pi+Pf+Po)
-#_      %s Z* (Zs+Zl+Zp) plus the controls 9-13 (HT,LF,VT,FF,CR)
-#_      %u Lu (also Lt ?)
-#_      %w %a+%n+Pc (e.g. '_')
-#_      %x 0-9A-Za-z
-#_      %z the 0 byte
-#_
-#_c.f.<br>
-#_[http://www.unicode.org/reports/tr44/tr44-6.html#Property_Values](http://www.unicode.org/reports/tr44/tr44-6.html#Property_Values)
-#_[http://unicode.org/Public/UNIDATA/UnicodeData.txt](http://unicode.org/Public/UNIDATA/UnicodeData.txt)
-#_
-#_**NOTE:**
-#_
-#_* `find` positions are in bytes for all ctypes!
-#_* use `ascii.sub` to cut found ranges! This is a) faster,
-#_  b) more reliable
-#_
-#_**`utf8`** behaviour:
-#_
-#_* `match` is by codes, code ranges are supported
-#_
-#_**`grapheme`** behaviour:
-#_
-#_* any `%class`, '`.`' and range match includes any following grapheme
-#_  extensions.
-#_* Ranges apply to single code points only.
-#_* If a `[]` enumeration contains a grapheme cluster, this matches
-#_  only the exact same cluster.
-#_* However, a literal single '`o`' standalone or in an `[]`
-#_  enumeration will match just that '`o`', even if it has a
-#_  extension in the string. Consequently, grapheme match positions
-#_  are not always cluster positions.
-#_
 #_
 </article>
 </node>
