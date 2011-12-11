@@ -1442,7 +1442,7 @@ mtime=3510177042
 id=123
 lv=1
 dt=Text
-nm=Panel specific functions
+nm=Panel functions
 <article>
 </article>
 </node>
@@ -1890,7 +1890,7 @@ mtime=3509018950
 id=124
 lv=1
 dt=Text
-nm=Editor specific functions
+nm=Editor functions
 <article>
 </article>
 </node>
@@ -1939,7 +1939,7 @@ mtime=3522051184
 id=125
 lv=1
 dt=Text
-nm=Viewer specific functions
+nm=Viewer functions
 <article>
 </article>
 </node>
@@ -1967,7 +1967,7 @@ mtime=3509018963
 id=220
 lv=1
 dt=Text
-nm=Dialog specific functions
+nm=Dialog functions
 <article>
 </article>
 </node>
@@ -6264,98 +6264,6 @@ nm=far.CopyToClipboard
 </article>
 </node>
 <node>
-id=186
-lv=2
-dt=Text
-nm=far.FarInputRecordToName
-mtime=3532778220
-<article>
-#_KeyComb = far.FarInputRecordToName (Input)
-#_Ctrl,Alt,Shift,Key = far.FarInputRecordToName (Input, true)
-#_
-#_**Parameters:**
-#_  Input:    table InputRecord
-#_            (Field *EventType* is mandatory, other fields
-#_            are optional. If some field is missing, the default
-#_            value of 0/false is used, except for *RepeatCount*
-#_            that defaults to 1).
-#_
-#_**Returns:**
-#_  KeyComb:  string
-#_  Ctrl:     "Ctrl", "RCtrl", or *false*
-#_  Alt:      "Alt", "RAlt", or *false*
-#_  Shift:    "Shift", or *false*
-#_  Key:      key without key-modifiers, or *false*
-#_
-#_**Far API used:**
-#_  FSF.FarInputRecordToName
-#_
-#_@@@
-#_<lua> Links = { ["\\bInputRecord\\b"]="187.html", }
-#_</lua>
-#_
-</article>
-</node>
-<node>
-id=426
-lv=2
-dt=Text
-nm=far.FarNameToInputRecord
-ctime=3508525223
-mtime=3519359123
-<article>
-#_Record = far.FarNameToInputRecord (Name)
-#_
-#_**Parameters:**
-#_  Name:   string
-#_
-#_**Returns:**
-#_  Record: table InputRecord, or nil
-#_er
-#_
-#_**Far API used:**
-#_  FSF.FarNameToInputRecord
-#_
-#_@@@
-#_<lua> Links = { ["\\bInputRecord\\b"]="187.html", } </lua>
-#_
-#_
-</article>
-</node>
-<node>
-id=211
-lv=2
-dt=Text
-nm=far.FarRecursiveSearch
-mtime=3532506264
-<article>
-#_far.FarRecursiveSearch (InitDir, Mask, UserFunc [, Flags])
-#_
-#_**Parameters:**
-#_  InitDir:  string
-#_  Mask:     string
-#_  UserFunc: function
-#_  Flags:    flags
-#_
-#_**Returns:**
-#_  nothing
-#_
-#_**Description:**
-#_  On every file found, *UserFunc* is called with 2 arguments
-#_  passed to it:
-#_      (1) a FindData table, and
-#_      (2) the full pathname of the found file.
-#_  If *UserFunc* returns *true* then the search is stopped.
-#_
-#_**Far API used:**
-#_  FSF.FarRecursiveSearch
-#_
-#_@@@
-#_<lua> Links = { FindData="90.html" } </lua>
-#_
-</article>
-</node>
-<node>
 id=262
 lv=2
 dt=Text
@@ -6459,6 +6367,39 @@ nm=far.GetReparsePointInfo
 #_  FSF.GetReparsePointInfo
 #_
 #_@@@
+#_
+</article>
+</node>
+<node>
+id=186
+lv=2
+dt=Text
+nm=far.InputRecordToName
+mtime=3532787197
+<article>
+#_KeyComb = far.InputRecordToName (Input)
+#_Ctrl,Alt,Shift,Key = far.InputRecordToName (Input, true)
+#_
+#_**Parameters:**
+#_  Input:    table InputRecord
+#_            (Field *EventType* is mandatory, other fields
+#_            are optional. If some field is missing, the default
+#_            value of 0/false is used, except for *RepeatCount*
+#_            that defaults to 1).
+#_
+#_**Returns:**
+#_  KeyComb:  string
+#_  Ctrl:     "Ctrl", "RCtrl", or *false*
+#_  Alt:      "Alt", "RAlt", or *false*
+#_  Shift:    "Shift", or *false*
+#_  Key:      key without key-modifiers, or *false*
+#_
+#_**Far API used:**
+#_  FSF.FarInputRecordToName
+#_
+#_@@@
+#_<lua> Links = { ["\\bInputRecord\\b"]="187.html", }
+#_</lua>
 #_
 </article>
 </node>
@@ -6678,6 +6619,32 @@ nm=far.MkTemp
 </article>
 </node>
 <node>
+id=426
+lv=2
+dt=Text
+nm=far.NameToInputRecord
+ctime=3508525223
+mtime=3532787207
+<article>
+#_Record = far.NameToInputRecord (Name)
+#_
+#_**Parameters:**
+#_  Name:   string
+#_
+#_**Returns:**
+#_  Record: table InputRecord, or nil
+#_er
+#_
+#_**Far API used:**
+#_  FSF.FarNameToInputRecord
+#_
+#_@@@
+#_<lua> Links = { ["\\bInputRecord\\b"]="187.html", } </lua>
+#_
+#_
+</article>
+</node>
+<node>
 id=67
 lv=2
 dt=Text
@@ -6721,6 +6688,39 @@ mtime=3507818405
 #_  FSF.ProcessName
 #_
 #_@@@
+#_
+</article>
+</node>
+<node>
+id=211
+lv=2
+dt=Text
+nm=far.RecursiveSearch
+mtime=3532787219
+<article>
+#_far.RecursiveSearch (InitDir, Mask, UserFunc [, Flags])
+#_
+#_**Parameters:**
+#_  InitDir:  string
+#_  Mask:     string
+#_  UserFunc: function
+#_  Flags:    flags
+#_
+#_**Returns:**
+#_  nothing
+#_
+#_**Description:**
+#_  On every file found, *UserFunc* is called with 2 arguments
+#_  passed to it:
+#_      (1) a FindData table, and
+#_      (2) the full pathname of the found file.
+#_  If *UserFunc* returns *true* then the search is stopped.
+#_
+#_**Far API used:**
+#_  FSF.FarRecursiveSearch
+#_
+#_@@@
+#_<lua> Links = { FindData="90.html" } </lua>
 #_
 </article>
 </node>

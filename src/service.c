@@ -3334,7 +3334,7 @@ static int far_PasteFromClipboard (lua_State *L)
   return 1;
 }
 
-static int far_FarInputRecordToName (lua_State *L)
+static int far_InputRecordToName (lua_State *L)
 {
   wchar_t buf[256];
   INPUT_RECORD ir;
@@ -3367,7 +3367,7 @@ static int far_FarInputRecordToName (lua_State *L)
   return 1;
 }
 
-static int far_FarNameToInputRecord (lua_State *L)
+static int far_NameToInputRecord (lua_State *L)
 {
   INPUT_RECORD ir;
   const wchar_t* str = check_utf8_string(L, 1, NULL);
@@ -3543,7 +3543,7 @@ static int WINAPI FrsUserFunc (const struct PluginPanelItem *FData, const wchar_
   return proceed;
 }
 
-static int far_FarRecursiveSearch (lua_State *L)
+static int far_RecursiveSearch (lua_State *L)
 {
   const wchar_t *InitDir = check_utf8_string(L, 1, NULL);
   const wchar_t *Mask = check_utf8_string(L, 2, NULL);
@@ -4915,8 +4915,8 @@ const luaL_reg far_funcs[] = {
   {"DeleteRegKey",        far_DeleteRegKey},
   {"CopyToClipboard",     far_CopyToClipboard},
   {"PasteFromClipboard",  far_PasteFromClipboard},
-  {"FarInputRecordToName",far_FarInputRecordToName},
-  {"FarNameToInputRecord",far_FarNameToInputRecord},
+  {"InputRecordToName",   far_InputRecordToName},
+  {"NameToInputRecord",   far_NameToInputRecord},
   {"LStricmp",            far_LStricmp},
   {"LStrnicmp",           far_LStrnicmp},
   {"ProcessName",         far_ProcessName},
@@ -4932,7 +4932,7 @@ const luaL_reg far_funcs[] = {
   {"MkLink",              far_MkLink},
   {"TruncPathStr",        far_TruncPathStr},
   {"TruncStr",            far_TruncStr},
-  {"FarRecursiveSearch",  far_FarRecursiveSearch},
+  {"RecursiveSearch",     far_RecursiveSearch},
   {"ConvertPath",         far_ConvertPath},
   {"XLat",                far_XLat},
 
