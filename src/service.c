@@ -3347,16 +3347,16 @@ static int far_FarInputRecordToName (lua_State *L)
       static const char C[]="RCtrl", A[]="RAlt", S[]="Shift";
       if (!strncmp(p, C+1, 4))       { lua_pushstring(L, C+1);  p += 4; }
       else if (!strncmp(p, C, 5))    { lua_pushstring(L, C); p += 5; }
-      else lua_pushliteral(L, "");
+      else lua_pushboolean(L, 0);
 
       if (!strncmp(p, A+1, 3))       { lua_pushstring(L, A+1);  p += 3; }
       else if (!strncmp(p, A, 4))    { lua_pushstring(L, A); p += 4; }
-      else lua_pushliteral(L, "");
+      else lua_pushboolean(L, 0);
 
       if (!strncmp(p, S, 5))         { lua_pushstring(L, S); p += 5; }
-      else lua_pushliteral(L, "");
+      else lua_pushboolean(L, 0);
 
-      lua_pushstring(L, p);
+      *p ? lua_pushstring(L, p) : lua_pushboolean(L, 0);
       return 4;
     }
     else

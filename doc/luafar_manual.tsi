@@ -6268,7 +6268,7 @@ id=186
 lv=2
 dt=Text
 nm=far.FarInputRecordToName
-mtime=3532768412
+mtime=3532778220
 <article>
 #_KeyComb = far.FarInputRecordToName (Input)
 #_Ctrl,Alt,Shift,Key = far.FarInputRecordToName (Input, true)
@@ -6282,10 +6282,10 @@ mtime=3532768412
 #_
 #_**Returns:**
 #_  KeyComb:  string
-#_  Ctrl:     "Ctrl", "RCtrl", or ""
-#_  Alt:      "Alt", "RAlt", or ""
-#_  Shift:    "Shift", or ""
-#_  Key:      key without key-modifiers, or ""
+#_  Ctrl:     "Ctrl", "RCtrl", or *false*
+#_  Alt:      "Alt", "RAlt", or *false*
+#_  Shift:    "Shift", or *false*
+#_  Key:      key without key-modifiers, or *false*
 #_
 #_**Far API used:**
 #_  FSF.FarInputRecordToName
