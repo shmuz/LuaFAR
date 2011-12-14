@@ -1435,16 +1435,10 @@ int LF_Message(lua_State *L,
   CONSOLE_SCREEN_BUFFER_INFO csbi;
   HANDLE hnd = GetStdHandle(STD_OUTPUT_HANDLE);
   int ret = GetConsoleScreenBufferInfo(hnd, &csbi);
-  const int MAXLEN    = ret ? csbi.srWindow.Right - csbi.srWindow.Left+1-14 : 66;
-  const int MAX_ITEMS = ret ? csbi.srWindow.Bottom - csbi.srWindow.Top+1-3 : 22;
-  const wchar_t** items = (const wchar_t**) malloc(MAX_ITEMS * sizeof(wchar_t*));
-  const wchar_t** pItems = items;
-  int num_items = 0, num_buttons = 0;
+  const int max_len   = ret ? csbi.srWindow.Right - csbi.srWindow.Left+1-14 : 66;
+  const int max_lines = ret ? csbi.srWindow.Bottom - csbi.srWindow.Top+1-5 : 20;
+  int num_lines = 0, num_buttons = 0;
   UINT64 Flags = 0;
-
-  // Title
-  *pItems++ = aTitle;
-  num_items++;
 
   // Buttons
   wchar_t *BtnCopy = NULL, *ptr = NULL;
@@ -1459,10 +1453,9 @@ int LF_Message(lua_State *L,
   }
   else {
     // Buttons: 1-st pass, determining number of buttons
-    // (giving buttons priority over message lines).
     BtnCopy = wcsdup(aButtons);
     ptr = BtnCopy;
-    while (*ptr && (num_buttons < MAX_ITEMS-2)) {
+    while (*ptr && (num_buttons < 64)) {
       while (*ptr == L';')
         ptr++; // skip semicolons
       if (*ptr) {
@@ -1471,30 +1464,35 @@ int LF_Message(lua_State *L,
         if (!ptr) break;
       }
     }
-    num_items += num_buttons;
   }
 
+  const wchar_t** items = (const wchar_t**) malloc((1+max_lines+num_buttons) * sizeof(wchar_t*));
+  wchar_t** allocLines = (wchar_t**) malloc(max_lines * sizeof(wchar_t*)); // array of pointers to allocated lines
+  int nAlloc = 0;                                                          // number of allocated lines
+  const wchar_t** pItems = items;
+
+  // Title
+  *pItems++ = aTitle;
+
   // Message lines
-  wchar_t* allocLines[MAX_ITEMS];       // array of pointers to allocated lines
-  int nAlloc = 0;                       // number of allocated lines
   wchar_t *lastSpace = NULL, *lastDelim = NULL;
 
   wchar_t* MsgCopy = wcsdup(aMsg);
   wchar_t *start=MsgCopy, *pos=MsgCopy;
-  while (num_items < MAX_ITEMS) {
+  while (num_lines < max_lines) {
     if (*pos == 0) {                       // end of the entire message
       *pItems++ = start;
-      ++num_items;
+      ++num_lines;
       break;
     }
-    else if (*pos == '\n') {               // end of a message line
+    else if (*pos == L'\n') {              // end of a message line
       *pItems++ = start;
-      *pos = '\0';
-      ++num_items;
+      *pos = L'\0';
+      ++num_lines;
       start = ++pos;
       lastSpace = lastDelim = NULL;
     }
-    else if (pos-start < MAXLEN) {         // characters inside the line
+    else if (pos-start < max_len) {         // characters inside the line
       if (*pos == L' ' || *pos == L'\t') lastSpace = pos;
       else if (!isalnum(*pos) && *pos != L'_') lastDelim = pos;
       pos++;
@@ -1506,7 +1504,7 @@ int LF_Message(lua_State *L,
       *pItems++ = *q = (wchar_t*) malloc((len+1)*sizeof(wchar_t));
       wcsncpy(*q, start, len);
       (*q)[len] = L'\0';
-      ++num_items;
+      ++num_lines;
       start = pos;
       lastSpace = lastDelim = NULL;
     }
@@ -1517,7 +1515,7 @@ int LF_Message(lua_State *L,
     int i;
     ptr = BtnCopy;
     for (i=0; i < num_buttons; i++) {
-      while (*ptr == ';')
+      while (*ptr == L';')
         ++ptr;
       if (*ptr) {
         *pItems++ = ptr;
@@ -1542,9 +1540,11 @@ int LF_Message(lua_State *L,
   // Id
   if (aMessageGuid == NULL) aMessageGuid = pd->PluginId;
 
-  ret = pd->Info->Message(pd->PluginId, aMessageGuid, Flags, aHelpTopic, items, num_items, num_buttons);
+  ret = pd->Info->Message(pd->PluginId, aMessageGuid, Flags, aHelpTopic, items,
+                          1+num_lines+num_buttons, num_buttons);
   free(BtnCopy);
   while(nAlloc) free(allocLines[--nAlloc]);
+  free (allocLines);
   free(MsgCopy);
   free(items);
   return ret;
