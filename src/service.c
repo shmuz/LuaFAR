@@ -1159,7 +1159,7 @@ int pushInputRecord(lua_State *L, const INPUT_RECORD* ir)
       PutNumToTable(L, "RepeatCount", ir->Event.KeyEvent.wRepeatCount);
       PutNumToTable(L, "VirtualKeyCode", ir->Event.KeyEvent.wVirtualKeyCode);
       PutNumToTable(L, "VirtualScanCode", ir->Event.KeyEvent.wVirtualScanCode);
-      PutNumToTable(L, "UnicodeChar", ir->Event.KeyEvent.uChar.UnicodeChar);
+      PutWStrToTable(L, "UnicodeChar", &ir->Event.KeyEvent.uChar.UnicodeChar, 1);
       PutNumToTable(L, "ControlKeyState", ir->Event.KeyEvent.dwControlKeyState);
       break;
 
@@ -1214,7 +1214,9 @@ static void FillInputRecord(lua_State *L, int pos, INPUT_RECORD *ir)
       ir->Event.KeyEvent.wRepeatCount = GetOptIntFromTable(L, "RepeatCount", 1);
       ir->Event.KeyEvent.wVirtualKeyCode = GetOptIntFromTable(L, "VirtualKeyCode", 0);
       ir->Event.KeyEvent.wVirtualScanCode = GetOptIntFromTable(L, "VirtualScanCode", 0);
-      ir->Event.KeyEvent.uChar.UnicodeChar = GetOptIntFromTable(L, "UnicodeChar", 0);
+      lua_getfield(L, -1, "UnicodeChar");
+      ir->Event.KeyEvent.uChar.UnicodeChar = *opt_utf8_string (L, -1, L"");
+      lua_pop(L, 1);
       ir->Event.KeyEvent.dwControlKeyState = GetOptIntFromTable(L, "ControlKeyState", 0);
       break;
 

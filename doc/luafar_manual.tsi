@@ -7759,7 +7759,7 @@ id=187
 lv=2
 dt=Text
 nm=InputRecord
-mtime=3532719927
+mtime=3533399494
 <article>
 #_**The table has the following fields:**
 #_
@@ -7770,7 +7770,7 @@ mtime=3532719927
 #_  RepeatCount:      integer
 #_  VirtualKeyCode:   integer
 #_  VirtualScanCode:  integer
-#_  UnicodeChar:      integer
+#_  UnicodeChar:      string
 #_  ControlKeyState:  integer
 #_
 #_  *--if EventType is MOUSE_EVENT:*
