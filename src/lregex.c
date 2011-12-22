@@ -398,7 +398,7 @@ int func_gsub     (lua_State *L)  { return rx_gsub(L, 1, 0); }
 int method_gsubW  (lua_State *L)  { return rx_gsub(L, 0, 1); }
 int func_gsubW    (lua_State *L)  { return rx_gsub(L, 1, 1); }
 
-const luaL_reg regex_methods[] = {
+const luaL_Reg regex_methods[] = {
   {"find",          method_find},
   {"gsub",          method_gsub},
   {"match",         method_match},
@@ -413,7 +413,7 @@ const luaL_reg regex_methods[] = {
   {NULL, NULL}
 };
 
-const luaL_reg regex_functions[] = {
+const luaL_Reg regex_functions[] = {
   {"new",           func_New},
 
   {"find",          func_find},

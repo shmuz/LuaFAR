@@ -116,7 +116,7 @@ static int arshift(lua_State *L)
   return push64(L, res);
 }
 
-static const luaL_reg funcs[] = {
+static const luaL_Reg funcs[] = {
   { "bnot",    bnot    },
   { "band",    band    },
   { "bor",     bor     },

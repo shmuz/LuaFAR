@@ -4747,7 +4747,7 @@ static int far_ColorDialog (lua_State *L)
   return 1;
 }
 
-const luaL_reg timer_methods[] = {
+const luaL_Reg timer_methods[] = {
   {"__gc",                timer_Close},
   {"__tostring",          timer_tostring},
   {"__index",             timer_index},
@@ -4755,7 +4755,7 @@ const luaL_reg timer_methods[] = {
   {NULL, NULL},
 };
 
-const luaL_reg filefilter_methods[] = {
+const luaL_Reg filefilter_methods[] = {
   {"__gc",                filefilter_gc},
   {"__tostring",          filefilter_tostring},
   {"FreeFileFilter",      filefilter_Free},
@@ -4765,13 +4765,13 @@ const luaL_reg filefilter_methods[] = {
   {NULL, NULL},
 };
 
-const luaL_reg dialog_methods[] = {
+const luaL_Reg dialog_methods[] = {
   {"__gc",                far_DialogFree},
   {"__tostring",          dialog_tostring},
   {NULL, NULL},
 };
 
-const luaL_reg Settings_methods[] = {
+const luaL_Reg Settings_methods[] = {
   {"__gc",                Settings_free},
   {"__tostring",          Settings_tostring},
   {"Delete",              Settings_delete},
@@ -4784,7 +4784,7 @@ const luaL_reg Settings_methods[] = {
   {NULL, NULL},
 };
 
-const luaL_reg editor_funcs[] = {
+const luaL_Reg editor_funcs[] = {
   {"AddColor",            editor_AddColor},
   {"AddStackBookmark",    editor_AddStackBookmark},
   {"ClearStackBookmarks", editor_ClearStackBookmarks},
@@ -4827,7 +4827,7 @@ const luaL_reg editor_funcs[] = {
   {NULL, NULL},
 };
 
-const luaL_reg viewer_funcs[] = {
+const luaL_Reg viewer_funcs[] = {
   {"GetInfo",             viewer_GetInfo},
   {"Quit",                viewer_Quit},
   {"Redraw",              viewer_Redraw},
@@ -4839,7 +4839,7 @@ const luaL_reg viewer_funcs[] = {
   {NULL, NULL},
 };
 
-const luaL_reg panel_funcs[] = {
+const luaL_Reg panel_funcs[] = {
 //{"Control",             far_Control}, // done as multiple functions
   {"CheckPanelsExist",    panel_CheckPanelsExist},
   {"ClearSelection",      panel_ClearSelection},
@@ -4876,7 +4876,7 @@ const luaL_reg panel_funcs[] = {
   {NULL, NULL},
 };
 
-const luaL_reg far_funcs[] = {
+const luaL_Reg far_funcs[] = {
   {"PluginStartupInfo",   far_PluginStartupInfo},
 
   {"DialogInit",          far_DialogInit},
@@ -4950,7 +4950,7 @@ const luaL_reg far_funcs[] = {
   {NULL, NULL}
 };
 
-const luaL_reg win_funcs[] = {
+const luaL_Reg win_funcs[] = {
   {"CompareString",       win_CompareString},
   {"CopyFile",            win_CopyFile},
   {"CreateDir",           win_CreateDir},

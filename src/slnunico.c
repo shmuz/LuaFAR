@@ -1387,7 +1387,7 @@ int ext_uni_match ( void *state, const char *s, size_t n,
 }
 #endif
 
-static const luaL_reg uniclib[] = {
+static const luaL_Reg uniclib[] = {
 	{"byte", unic_byte}, /* no cluster ! */
 	{"char", unic_char},
 	{"dump", str_dump},
