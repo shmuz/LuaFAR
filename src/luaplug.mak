@@ -29,7 +29,7 @@ $(TARGET): $(OBJ) $(PATH_LUAFARSRC)\$(LUAFARDLL)
 	$(CC) -o $@ $^ $(MYLDFLAGS)
 
 $(PATH_LUAFARSRC)\$(LUAFARDLL):
-	cd $(PATH_LUAFARSRC) && $(MAKE) -f luafar.mak
+	cd $(PATH_LUAFARSRC) && $(MAKE)
 
 luaplug.o: luaplug.c luafar.h
 # (end of Makefile)

@@ -1,4 +1,4 @@
-# luafar.mak
+# Makefile for LuaFAR
 
 include ../config.mak
 
