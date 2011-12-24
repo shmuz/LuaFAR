@@ -35,8 +35,8 @@ UINT64 check64(lua_State *L, int pos, int* success)
     const char* s = lua_tolstring(L, pos, &len);
     if (len >= 3 && len <= 18 && s[0]=='0' && (s[1]=='x' || s[1]=='X')) {
       size_t i;
-      len -= 2; s += 2;
       UINT64 v = 0;
+      len -= 2; s += 2;
       for (i=0; i<len; i++) {
         int a;
         if (s[i] >= '0' && s[i] <= '9')      a = s[i] - '0';
@@ -107,10 +107,10 @@ static int rshift(lua_State *L)
 
 static int arshift(lua_State *L)
 {
-  UINT64 v = check64(L, 1, NULL);
+  UINT64 v = check64(L, 1, NULL), res;
   unsigned int n = luaL_checkinteger(L, 2);
   if (n > 64) n = 64;
-  UINT64 res = (v >> n);
+  res = (v >> n);
   if (v & 0x8000000000000000ULL)
     res |= (0xffffffffffffffffULL << (64-n));
   return push64(L, res);

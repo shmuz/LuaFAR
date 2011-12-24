@@ -6,8 +6,8 @@
 // This function was initially taken from Lua 5.0.2 (loadlib.c)
 void pusherrorcode(lua_State *L, int error)
 {
-  const int BUFSZ = 256;
-  wchar_t buffer[BUFSZ];
+  wchar_t buffer[256];
+  const int BUFSZ = DIM(buffer);
   int num = FormatMessageW(FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_FROM_SYSTEM,
     0, error, 0, buffer, BUFSZ, 0);
   if (num)
@@ -119,16 +119,18 @@ int GetOptIntFromArray(lua_State *L, int key, int dflt)
 
 BOOL GetBoolFromTable(lua_State *L, const char* key)
 {
+  int ret;
   lua_getfield(L, -1, key);
-  int ret = lua_toboolean(L, -1);
+  ret = lua_toboolean(L, -1);
   lua_pop(L, 1);
   return ret;
 }
 
 BOOL GetOptBoolFromTable(lua_State *L, const char* key, BOOL dflt)
 {
+  BOOL ret;
   lua_getfield(L, -1, key);
-  BOOL ret = lua_isnil(L, -1) ? dflt : lua_toboolean(L, -1);
+  ret = lua_isnil(L, -1) ? dflt : lua_toboolean(L, -1);
   lua_pop(L, 1);
   return ret;
 }
@@ -140,17 +142,21 @@ BOOL GetOptBoolFromTable(lua_State *L, const char* key, BOOL dflt)
 wchar_t* convert_multibyte_string (lua_State *L, int pos, UINT codepage,
   DWORD dwFlags, int* pTrgSize, int can_raise)
 {
+  size_t sourceLen;
+  const char *source;
+  wchar_t *target;
+  int size;
+
   if (pos < 0) pos += lua_gettop(L) + 1;
 
   if (!can_raise && !lua_isstring(L, pos))
     return NULL;
 
-  size_t sourceLen;
-  const char* source = luaL_checklstring(L, pos, &sourceLen);
+  source = luaL_checklstring(L, pos, &sourceLen);
   if (!pTrgSize)
     ++sourceLen;
 
-  int size = MultiByteToWideChar(
+  size = MultiByteToWideChar(
     codepage,     // code page
     dwFlags,      // character-type options
     source,       // lpMultiByteStr, pointer to the character string to be converted
@@ -164,7 +170,7 @@ wchar_t* convert_multibyte_string (lua_State *L, int pos, UINT codepage,
     return NULL;
   }
 
-  wchar_t* target = (wchar_t*)lua_newuserdata(L, (size+1) * sizeof(wchar_t));
+  target = (wchar_t*)lua_newuserdata(L, (size+1) * sizeof(wchar_t));
   MultiByteToWideChar(codepage, dwFlags, source, sourceLen, target, size);
   target[size] = L'\0';
   lua_replace(L, pos);
@@ -195,9 +201,12 @@ wchar_t* oem_to_utf16 (lua_State *L, int pos, int* pTrgSize)
 char* push_multibyte_string (lua_State* L, UINT CodePage, const wchar_t* str,
   int numchars, DWORD dwFlags)
 {
+  int targetSize;
+  char *target;
+
   if (str == NULL) { lua_pushnil(L); return NULL; }
 
-  int targetSize = WideCharToMultiByte(
+  targetSize = WideCharToMultiByte(
     CodePage, // UINT CodePage,
     dwFlags,  // DWORD dwFlags,
     str,      // LPCWSTR lpWideCharStr,
@@ -210,7 +219,7 @@ char* push_multibyte_string (lua_State* L, UINT CodePage, const wchar_t* str,
   if (targetSize == 0 && numchars == -1 && str[0]) {
     luaL_error(L, "invalid UTF-16 string");
   }
-  char *target = (char*)lua_newuserdata(L, targetSize+1);
+  target = (char*)lua_newuserdata(L, targetSize+1);
   WideCharToMultiByte(CodePage, dwFlags, str, numchars, target, targetSize, NULL, NULL);
   if (numchars == -1)
     --targetSize;
@@ -233,9 +242,10 @@ int ustring_WideCharToMultiByte (lua_State *L)
 {
   size_t numchars;
   const wchar_t* src = (const wchar_t*)luaL_checklstring(L, 1, &numchars);
-  numchars /= sizeof(wchar_t);
-  UINT codepage = luaL_checkinteger(L, 2);
+  UINT codepage;
   DWORD dwFlags = 0;
+  numchars /= sizeof(wchar_t);
+  codepage = luaL_checkinteger(L, 2);
   if (lua_isstring(L, 3)) {
     const char *s = lua_tostring(L, 3);
     for (; *s; s++) {
@@ -253,9 +263,10 @@ int ustring_MultiByteToWideChar (lua_State *L)
 {
   wchar_t* Trg;
   int TrgSize;
-  (void) luaL_checkstring(L, 1);
-  UINT codepage = luaL_checkinteger(L, 2);
+  UINT codepage;
   DWORD dwFlags = 0;
+  (void) luaL_checkstring(L, 1);
+  codepage = luaL_checkinteger(L, 2);
   if (lua_isstring(L, 3)) {
     const char *s = lua_tostring(L, 3);
     for (; *s; s++) {
@@ -277,9 +288,10 @@ int ustring_OemToUtf8 (lua_State *L)
 {
   size_t len;
   int intlen;
+  wchar_t* buf;
   (void) luaL_checklstring(L, 1, &len);
   intlen = len;
-  wchar_t* buf = oem_to_utf16(L, 1, &intlen);
+  buf = oem_to_utf16(L, 1, &intlen);
   push_utf8_string(L, buf, len);
   return 1;
 }
@@ -568,15 +580,16 @@ void push_utf16_string (lua_State* L, const wchar_t* str, int numchars)
 int ustring_sub(lua_State *L)
 {
   size_t len;
+  int from, to;
   const char* s = luaL_checklstring(L, 1, &len);
   len /= sizeof(wchar_t);
 
-  int from = luaL_optinteger(L, 2, 1);
+  from = luaL_optinteger(L, 2, 1);
   if (from < 0) from += len+1;
   if (--from < 0) from = 0;
   else if ((size_t)from > len) from = len;
 
-  int to = luaL_optinteger(L, 3, -1);
+  to = luaL_optinteger(L, 3, -1);
   if (to < 0) to += len+1;
   if (to < from) to = from;
   else if ((size_t)to > len) to = len;

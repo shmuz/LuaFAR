@@ -21,11 +21,12 @@ int luaLF_FieldError (lua_State *L, const char* key, const char* expected_typena
 
 int GetIntFromArray(lua_State *L, int index)
 {
+  int ret;
   lua_pushinteger(L, index);
   lua_gettable(L, -2);
   if (!lua_isnumber (L,-1))
     return luaLF_SlotError (L, index, "number");
-  int ret = lua_tointeger(L, -1);
+  ret = lua_tointeger(L, -1);
   lua_pop(L, 1);
   return ret;
 }

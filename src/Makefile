@@ -5,7 +5,7 @@ include ../config.mak
 ARCH= -m32
 CC= gcc
 CFLAGS= -O2 -W -Wall -I$(INC_FAR) -I$(INC_LUA) -DBUILD_DLL -DWINVER=0x500 \
-        -DLUADLL=\"$(LUADLLNAME).dll\" $(ARCH)
+        -DLUADLL=\"$(LUADLLNAME).dll\" $(ARCH) $(MYCFLAGS)
 MYLDFLAGS= -L$(PATH_EXE) -l$(LUADLLNAME) -shared $(ARCH) -s -lrpcrt4
 
 ifeq ($(ARCH),-m64)
