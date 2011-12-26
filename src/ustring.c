@@ -1,6 +1,7 @@
 #include <shlobj.h>
 #include "ustring.h"
 
+#define CAST(tp,expr) (tp)(expr)
 #define DIM(buff) (sizeof(buff)/sizeof(buff[0]))
 
 // This function was initially taken from Lua 5.0.2 (loadlib.c)
@@ -473,13 +474,13 @@ int ustring_GlobalMemoryStatus (lua_State *L)
     return SysErrorReturn(L);
   lua_createtable(L, 0, 8);
   PutNumToTable(L, "MemoryLoad",           ms.dwMemoryLoad);
-  PutNumToTable(L, "TotalPhys",            ms.ullTotalPhys);
-  PutNumToTable(L, "AvailPhys",            ms.ullAvailPhys);
-  PutNumToTable(L, "TotalPageFile",        ms.ullTotalPageFile);
-  PutNumToTable(L, "AvailPageFile",        ms.ullAvailPageFile);
-  PutNumToTable(L, "TotalVirtual",         ms.ullTotalVirtual);
-  PutNumToTable(L, "AvailVirtual",         ms.ullAvailVirtual);
-  PutNumToTable(L, "AvailExtendedVirtual", ms.ullAvailExtendedVirtual);
+  PutNumToTable(L, "TotalPhys",            CAST(double, ms.ullTotalPhys));
+  PutNumToTable(L, "AvailPhys",            CAST(double, ms.ullAvailPhys));
+  PutNumToTable(L, "TotalPageFile",        CAST(double, ms.ullTotalPageFile));
+  PutNumToTable(L, "AvailPageFile",        CAST(double, ms.ullAvailPageFile));
+  PutNumToTable(L, "TotalVirtual",         CAST(double, ms.ullTotalVirtual));
+  PutNumToTable(L, "AvailVirtual",         CAST(double, ms.ullAvailVirtual));
+  PutNumToTable(L, "AvailExtendedVirtual", CAST(double, ms.ullAvailExtendedVirtual));
   return 1;
 }
 

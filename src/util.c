@@ -1,6 +1,8 @@
 #include "ustring.h"
 #include "util.h"
 
+#define CAST(tp,expr) (tp)(expr)
+
 // stack[-2] - table
 // stack[-1] - value
 int luaLF_SlotError (lua_State *L, int key, const char* expected_typename)
@@ -50,7 +52,7 @@ FILETIME GetFileTimeFromTable(lua_State *L, const char *key)
   if (lua_isnumber(L, -1)) {
     long long tm = (long long) lua_tonumber(L, -1);
     tm *= 10000; // convert ms units to 100ns ones
-    ft.dwHighDateTime = tm / 0x100000000ll;
+    ft.dwHighDateTime = CAST(DWORD, tm / 0x100000000ll);
     ft.dwLowDateTime  = tm % 0x100000000ll;
   }
   else
@@ -64,7 +66,7 @@ void PutFileTimeToTable(lua_State *L, const char* key, FILETIME ft)
   LARGE_INTEGER li;
   li.LowPart = ft.dwLowDateTime;
   li.HighPart = ft.dwHighDateTime;
-  PutNumToTable(L, key, li.QuadPart/10000); // convert 100ns units to 1ms ones
+  PutNumToTable(L, key, CAST(double, li.QuadPart/10000)); // convert 100ns units to 1ms ones
 }
 
 int GetAttrFromTable(lua_State *L)

@@ -4,6 +4,7 @@
 #include "util.h"
 #include "ustring.h"
 
+#define CAST(tp,expr) (tp)(expr)
 #define NOPANEL_HANDLE_VALUE(h) ((INT_PTR)h > -3 && (INT_PTR)h <= 0)
 #define TRANSFORM_REF(h)        (h > 0 ? h : h - 3)
 #define UNTRANSFORM_REF(h)      ((INT_PTR)h > 0 ? (INT_PTR)h : (INT_PTR)h + 3)
@@ -191,7 +192,7 @@ void FillPluginPanelItem (lua_State *L, struct PluginPanelItem *pi)
   pi->LastAccessTime = GetFileTimeFromTable(L, "LastAccessTime");
   pi->LastWriteTime  = GetFileTimeFromTable(L, "LastWriteTime");
   pi->FileSize = GetFileSizeFromTable(L, "FileSize");
-  pi->PackSize = GetFileSizeFromTable(L, "PackSize");
+  pi->AllocationSize = GetFileSizeFromTable(L, "AllocationSize");
   pi->FileName = (wchar_t*)AddStringToCollectorField(L,-2,"FileName");
   pi->AlternateFileName = (wchar_t*)AddStringToCollectorField(L,-2,"AlternateFileName");
 
@@ -424,7 +425,7 @@ void LF_GetOpenPanelInfo(lua_State* L, struct OpenPanelInfo *aInfo)
   Info = (struct OpenPanelInfo*) AddBufToCollector(L, cpos, sizeof(struct OpenPanelInfo));
   //---------------------------------------------------------------------------
   Info->StructSize = sizeof (struct OpenPanelInfo);
-  Info->FreeSize   = GetOptNumFromTable(L, "FreeSize", 0);
+  Info->FreeSize   = CAST(unsigned __int64, GetOptNumFromTable(L, "FreeSize", 0));
   Info->Flags      = GetFlagsFromTable(L, -1, "Flags");
   Info->HostFile   = AddStringToCollectorField(L, cpos, "HostFile");
   Info->CurDir     = AddStringToCollectorField(L, cpos, "CurDir");
@@ -510,7 +511,7 @@ void LF_GetOpenPanelInfo(lua_State* L, struct OpenPanelInfo *aInfo)
       }
       kbt->Labels[i].Key.VirtualKeyCode = GetOptIntFromTable(L, "VirtualKeyCode", 0);
       lua_getfield(L, -1, "ControlKeyState");
-      kbt->Labels[i].Key.ControlKeyState = GetFlagCombination(L, -1, NULL);
+      kbt->Labels[i].Key.ControlKeyState = CAST(DWORD, GetFlagCombination(L, -1, NULL));
       lua_pop(L, 1);
       kbt->Labels[i].Text = AddStringToCollectorField(L, cpos, "Text");
       kbt->Labels[i].LongText = AddStringToCollectorField(L, cpos, "LongText");
@@ -925,7 +926,7 @@ int LF_GetCustomData(lua_State* L, const wchar_t *FilePath, wchar_t **CustomData
       if (lua_isstring(L, -1)) {
         const wchar_t* p = utf8_to_utf16(L, -1, NULL);
         if (p) {
-          *CustomData = wcsdup(p);
+          *CustomData = _wcsdup(p);
           lua_pop(L, 1);
           return TRUE;
         }

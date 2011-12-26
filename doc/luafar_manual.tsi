@@ -5771,15 +5771,18 @@ lv=2
 dt=Text
 nm=far.CreateSettings
 ctime=3507637218
-mtime=3512813880
+mtime=3534081395
 <article>
-#_obj = far.CreateSettings (PluginId)
+#_obj = far.CreateSettings (Guid)
 #_
 #_**Parameters:**
-#_  PluginId:  string (optional; defaults to calling Plugin ID)
+#_  Guid:  string (optional; defaults to calling Plugin ID)
 #_
 #_**Returns:**
-#_  obj:       userdata
+#_  obj:   userdata
+#_
+#_**Note:**
+#_  For creating an object for accessing Far settings, pass Guid == "\0".
 #_
 #_**Far API used:**
 #_  SettingsControl
@@ -5887,15 +5890,19 @@ lv=2
 dt=Text
 nm=obj:Enum
 ctime=3507637655
-mtime=3528578487
+mtime=3534075889
 <article>
-#_result = obj:Enum (Root)
+#_items = obj:Enum (Root[, from[, to]])
 #_
 #_**Parameters:**
 #_  Root:   integer
+#_  from:   integer; 1-based; negative values count from the end; default=1;
+#_  to:     integer; 1-based; negative values count from the end; default=-1;
 #_
 #_**Returns:**
-#_  result: table (array of tables), or nil
+#_  items: table (array of tables), or nil
+#_    items.Count: total number of items
+#_    #items:      returned number of items
 #_    Each table in the array has the following fields:
 #_      if *obj* was created with plugin's GUID:
 #_        Name:     string
@@ -7859,7 +7866,7 @@ id=85
 lv=2
 dt=Text
 nm=PluginPanelItem
-mtime=3507818636
+mtime=3534051192
 <article>
 #_<markdown>
 #_**`PluginPanelItem`** is a table with the following predefined fields:
@@ -7869,7 +7876,7 @@ mtime=3507818636
 #_      LastAccessTime:     number
 #_      CreationTime:       number
 #_      FileSize:           number
-#_      PackSize:           number
+#_      AllocationSize:     number
 #_      FileName:           string
 #_      AlternateFileName:  string
 #_      Flags:              flags
