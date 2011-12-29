@@ -1,5 +1,9 @@
-INC_FAR    = s:\progr\work\system\include\far\unicode
-INC_LUA    = s:\progr\work\system\include
+ifndef PATH_LUAFAR
+  PATH_LUAFAR = ..
+endif
+
+INC_FAR = $(PATH_LUAFAR)\..\..\system\include\far\unicode
+INC_LUA = $(PATH_LUAFAR)\..\..\system\include
 
 ifeq ($(ARCH),-m64)
   PATH_EXE = c:\exe64

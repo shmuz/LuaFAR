@@ -9,8 +9,8 @@ else
   TARGETDIR = win32_bin
 endif
 
-all: src/luafar.mak
-	cd src && $(MAKE) -f luafar.mak ARCH=$(ARCH)
+all: src/Makefile
+	cd src && $(MAKE) ARCH=$(ARCH)
 
 install: src/$(LUAFARDLL) $(TARGETDIR)
 	cd src && move /Y $(LUAFARDLL) ..\$(TARGETDIR)
@@ -18,5 +18,5 @@ install: src/$(LUAFARDLL) $(TARGETDIR)
 $(TARGETDIR):
 	if not exist $@ mkdir $@
 
-clean: src/luafar.mak
-	cd src && $(MAKE) -f luafar.mak clean
+clean: src/Makefile
+	cd src && $(MAKE) clean

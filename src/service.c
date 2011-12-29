@@ -4092,7 +4092,8 @@ static int far_MakeMenuItems (lua_State *L)
       lua_pushvalue(L, i);
       if (0 != lua_pcall(L, 1, 1, 0))
         luaL_error(L, lua_tostring(L, -1));
-      str = check_utf8_string(L, -1, &len);
+      lua_replace(L, i);
+      str = check_utf8_string(L, i, &len);
       start = str;
       for (j=0; j<len; j++)
         if (str[j] == 0) str[j] = L' ';
@@ -4108,7 +4109,6 @@ static int far_MakeMenuItems (lua_State *L)
         lua_rawseti(L, argn+1, item++);
         start = nl;
       } while (start);
-      lua_pop(L, 1);
     }
   }
   return 1;
@@ -4577,7 +4577,7 @@ static int far_CreateSettings (lua_State *L)
   if (strId == NULL)
     ParamId = pd->PluginId;
   else {
-    if (len == 1 && *strId == '\0') // a special convention for passing Far ID
+    if (len == 3 && strcmp(strId, "far") == 0)
       IsFarSettings = 1;
     else if (len == sizeof(GUID))
       IsFarSettings = !memcmp(strId, FarGuid, len);

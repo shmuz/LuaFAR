@@ -5771,9 +5771,9 @@ lv=2
 dt=Text
 nm=far.CreateSettings
 ctime=3507637218
-mtime=3534081395
+mtime=3534100716
 <article>
-#_obj = far.CreateSettings (Guid)
+#_obj = far.CreateSettings ([Guid])
 #_
 #_**Parameters:**
 #_  Guid:  string (optional; defaults to calling Plugin ID)
@@ -5782,7 +5782,7 @@ mtime=3534081395
 #_  obj:   userdata
 #_
 #_**Note:**
-#_  For creating an object for accessing Far settings, pass Guid == "\0".
+#_  For creating an object for accessing Far settings, pass Guid == "far".
 #_
 #_**Far API used:**
 #_  SettingsControl
