@@ -2873,22 +2873,23 @@ nm=panel.GetCurrentPanelItem
 id=260
 lv=2
 dt=Text
-nm=panel.GetPanelDir
+nm=panel.GetPanelDirectory
+mtime=3534535868
 <article>
-#_PanelDir = panel.GetPanelDir ([handle], whatpanel)
+#_PanelDir = panel.GetPanelDirectory ([handle], whatpanel)
 #_
 #_**Parameters:**
 #_  handle:    panel handle, or nil
 #_  whatpanel: 1=active panel; 0=passive panel;
 #_
 #_**Returns:**
-#_  PanelDir:  string
+#_  PanelDir:  table FarPanelDirectory
 #_
 #_**Far API used:**
-#_  Control, FCTL_GETPANELDIR
+#_  Control, FCTL_GETPANELDIRECTORY
 #_
 #_@@@
-#_
+#_<lua> Links = { FarPanelDirectory="459.html" } </lua>
 #_
 </article>
 </node>
@@ -3270,22 +3271,25 @@ nm=panel.SetNumericSort
 id=13
 lv=2
 dt=Text
-nm=panel.SetPanelDir
+nm=panel.SetPanelDirectory
+mtime=3534539133
 <article>
-#_result = panel.SetPanelDir (handle, whatpanel, dir)
+#_result = panel.SetPanelDirectory (handle, whatpanel, dir)
 #_
 #_**Parameters:**
 #_  handle:    panel handle, or nil
 #_  whatpanel: 1=active panel; 0=passive panel;
-#_  dir:       string
+#_  dir:       string, or table FarPanelDirectory
+#_             (if dir.PluginId is not set, it defaults to Far ID)
 #_
 #_**Returns:**
 #_  result: boolean
 #_
 #_**Far API used:**
-#_  Control, FCTL_SETPANELDIR
+#_  Control, FCTL_SETPANELDIRECTORY
 #_
 #_@@@
+#_<lua> Links = { FarPanelDirectory="459.html" } </lua>
 #_
 </article>
 </node>
@@ -7700,6 +7704,25 @@ mtime=3519480675
 #_
 #_      VirtualKeyCode:     integer
 #_      ControlKeyState:    integer
+#_
+#_
+</article>
+</node>
+<node>
+id=459
+lv=2
+dt=Text
+nm=FarPanelDirectory
+ctime=3534535611
+mtime=3534535770
+<article>
+#_<markdown>
+#_**`FarPanelDirectory`** is a table with the following predefined fields:
+#_
+#_      Name:     string
+#_      Param:    string
+#_      PluginId: string (GUID)
+#_      File:     string
 #_
 #_
 </article>

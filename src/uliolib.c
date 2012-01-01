@@ -1,5 +1,5 @@
 /*
-** uliolib.c, copyright 2010-2011, Shmuel Zeigerman.
+** uliolib.c, copyright 2010-2012, Shmuel Zeigerman.
 ** A modification of Standard I/O (and system) library
 ** giving it capability of working with Unicode paths.
 ** Same license as Lua 5.1.

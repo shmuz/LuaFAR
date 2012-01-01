@@ -1731,10 +1731,6 @@ static int get_string_info(lua_State *L, int command)
   return lua_pushnil(L), 1;
 }
 
-static int panel_GetPanelDir(lua_State *L) {
-  return get_string_info(L, FCTL_GETPANELDIR);
-}
-
 static int panel_GetPanelFormat(lua_State *L) {
   return get_string_info(L, FCTL_GETPANELFORMAT);
 }
@@ -1825,18 +1821,55 @@ static int panel_SetViewMode(lua_State *L) {
   return SetPanelIntegerProperty(L, FCTL_SETVIEWMODE);
 }
 
-static int panel_SetPanelDir(lua_State *L)
+static int panel_GetPanelDirectory(lua_State *L)
 {
-  PSInfo *Info = GetPluginData(L)->Info;
-  void* param2 = NULL;
+  int size;
+  TPluginData *pd = GetPluginData(L);
   HANDLE handle = OptHandle (L, 1);
   if (handle == INVALID_HANDLE_VALUE) {
     handle = (luaL_checkinteger(L,2) % 2) ? PANEL_ACTIVE:PANEL_PASSIVE;
   }
-  if (lua_isstring(L, 3)) {
-    param2 = check_utf8_string(L, 3, NULL);
+  size = pd->Info->PanelControl(handle, FCTL_GETPANELDIRECTORY, 0, NULL);
+  if (size) {
+    struct FarPanelDirectory *fpd = (struct FarPanelDirectory*)lua_newuserdata(L, size);
+    memset(fpd, 0, size);
+    if (pd->Info->PanelControl(handle, FCTL_GETPANELDIRECTORY, size, fpd)) {
+      lua_createtable(L, 0, 4);
+      PutWStrToTable(L, "Name",  fpd->Name, -1);
+      PutWStrToTable(L, "Param", fpd->Param, -1);
+      PutWStrToTable(L, "File",  fpd->File, -1);
+      PutLStrToTable(L, "PluginId", &fpd->PluginId, sizeof(fpd->PluginId));
+      return 1;
+    }
   }
-  lua_pushboolean(L, Info->PanelControl(handle, FCTL_SETPANELDIR, 0, param2));
+  return lua_pushnil(L), 1;
+}
+
+static int panel_SetPanelDirectory(lua_State *L)
+{
+  TPluginData *pd = GetPluginData(L);
+  struct FarPanelDirectory fpd;
+  HANDLE handle = OptHandle (L, 1);
+  if (handle == INVALID_HANDLE_VALUE) {
+    handle = (luaL_checkinteger(L,2) % 2) ? PANEL_ACTIVE:PANEL_PASSIVE;
+  }
+  memset(&fpd, 0, sizeof(fpd)); // also sets fpd.PluginId = FarId
+  fpd.StructSize = sizeof(fpd);
+  if (lua_istable(L, 3)) {
+    size_t len;
+    const GUID* id;
+    lua_getfield(L, 3, "PluginId");
+    id = (const GUID*)lua_tolstring(L, -1, &len);
+    if (id && len == sizeof(GUID)) fpd.PluginId = *id;
+    lua_getfield(L, 3, "Name");  if (lua_isstring(L, -1)) fpd.Name = check_utf8_string(L, -1, NULL);
+    lua_getfield(L, 3, "Param"); if (lua_isstring(L, -1)) fpd.Param = check_utf8_string(L, -1, NULL);
+    lua_getfield(L, 3, "File");  if (lua_isstring(L, -1)) fpd.File = check_utf8_string(L, -1, NULL);
+  }
+  else if (lua_isstring(L, 3))
+    fpd.Name = check_utf8_string(L, 3, NULL);
+  else
+    luaL_argerror(L, 3, "table or string");
+  lua_pushboolean(L, pd->Info->PanelControl(handle, FCTL_SETPANELDIRECTORY, 0, &fpd));
   return 1;
 }
 
@@ -4930,7 +4963,7 @@ const luaL_Reg panel_funcs[] = {
   {"GetColumnTypes",      panel_GetColumnTypes},
   {"GetColumnWidths",     panel_GetColumnWidths},
   {"GetCurrentPanelItem", panel_GetCurrentPanelItem},
-  {"GetPanelDir",         panel_GetPanelDir},
+  {"GetPanelDirectory",   panel_GetPanelDirectory},
   {"GetPanelFormat",      panel_GetPanelFormat},
   {"GetPanelHostFile",    panel_GetPanelHostFile},
   {"GetPanelInfo",        panel_GetPanelInfo},
@@ -4946,7 +4979,7 @@ const luaL_Reg panel_funcs[] = {
   {"SetCmdLinePos",       panel_SetCmdLinePos},
   {"SetCmdLineSelection", panel_SetCmdLineSelection},
   {"SetNumericSort",      panel_SetNumericSort},
-  {"SetPanelDir",         panel_SetPanelDir},
+  {"SetPanelDirectory",   panel_SetPanelDirectory},
   {"SetSelection",        panel_SetSelection},
   {"SetSortMode",         panel_SetSortMode},
   {"SetSortOrder",        panel_SetSortOrder},
