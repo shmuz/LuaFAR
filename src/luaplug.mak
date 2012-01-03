@@ -14,19 +14,19 @@ PATH_LUAFARSRC = $(PATH_LUAFAR)\src
 
 include $(PATH_LUAFAR)/config.mak
 
-ARCH= -m32
+ARCH=
 CC= gcc
 
-OBJ       = luaplug.o
-CFLAGS    = -O2 -Wall -I$(INC_FAR) -I$(INC_LUA) $(EXPORTS) \
-            $(ARCH) -D_export=
-MYLDFLAGS = -Wl,--kill-at -shared -s $(ARCH)
+OBJ     = luaplug.o
+CFLAGS  = -O2 -Wall -I$(INC_FAR) -I$(INC_LUA) $(EXPORTS) \
+          $(ARCH) $(MYCFLAGS)
+LDFLAGS = -Wl,--kill-at -shared -s $(ARCH) $(MYLDFLAGS)
 
 vpath %.c $(PATH_LUAFARSRC)
 vpath %.h $(PATH_LUAFARSRC)
 
 $(TARGET): $(OBJ) $(PATH_LUAFARSRC)\$(LUAFARDLL)
-	$(CC) -o $@ $^ $(MYLDFLAGS)
+	$(CC) -o $@ $^ $(LDFLAGS)
 
 $(PATH_LUAFARSRC)\$(LUAFARDLL):
 	cd $(PATH_LUAFARSRC) && $(MAKE) PATH_LUAFAR=..

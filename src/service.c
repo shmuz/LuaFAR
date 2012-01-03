@@ -3155,10 +3155,10 @@ static int far_InputBox(lua_State *L)
   wchar_t *DestText;
   int res;
 
-  if (DestLength < 1) DestLength = 1;
-  DestText = (wchar_t*) malloc(sizeof(wchar_t)*DestLength);
+  if (DestLength < 0) DestLength = 0;
+  DestText = (wchar_t*) malloc(sizeof(wchar_t)*(DestLength+1));
   res = pd->Info->InputBox(pd->PluginId, Id, Title, Prompt, HistoryName, SrcText,
-                           DestText, DestLength, HelpTopic, Flags);
+                           DestText, DestLength+1, HelpTopic, Flags);
   if (res) push_utf8_string (L, DestText, -1);
   else lua_pushnil(L);
 

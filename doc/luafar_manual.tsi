@@ -4886,7 +4886,7 @@ id=62
 lv=2
 dt=Text
 nm=far.InputBox
-mtime=3519542187
+mtime=3534766496
 <article>
 #_result = far.InputBox (Id, Title, Prompt, HistoryName, SrcText,
 #_                       DestLength, HelpTopic, Flags)

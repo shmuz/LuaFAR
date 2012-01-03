@@ -13,7 +13,7 @@ all: src/Makefile
 	cd src && $(MAKE) ARCH=$(ARCH)
 
 install: src/$(LUAFARDLL) $(TARGETDIR)
-	cd src && move /Y $(LUAFARDLL) ..\$(TARGETDIR)
+	cd src && copy /Y $(LUAFARDLL) ..\$(TARGETDIR)
 
 $(TARGETDIR):
 	if not exist $@ mkdir $@
