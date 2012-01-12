@@ -6,7 +6,7 @@ ver=2.7
 id=91
 lv=0
 dt=Text
-nm=Manual of LuaFAR 3.0.0
+nm=Manual of LuaFAR 3.0
 mtime=3532769479
 <article>
 </article>
@@ -2242,16 +2242,17 @@ lv=2
 dt=Text
 nm=far.MacroAdd
 ctime=3523354795
-mtime=3523358448
+mtime=3535530026
 <article>
-#_Id = far.MacroAdd (Callback, SequenceText, Flags, AKey, Description)
+#_Id = far.MacroAdd (Area, Flags, AKey, SequenceText, Description, Callback)
 #_
 #_**Parameters:**
-#_  Callback:     function
-#_  SequenceText: string
+#_  Area:         flags (defaults to MACROAREA_COMMON)
 #_  Flags:        flags (defaults to 0)
 #_  AKey:         table InputRecord, or string (e.g. "CtrlShiftF12")
+#_  SequenceText: string
 #_  Description:  string (defaults to "")
+#_  Callback:     function, or nil
 #_
 #_**Returns:**
 #_  Id:           integer (success), or nil (failure)
@@ -2264,16 +2265,16 @@ mtime=3523358448
 #_  local F = far.Flags
 #_
 #_  local function Callback (Id, Flags)
-#_    return F.MACROAREA_SHELL == far.MacroGetArea()
+#_    return some_condition and another_condition
 #_  end
 #_
 #_  local Id = far.MacroAdd(
-#_      Callback,
-#_      'msgbox("test","test")',
-#_      F.KMFLAGS_DISABLEOUTPUT,
-#_      "CtrlShiftF12",
-#_      "cool macro"
-#_  )
+#_    F.MACROAREA_SHELL,
+#_    F.KMFLAGS_DISABLEOUTPUT,
+#_    "CtrlShiftF12",
+#_    'msgbox("test","test")',
+#_    "cool macro",
+#_    Callback)
 #_
 #_@@@
 #_<lua> Links = {
@@ -2465,7 +2466,7 @@ id=64
 lv=2
 dt=Text
 nm=far.Menu
-mtime=3530715212
+mtime=3535392254
 <article>
 #_Item, Position = far.Menu (Properties, Items [, BreakKeys])
 #_
@@ -2475,12 +2476,12 @@ mtime=3530715212
 #_      X:            integer
 #_      Y:            integer
 #_      MaxHeight:    integer
-#_      Flags:        flags
+#_      Flags:        flags   (default = FMENU_WRAPMODE | FMENU_AUTOHIGHLIGHT)
 #_      Title:        string
 #_      Bottom:       string
 #_      HelpTopic:    string
 #_      SelectIndex:  integer (1-based)
-#_      Id:           string (GUID)
+#_      Id:           string  (GUID)
 #_
 #_  Items: table (array of menu items)
 #_      a menu item is a table;
@@ -2506,18 +2507,17 @@ mtime=3530715212
 #_            nil     (the menu was cancelled by the user)
 #_
 #_**Notes:**
-#_The first return value (*Item*) should be used by the
-#_program for performing the item-specific action. To do
-#_so, the program can put some specific field(s) into
-#_each element of *Items* and *BreakKeys* tables. For
-#_example, such fields can be "action", "filename", etc.
+#_The first return value (*Item*) should be used by the program
+#_for performing the item-specific action. To do so, the program
+#_can put some specific field(s) into each element of *Items* and
+#_*BreakKeys* tables. For example, such fields can be "action",
+#_"filename", etc.
 #_
 #_The second return value (*Position*) does not necessarily
-#_correspond to the position of the menuitem that the user
-#_have chosen, it is the menuitem that was selected at the
-#_time of the menu closing. It is provided so that the program
-#_would be able to call the closed menu again in the same
-#_visible state.
+#_correspond to the position of the menuitem that the user have
+#_chosen, it is the menuitem that was selected at the time of
+#_the menu closing. It is provided so that the program would be
+#_able to call the closed menu again in the same visible state.
 #_
 #_**Far API used:**
 #_  Menu

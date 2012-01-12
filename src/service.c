@@ -209,6 +209,11 @@ static UINT64 CheckFlags(lua_State* L, int pos)
   return Flags;
 }
 
+static UINT64 OptFlags(lua_State* L, int pos, UINT64 dflt)
+{
+  return lua_isnoneornil(L, pos) ? dflt : CheckFlags(L, pos);
+}
+
 static UINT64 CheckFlagsFromTable (lua_State *L, int pos, const char* key)
 {
   UINT64 f;
@@ -1305,23 +1310,24 @@ static int far_Menu(lua_State *L)
   lua_newtable(L); // temporary store; at stack position 4
 
   // Properties
-  lua_pushvalue (L,1);  // push Properties on top (stack index 5)
+  lua_pushvalue (L,1);                //+1
   X = GetOptIntFromTable(L, "X", -1);
   Y = GetOptIntFromTable(L, "Y", -1);
   MaxHeight = GetOptIntFromTable(L, "MaxHeight", 0);
-  Flags = CheckFlagsFromTable(L, 1, "Flags");
-  lua_getfield(L, 1, "Title");
+  lua_getfield(L, 1, "Flags");        //+2
+  if (!lua_isnil(L, -1)) Flags = CheckFlags(L, -1);
+  lua_getfield(L, 1, "Title");        //+3
   if(lua_isstring(L,-1))    Title = StoreTempString(L, 4, &store);
-  lua_getfield(L, 1, "Bottom");
+  lua_getfield(L, 1, "Bottom");       //+3
   if(lua_isstring(L,-1))    Bottom = StoreTempString(L, 4, &store);
-  lua_getfield(L, 1, "HelpTopic");
+  lua_getfield(L, 1, "HelpTopic");    //+3
   if(lua_isstring(L,-1))    HelpTopic = StoreTempString(L, 4, &store);
-  lua_getfield(L, 1, "SelectIndex");
+  lua_getfield(L, 1, "SelectIndex");  //+3
   SelectIndex = lua_tointeger(L,-1);
-  lua_getfield(L, 1, "Id");
+  lua_getfield(L, 1, "Id");           //+4
   if (lua_type(L,-1)==LUA_TSTRING && lua_objlen(L,-1)==sizeof(GUID))
     MenuGuid = (const GUID*)lua_tostring(L, -1);
-  lua_pop(L, 2);
+  lua_pop(L, 4);
 
   // Items
   ItemsNumber = lua_objlen(L, 2);
@@ -3150,8 +3156,7 @@ static int far_InputBox(lua_State *L)
   const wchar_t *SrcText     = opt_utf8_string (L, 5, L"");
   int DestLength             = luaL_optinteger (L, 6, 1024);
   const wchar_t *HelpTopic   = opt_utf8_string (L, 7, NULL);
-  UINT64 Flags = lua_isnoneornil(L, 8) ?
-    (FIB_ENABLEEMPTY|FIB_BUTTONS|FIB_NOAMPERSAND) : CheckFlags(L, 8);
+  UINT64 Flags = OptFlags(L, 8, FIB_ENABLEEMPTY|FIB_BUTTONS|FIB_NOAMPERSAND);
   wchar_t *DestText;
   int res;
 
@@ -3954,15 +3959,19 @@ static int far_MacroAdd (lua_State* L)
   struct MacroAddMacro data;
   memset(&data, 0, sizeof(data));
   data.StructSize = sizeof(data);
-  data.Callback = pd->MacroCallback;
 
-  luaL_checktype(L, 1, LUA_TFUNCTION);
-  data.SequenceText = check_utf8_string(L, 2, NULL);
-  data.Flags = CheckFlags(L, 3);
-  OptInputRecord(L, pd, 4, &data.AKey);
+  data.Area = OptFlags(L, 1, MACROAREA_COMMON);
+  data.Flags = OptFlags(L, 2, 0);
+  OptInputRecord(L, pd, 3, &data.AKey);
+  data.SequenceText = check_utf8_string(L, 4, NULL);
   data.Description = opt_utf8_string(L, 5, L"");
-
-  lua_pushvalue(L, 1);
+  if (lua_isnoneornil(L, 6))
+    lua_pushboolean(L, 1);
+  else {
+    luaL_checktype(L, 6, LUA_TFUNCTION);
+    data.Callback = pd->MacroCallback;
+    lua_pushvalue(L, 6);
+  }
   ref = luaL_ref(L, LUA_REGISTRYINDEX);
   data.Id = (void*) ref;
 

@@ -13,9 +13,9 @@
 		{
 			VALUE "FileDescription",   "LuaFAR library"
 			VALUE "FileVersion",       VER_STRING
-			VALUE "InternalName",      "luafarw"
+			VALUE "InternalName",      "luafar3"
 			VALUE "LegalCopyright",    COPYRIGHT
-			VALUE "OriginalFilename",  "luafarw.dll"
+			VALUE "OriginalFilename",  "luafar3.dll"
 			VALUE "ProductName",       "LuaFAR"
 			VALUE "ProductVersion",    VER_STRING
 		}
