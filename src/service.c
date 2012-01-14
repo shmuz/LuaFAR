@@ -1839,6 +1839,7 @@ static int panel_GetPanelDirectory(lua_State *L)
   if (size) {
     struct FarPanelDirectory *fpd = (struct FarPanelDirectory*)lua_newuserdata(L, size);
     memset(fpd, 0, size);
+    fpd->StructSize = sizeof(*fpd);
     if (pd->Info->PanelControl(handle, FCTL_GETPANELDIRECTORY, size, fpd)) {
       lua_createtable(L, 0, 4);
       PutWStrToTable(L, "Name",  fpd->Name, -1);
@@ -1981,6 +1982,7 @@ static int ChangePanelSelection(lua_State *L, BOOL op_set)
   state = op_set ? lua_toboolean(L,4) : 0;
 
   // get panel info
+  pi.StructSize = sizeof(pi);
   if (!Info->PanelControl(handle, FCTL_GETPANELINFO, 0, &pi) ||
      (pi.PanelType != PTYPE_FILEPANEL))
     return 0;
@@ -3787,6 +3789,7 @@ static int far_AdvControl (lua_State *L)
     {
       int r;
       memset(&wi, 0, sizeof(wi));
+      wi.StructSize = sizeof(wi);
       wi.Pos = luaL_optinteger(L, 2, -1);
 
       r = Info->AdvControl(PluginId, Command, 0, &wi);
@@ -3901,28 +3904,12 @@ static int far_MacroGetArea (lua_State* L)
 static int MacroSendString (lua_State* L, int Param1)
 {
   TPluginData *pd = GetPluginData(L);
-  struct MacroCheckMacroText cmt;
-  struct MacroSendMacroText *smt = &cmt.Check.Text;
-  smt->StructSize = sizeof(*smt);
-
-  smt->SequenceText = check_utf8_string(L, 1, NULL);
-  smt->Flags = CheckFlags(L, 2);
-  OptInputRecord(L, pd, 3, &smt->AKey);
-  if (Param1 == MSSC_POST) {
-    lua_pushboolean(L, pd->Info->MacroControl(pd->PluginId, MCTL_SENDSTRING, Param1, smt));
-  }
-  else if (Param1 == MSSC_CHECK) {
-    int result = pd->Info->MacroControl(pd->PluginId, MCTL_SENDSTRING, Param1, &cmt);
-    if (result) {
-      lua_createtable(L, 0, 4);
-      PutIntToTable(L, "ErrCode", cmt.Check.Result.ErrCode);
-      PutIntToTable(L, "ErrPosX", cmt.Check.Result.ErrPos.X);
-      PutIntToTable(L, "ErrPosY", cmt.Check.Result.ErrPos.Y);
-      PutWStrToTable(L, "ErrSrc", cmt.Check.Result.ErrSrc, -1);
-    }
-    else
-      lua_pushboolean(L, 0);
-  }
+  struct MacroSendMacroText smt;
+  smt.StructSize = sizeof(smt);
+  smt.SequenceText = check_utf8_string(L, 1, NULL);
+  smt.Flags = CheckFlags(L, 2);
+  OptInputRecord(L, pd, 3, &smt.AKey);
+  lua_pushboolean(L, pd->Info->MacroControl(pd->PluginId, MCTL_SENDSTRING, Param1, &smt));
   return 1;
 }
 
@@ -3934,6 +3921,25 @@ static int far_MacroPost (lua_State* L)
 static int far_MacroCheck (lua_State* L)
 {
   return MacroSendString(L, MSSC_CHECK);
+}
+
+static int far_MacroGetLastError (lua_State* L)
+{
+  TPluginData *pd = GetPluginData(L);
+  int size = pd->Info->MacroControl(pd->PluginId, MCTL_GETLASTERROR, 0, NULL);
+  if (size) {
+    struct MacroParseResult *mpr = (struct MacroParseResult*)lua_newuserdata(L, size);
+    mpr->StructSize = sizeof(*mpr);
+    pd->Info->MacroControl(pd->PluginId, MCTL_GETLASTERROR, size, mpr);
+    lua_createtable(L, 0, 4);
+    PutIntToTable(L, "ErrCode", mpr->ErrCode);
+    PutIntToTable(L, "ErrPosX", mpr->ErrPos.X);
+    PutIntToTable(L, "ErrPosY", mpr->ErrPos.Y);
+    PutWStrToTable(L, "ErrSrc", mpr->ErrSrc, -1);
+  }
+  else
+    lua_pushboolean(L, 0);
+  return 1;
 }
 
 int LF_MacroCallback (lua_State* L, void* Id, FARADDKEYMACROFLAGS Flags)
@@ -5026,6 +5032,7 @@ const luaL_Reg far_funcs[] = {
   {"MacroCheck",          far_MacroCheck},
   {"MacroAdd",            far_MacroAdd},
   {"MacroDelete",         far_MacroDelete},
+  {"MacroGetLastError",   far_MacroGetLastError},
   {"DefDlgProc",          far_DefDlgProc},
   {"CreateFileFilter",    far_CreateFileFilter},
   {"PluginsControl",      far_PluginsControl},

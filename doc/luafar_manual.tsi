@@ -2291,7 +2291,7 @@ lv=2
 dt=Text
 nm=far.MacroCheck
 ctime=3507633625
-mtime=3523358353
+mtime=3535655686
 <article>
 #_result = far.MacroCheck (SequenceText, Flags, AKey)
 #_
@@ -2301,11 +2301,7 @@ mtime=3523358353
 #_  AKey:         table InputRecord, or string (e.g. "CtrlShiftF12"); optional
 #_
 #_**Returns:**
-#_  result:       table
-#_                  ErrCode:  integer
-#_                  ErrPosX:  integer
-#_                  ErrPosY:  integer
-#_                  ErrSrc:   string
+#_  result: boolean
 #_
 #_**Far API used:**
 #_  MacroControl(MCTL_SENDSTRING, MSSC_CHECK)
@@ -2359,6 +2355,33 @@ mtime=3523362800
 #_
 #_**Far API used:**
 #_  MacroControl(MCTL_GETAREA)
+#_
+#_@@@
+#_
+</article>
+</node>
+<node>
+id=460
+lv=2
+dt=Text
+nm=far.MacroGetLastError
+ctime=3535655414
+mtime=3535655604
+<article>
+#_result = far.MacroGetLastError()
+#_
+#_**Parameters:**
+#_  none
+#_
+#_**Returns:**
+#_  result:  table
+#_             ErrCode:  integer
+#_             ErrPosX:  integer
+#_             ErrPosY:  integer
+#_             ErrSrc:   string
+#_
+#_**Far API used:**
+#_  MacroControl(MCTL_GETLASTERROR)
 #_
 #_@@@
 #_
