@@ -226,7 +226,7 @@ id=149
 lv=0
 dt=Text
 nm=What's new in this version
-mtime=3519379609
+mtime=3536353822
 <article>
 #_<markdown>
 #_
@@ -238,8 +238,8 @@ mtime=3519379609
 #_1. [`far.ColorDialog`](435.html)
 #_1. [`far.Colors`](437.html)
 #_1. [`far.EditorDelColor`](444.html)
-#_1. [`far.FarInputRecordToName`](186.html)
-#_1. [`far.FarNameToInputRecord`](426.html)
+#_1. [`far.InputRecordToName`](186.html)
+#_1. [`far.NameToInputRecord`](426.html)
 #_1. [`win.GetFileAttr`](433.html)
 #_1. [`win.GlobalMemoryStatus`](431.html)
 #_1. [`win.SearchPath`](429.html)
@@ -1452,21 +1452,18 @@ lv=2
 dt=Text
 nm=export.Analyse
 ctime=3507872410
-mtime=3509018881
+mtime=3536040453
 <article>
 #_result = export.Analyse (Data)
 #_
 #_**Parameters:**
-#_  Data:   table
-#_    fields of Data:
-#_      FileName: string (UTF-8)
-#_      Buffer:   string
-#_      OpMode:   flags
+#_  Data:   table AnalyseInfo
 #_
 #_**Returns:**
 #_  result: boolean
 #_
 #_@@@
+#_<lua> Links = { AnalyseInfo="461.html" } </lua>
 #_
 </article>
 </node>
@@ -1684,7 +1681,7 @@ id=109
 lv=2
 dt=Text
 nm=export.Open
-mtime=3514278205
+mtime=3536040622
 <article>
 #_ret = export.Open (OpenFrom, Guid, Item)
 #_
@@ -1693,13 +1690,14 @@ mtime=3514278205
 #_  Guid:     string
 #_  Item:
 #_    - If OpenFrom contains OPEN_FROMMACRO:
-#_        string  (if OpenFrom contains OPEN_FROMMACROSTRING)
-#_        integer (for other cases of OpenFrom)
+#_        - string  (if OpenFrom contains OPEN_FROMMACROSTRING)
+#_        - integer (for other cases of OpenFrom)
 #_    - else:
-#_        string (if OpenFrom is OPEN_SHORTCUT or OPEN_COMMANDLINE)
-#_        table  (if OpenFrom is OPEN_DIALOG)
-#_          hDlg : userdata
-#_        integer (for other cases of OpenFrom)
+#_        - string (if OpenFrom is OPEN_SHORTCUT or OPEN_COMMANDLINE)
+#_        - table  (if OpenFrom is OPEN_DIALOG)
+#_            hDlg : userdata
+#_        - table AnalyseInfo (if OpenFrom is OPEN_ANALYSE)
+#_        - integer (for other cases of OpenFrom)
 #_
 #_**Returns:**
 #_  ret: any Lua value; it is processed by LuaFAR as follows:
@@ -1716,7 +1714,7 @@ mtime=3514278205
 #_  Far that the file has already been processed.
 #_
 #_@@@
-#_
+#_<lua> Links = { AnalyseInfo="461.html" } </lua>
 #_
 </article>
 </node>
@@ -5798,12 +5796,13 @@ lv=2
 dt=Text
 nm=far.CreateSettings
 ctime=3507637218
-mtime=3534100716
+mtime=3536037740
 <article>
-#_obj = far.CreateSettings ([Guid])
+#_obj = far.CreateSettings (Guid, Location)
 #_
 #_**Parameters:**
-#_  Guid:  string (optional; defaults to calling Plugin ID)
+#_  Guid:     string (optional; defaults to calling plugin's ID)
+#_  Location: flags (optional; defaults to PSL_ROAMING)
 #_
 #_**Returns:**
 #_  obj:   userdata
@@ -5815,6 +5814,7 @@ mtime=3534100716
 #_  SettingsControl
 #_
 #_@@@
+#_
 #_
 </article>
 </node>
@@ -7627,6 +7627,23 @@ nm="Structures"
 </article>
 </node>
 <node>
+id=461
+lv=2
+dt=Text
+nm=AnalyseInfo
+ctime=3536040267
+mtime=3536040345
+<article>
+#_<markdown>
+#_**`AnalyseInfo`** is a table with the following predefined fields:
+#_
+#_      FileName: string (UTF-8)
+#_      Buffer:   string
+#_      OpMode:   flags
+#_
+</article>
+</node>
+<node>
 id=314
 lv=2
 dt=Text
@@ -7812,7 +7829,7 @@ id=187
 lv=2
 dt=Text
 nm=InputRecord
-mtime=3533399494
+mtime=3536353853
 <article>
 #_**The table has the following fields:**
 #_
@@ -7843,7 +7860,7 @@ mtime=3533399494
 #_<lua> Links = {
 #_  ['editor.ProcessInput']="36.html",
 #_  ['editor.ReadInput']="38.html",
-#_  ['far.FarInputRecordToKey']="186.html",
+#_  ['far.InputRecordToKey']="186.html",
 #_  ['far.ProcessKey']="114.html",
 #_  MouseEventRecord="313.html",
 #_} </lua>
@@ -8195,10 +8212,33 @@ nm=win.ExtractKey
 </article>
 </node>
 <node>
+id=462
+lv=2
+dt=Text
+nm=win.FileTimeToLocalFileTime
+ctime=3536488129
+mtime=3536488349
+<article>
+#_local_filetime = win.FileTimeToLocalFileTime (filetime)
+#_
+#_**Parameters:**
+#_  filetime : number (number of milliseconds since January 1, 1601)
+#_
+#_**Returns:**
+#_  local_filetime : number (number of milliseconds since January 1, 1601)
+#_
+#_**Windows API used:**
+#_  FileTimeToLocalFileTime
+#_
+#_
+</article>
+</node>
+<node>
 id=215
 lv=2
 dt=Text
 nm=win.FileTimeToSystemTime
+mtime=3536485069
 <article>
 #_result = win.FileTimeToSystemTime (filetime)
 #_
@@ -8389,7 +8429,7 @@ id=213
 lv=2
 dt=Text
 nm=win.GetFileInfo
-mtime=3509094971
+mtime=3536353869
 <article>
 #_<markdown>
 #_    Info = win.GetFileInfo (FileName)
@@ -8404,7 +8444,7 @@ mtime=3509094971
 #_
 #_###Description
 #_  This function provides information about the specified file.
-#_  The same information can be obtained with `far.FarRecursiveSearch`
+#_  The same information can be obtained with `far.RecursiveSearch`
 #_  function, but this function has simpler API and is much faster
 #_  when single file data are needed.
 #_
@@ -8415,7 +8455,7 @@ mtime=3509094971
 #_<lua>
 #_Links = {
 #_  FindData="90.html",
-#_  ["far.FarRecursiveSearch"]="211.html"
+#_  ["far.RecursiveSearch"]="211.html"
 #_}
 #_</lua>
 #_
@@ -8473,10 +8513,10 @@ mtime=3500653766
 id=217
 lv=2
 dt=Text
-nm=win.GetSystemTime
-mtime=3510474846
+nm=win.GetSystemTimeAsFileTime
+mtime=3536484931
 <article>
-#_result = win.GetSystemTime ()
+#_result = win.GetSystemTimeAsFileTime ()
 #_
 #_**Parameters:**
 #_  none
@@ -8493,36 +8533,6 @@ mtime=3510474846
 #_@@@
 #_<lua> Links = { ["\\bSystemTime\\b"]="218.html" } </lua>
 #_
-#_
-</article>
-</node>
-<node>
-id=212
-lv=2
-dt=Text
-nm=win.GetTimeZoneInformation
-<article>
-#_Info, Result = win.GetTimeZoneInformation ()
-#_
-#_**Parameters:**
-#_  none
-#_
-#_**Returns:**
-#_  Info:    table (see its fields below)
-#_               Bias:         integer
-#_               StandardBias: integer
-#_               DaylightBias: integer
-#_               StandardName: string (UTF16)
-#_               DaylightName: string (UTF16)
-#_  Result:  integer
-#_
-#_**Returns on failure:**
-#_  nil
-#_
-#_**Windows API used:**
-#_  GetTimeZoneInformation
-#_
-#_@@@
 #_
 </article>
 </node>

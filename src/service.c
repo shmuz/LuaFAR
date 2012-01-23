@@ -4006,24 +4006,6 @@ static int far_CPluginStartupInfo(lua_State *L)
   return lua_pushlightuserdata(L, (void*)GetPluginData(L)->Info), 1;
 }
 
-static int win_GetTimeZoneInformation (lua_State *L)
-{
-  TIME_ZONE_INFORMATION tzi;
-  DWORD res = GetTimeZoneInformation(&tzi);
-  if (res == 0xFFFFFFFF)
-    return lua_pushnil(L), 1;
-
-  lua_createtable(L, 0, 5);
-  PutNumToTable(L, "Bias", tzi.Bias);
-  PutNumToTable(L, "StandardBias", tzi.StandardBias);
-  PutNumToTable(L, "DaylightBias", tzi.DaylightBias);
-  PutLStrToTable(L, "StandardName", tzi.StandardName, sizeof(WCHAR)*wcslen(tzi.StandardName));
-  PutLStrToTable(L, "DaylightName", tzi.DaylightName, sizeof(WCHAR)*wcslen(tzi.DaylightName));
-
-  lua_pushnumber(L, res);
-  return 2;
-}
-
 static void pushSystemTime (lua_State *L, const SYSTEMTIME *st)
 {
   lua_createtable(L, 0, 8);
@@ -4044,7 +4026,7 @@ static void pushFileTime (lua_State *L, const FILETIME *ft)
   lua_pushnumber(L, (double)llFileTime);
 }
 
-static int win_GetSystemTime (lua_State *L)
+static int win_GetSystemTimeAsFileTime (lua_State *L)
 {
   FILETIME ft;
   GetSystemTimeAsFileTime(&ft);
@@ -4060,7 +4042,7 @@ static int win_FileTimeToSystemTime (lua_State *L)
   ft.dwLowDateTime = llFileTime & 0xFFFFFFFF;
   ft.dwHighDateTime = llFileTime >> 32;
   if (! FileTimeToSystemTime(&ft, &st))
-    return lua_pushnil(L), 1;
+    return SysErrorReturn(L);
   pushSystemTime(L, &st);
   return 1;
 }
@@ -4081,8 +4063,21 @@ static int win_SystemTimeToFileTime (lua_State *L)
   st.wSecond       = GetOptIntFromTable(L, "wSecond", 0);
   st.wMilliseconds = GetOptIntFromTable(L, "wMilliseconds", 0);
   if (! SystemTimeToFileTime(&st, &ft))
-    return lua_pushnil(L), 1;
+    return SysErrorReturn(L);
   pushFileTime(L, &ft);
+  return 1;
+}
+
+static int win_FileTimeToLocalFileTime (lua_State *L)
+{
+  FILETIME ft, local_ft;
+  long long llFileTime = 10000 * (long long) luaL_checknumber(L, 1);
+  ft.dwLowDateTime = llFileTime & 0xFFFFFFFF;
+  ft.dwHighDateTime = llFileTime >> 32;
+  if (FileTimeToLocalFileTime(&ft, &local_ft))
+    pushFileTime(L, &local_ft);
+  else
+    return SysErrorReturn(L);
   return 1;
 }
 
@@ -4620,6 +4615,7 @@ static int far_CreateSettings (lua_State *L)
   struct FarSettingsCreate fsc;
   BOOL IsFarSettings = 0;
   TPluginData *pd = GetPluginData(L);
+  int location;
 
   strId = luaL_optlstring(L, 1, NULL, &len);
   if (strId == NULL)
@@ -4635,10 +4631,11 @@ static int far_CreateSettings (lua_State *L)
     }
     ParamId = CAST(const GUID*, (IsFarSettings ? FarGuid : strId));
   }
+  location = OptFlags(L, 2, PSL_ROAMING);
 
   fsc.StructSize = sizeof(fsc);
   fsc.Guid = *ParamId;
-  if (!pd->Info->SettingsControl(INVALID_HANDLE_VALUE, SCTL_CREATE, 0, &fsc)) {
+  if (!pd->Info->SettingsControl(INVALID_HANDLE_VALUE, SCTL_CREATE, location, &fsc)) {
     lua_pushnil(L);
     return 1;
   }
@@ -5085,12 +5082,12 @@ const luaL_Reg win_funcs[] = {
   {"CreateDir",           win_CreateDir},
   {"DeleteFile",          win_DeleteFile},
   {"ExtractKey",          win_ExtractKey},
+  {"FileTimeToLocalFileTime", win_FileTimeToLocalFileTime},
   {"FileTimeToSystemTime",win_FileTimeToSystemTime},
   {"GetConsoleScreenBufferInfo", win_GetConsoleScreenBufferInfo},
   {"GetEnv",              win_GetEnv},
   {"GetFileInfo",         win_GetFileInfo},
-  {"GetSystemTime",       win_GetSystemTime},
-  {"GetTimeZoneInformation", win_GetTimeZoneInformation},
+  {"GetSystemTimeAsFileTime", win_GetSystemTimeAsFileTime},
   {"GetVirtualKeys",      win_GetVirtualKeys},
   {"MoveFile",            win_MoveFile},
   {"RemoveDir",           win_RemoveDir},

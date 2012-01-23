@@ -365,15 +365,20 @@ INT_PTR RegisterObject (lua_State* L)
   return TRANSFORM_REF(ref);
 }
 
+static void PushAnalyseInfo(lua_State* L, const struct AnalyseInfo *Info)
+{
+  lua_createtable(L, 0, 4);
+  PutIntToTable(L, "StructSize", Info->StructSize);
+  PutWStrToTable(L, "FileName", Info->FileName, -1);
+  PutLStrToTable(L, "Buffer", Info->Buffer, Info->BufferSize);
+  PutFlagsToTable(L, "OpMode", Info->OpMode);
+}
+
 int LF_Analyse(lua_State* L, const struct AnalyseInfo *Info)
 {
   int result = FALSE;
   if (GetExportFunction(L, "Analyse")) {           //+1
-    lua_createtable(L, 0, 4);                      //+2
-    PutIntToTable(L, "StructSize", Info->StructSize);
-    PutWStrToTable(L, "FileName", Info->FileName, -1);
-    PutLStrToTable(L, "Buffer", Info->Buffer, Info->BufferSize);
-    PutFlagsToTable(L, "OpMode", Info->OpMode);
+    PushAnalyseInfo(L, Info);                      //+2
     if (!pcall_msg(L, 1, 1)) {                     //+1
       result = lua_toboolean(L, -1);
       lua_pop (L, 1);                              //+0
@@ -544,18 +549,18 @@ HANDLE LF_Open (lua_State* L, const struct OpenInfo *Info)
     else
       lua_pushinteger(L, Info->Data);
   }
-  else {
-    if (Info->OpenFrom==OPEN_SHORTCUT || Info->OpenFrom==OPEN_COMMANDLINE)
-      push_utf8_string(L, (const wchar_t*)Info->Data, -1);
-    else if (Info->OpenFrom==OPEN_DIALOG) {
-      struct OpenDlgPluginData *data = (struct OpenDlgPluginData*)Info->Data;
-      lua_createtable(L, 0, 1);
-      NewDialogData(L, NULL, data->hDlg, FALSE);
-      lua_setfield(L, -2, "hDlg");
-    }
-    else
-      lua_pushinteger(L, Info->Data);
+  else if (Info->OpenFrom == OPEN_SHORTCUT || Info->OpenFrom == OPEN_COMMANDLINE)
+    push_utf8_string(L, (const wchar_t*)Info->Data, -1);
+  else if (Info->OpenFrom==OPEN_DIALOG) {
+    struct OpenDlgPluginData *data = (struct OpenDlgPluginData*)Info->Data;
+    lua_createtable(L, 0, 1);
+    NewDialogData(L, NULL, data->hDlg, FALSE);
+    lua_setfield(L, -2, "hDlg");
   }
+  else if (Info->OpenFrom == OPEN_ANALYSE)
+    PushAnalyseInfo(L, (const struct AnalyseInfo*)Info->Data);
+  else
+    lua_pushinteger(L, Info->Data);
 
   if (pcall_msg(L, 3, 1) == 0) {
     if (lua_type(L,-1) == LUA_TNUMBER) {
