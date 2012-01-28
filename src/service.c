@@ -37,8 +37,9 @@ extern void SetFarColors (lua_State *L);
 const char FarFileFilterType[] = "FarFileFilter";
 const char FarTimerType[]      = "FarTimer";
 const char FarDialogType[]     = "FarDialog";
-const char SettingsType[]      = "Settings";
-const char SettingsHandles[]   = "SettingsHandles";
+const char SettingsType[]      = "FarSettings";
+const char SettingsHandles[]   = "FarSettingsHandles";
+const char PluginHandleType[]  = "FarPluginHandle";
 
 const char FAR_VIRTUALKEYS[]   = "far.virtualkeys";
 const char FAR_FLAGSTABLE[]    = "far.Flags";
@@ -249,6 +250,14 @@ TPluginData* GetPluginData (lua_State* L)
   TPluginData *pd;
   (void) lua_getallocf(L, (void**)&pd);
   return pd;
+}
+
+static void PushPluginHandle (lua_State *L, HANDLE Handle)
+{
+  HANDLE *p = (HANDLE*)lua_newuserdata(L, sizeof(HANDLE));
+  *p = Handle;
+  luaL_getmetatable(L, PluginHandleType);
+  lua_setmetatable(L, -2);
 }
 
 static int far_GetFileOwner (lua_State *L)
@@ -1660,7 +1669,7 @@ static int panel_GetPanelInfo(lua_State *L)
   lua_createtable(L, 0, 13);
   //-------------------------------------------------------------------------
   PutLStrToTable(L, "OwnerGuid", &pi.OwnerGuid, sizeof(GUID));
-  lua_pushlightuserdata(L, pi.PluginHandle); //TODO
+  PushPluginHandle(L, pi.PluginHandle);
   lua_setfield(L, -2, "PluginHandle");
   //-------------------------------------------------------------------------
   PutIntToTable(L, "PanelType", pi.PanelType);
@@ -4286,20 +4295,140 @@ static int filefilter_IsFileInFilter (lua_State *L)
   return 1;
 }
 
-static int far_PluginsControl (lua_State *L)
+static int plugin_load (lua_State *L, enum FAR_PLUGINS_CONTROL_COMMANDS command)
 {
   PSInfo *Info = GetPluginData(L)->Info;
-  HANDLE handle = OptHandle (L, 1);
-  int command = CAST(int, check_env_flag(L, 2));
-  if (command==PCTL_LOADPLUGIN || command==PCTL_UNLOADPLUGIN ||
-      command==PCTL_FORCEDLOADPLUGIN)
-  {
-    int param1 = CAST(int, check_env_flag(L, 3));
-    void *param2 = check_utf8_string(L, 4, NULL);
-    lua_pushboolean(L, Info->PluginsControl(handle, command, param1, param2));
+  int param1 = CAST(int, check_env_flag(L, 1));
+  void *param2 = check_utf8_string(L, 2, NULL);
+  INT_PTR result = Info->PluginsControl(INVALID_HANDLE_VALUE, command, param1, param2);
+  if (result) PushPluginHandle(L, CAST(HANDLE, result));
+  else lua_pushnil(L);
+  return 1;
+}
+
+static int far_LoadPlugin (lua_State *L) { return plugin_load(L, PCTL_LOADPLUGIN); }
+static int far_ForcedLoadPlugin (lua_State *L) { return plugin_load(L, PCTL_FORCEDLOADPLUGIN); }
+
+static int far_UnloadPlugin (lua_State *L)
+{
+  PSInfo *Info = GetPluginData(L)->Info;
+  void* Handle = *(void**)luaL_checkudata(L, 1, PluginHandleType);
+  lua_pushboolean(L, Info->PluginsControl(Handle, PCTL_UNLOADPLUGIN, 0, 0));
+  return 1;
+}
+
+static int far_FindPlugin (lua_State *L)
+{
+  PSInfo *Info = GetPluginData(L)->Info;
+  int param1 = CAST(int, check_env_flag(L, 1));
+  void *param2 = NULL;
+  if (param1 == PFM_MODULENAME)
+    param2 = check_utf8_string(L, 2, NULL);
+  else if (param1 == PFM_GUID) {
+    size_t len;
+    param2 = CAST(void*, luaL_checklstring(L, 2, &len));
+    if (len < sizeof(GUID)) param2 = NULL;
   }
-  else
-    lua_pushnil(L);
+  if (param2) {
+    INT_PTR handle = Info->PluginsControl(NULL, PCTL_FINDPLUGIN, param1, param2);
+    if (handle) {
+      PushPluginHandle(L, CAST(HANDLE, handle));
+      return 1;
+    }
+  }
+  lua_pushnil(L);
+  return 1;
+}
+
+static void PutPluginMenuItemToTable (lua_State *L, const char* field, const struct PluginMenuItem *mi)
+{
+  lua_createtable(L, 0, 3);
+  {
+    size_t i;
+    PutIntToTable(L, "Count", mi->Count);
+    lua_createtable(L, mi->Count, 0); // Guids
+    lua_createtable(L, mi->Count, 0); // Strings
+    for (i=0; i < mi->Count; i++) {
+      lua_pushlstring(L, CAST(const char*, mi->Guids + i), sizeof(GUID));
+      lua_rawseti(L, -3, i+1);
+      push_utf8_string(L, mi->Strings[i], -1);
+      lua_rawseti(L, -2, i+1);
+    }
+    lua_setfield(L, -3, "Strings");
+    lua_setfield(L, -2, "Guids");
+  }
+  lua_setfield(L, -2, field);
+}
+
+static void PutVersionInfoToTable (lua_State *L, const char* field, const struct VersionInfo *vi)
+{
+  lua_createtable(L, 5, 0);
+  PutIntToArray(L, 1, vi->Major);
+  PutIntToArray(L, 2, vi->Minor);
+  PutIntToArray(L, 3, vi->Revision);
+  PutIntToArray(L, 4, vi->Build);
+  PutIntToArray(L, 5, vi->Stage);
+  lua_setfield(L, -2, field);
+}
+
+static int far_GetPluginInformation (lua_State *L)
+{
+  struct FarGetPluginInformation *pi;
+  PSInfo *Info = GetPluginData(L)->Info;
+  HANDLE Handle = *(HANDLE*)luaL_checkudata(L, 1, PluginHandleType);
+  size_t size = Info->PluginsControl(Handle, PCTL_GETPLUGININFORMATION, 0, 0);
+  if (size == 0) return lua_pushnil(L), 1;
+
+  pi = (struct FarGetPluginInformation *)lua_newuserdata(L, size);
+  pi->StructSize = sizeof(*pi);
+  if(!Info->PluginsControl(Handle, PCTL_GETPLUGININFORMATION, size, pi))
+    return lua_pushnil(L), 1;
+
+  lua_createtable(L, 0, 4);
+  {
+    PutWStrToTable(L, "ModuleName", pi->ModuleName, -1);
+    PutFlagsToTable(L, "Flags", pi->Flags);
+    lua_createtable(L, 0, 6); // PInfo
+    {
+      PutIntToTable(L, "StructSize", pi->PInfo.StructSize);
+      PutFlagsToTable(L, "Flags", pi->PInfo.Flags);
+      PutPluginMenuItemToTable(L, "DiskMenu", &pi->PInfo.DiskMenu);
+      PutPluginMenuItemToTable(L, "PluginMenu", &pi->PInfo.PluginMenu);
+      PutPluginMenuItemToTable(L, "PluginConfig", &pi->PInfo.PluginConfig);
+      if (pi->PInfo.CommandPrefix)
+        PutWStrToTable(L, "CommandPrefix", pi->PInfo.CommandPrefix, -1);
+      lua_setfield(L, -2, "PInfo");
+    }
+    lua_createtable(L, 0, 7); // GInfo
+    {
+      PutIntToTable(L, "StructSize", pi->GInfo.StructSize);
+      PutVersionInfoToTable(L, "MinFarVersion", &pi->GInfo.MinFarVersion);
+      PutVersionInfoToTable(L, "Version", &pi->GInfo.Version);
+      PutLStrToTable(L, "Guid", (const char*)&pi->GInfo.Guid, sizeof(GUID));
+      PutWStrToTable(L, "Title", pi->GInfo.Title, -1);
+      PutWStrToTable(L, "Description", pi->GInfo.Description, -1);
+      PutWStrToTable(L, "Author", pi->GInfo.Author, -1);
+      lua_setfield(L, -2, "GInfo");
+    }
+  }
+  return 1;
+}
+
+static int far_GetPlugins (lua_State *L)
+{
+  PSInfo *Info = GetPluginData(L)->Info;
+  int count = Info->PluginsControl(INVALID_HANDLE_VALUE, PCTL_GETPLUGINS, 0, 0);
+  lua_createtable(L, count, 0);
+  if (count > 0) {
+    int i;
+    HANDLE *handles = lua_newuserdata(L, count*sizeof(HANDLE));
+    count = Info->PluginsControl(INVALID_HANDLE_VALUE, PCTL_GETPLUGINS, count, handles);
+    for (i=0; i<count; i++) {
+      PushPluginHandle(L, handles[i]);
+      lua_rawseti(L, -3, i+1);
+    }
+    lua_pop(L, 1);
+  }
   return 1;
 }
 
@@ -4316,6 +4445,19 @@ static int far_XLat (lua_State *L)
 
   str = GetPluginData(L)->FSF->XLat(Line, StartPos, EndPos, Flags);
   str ? (void)push_utf8_string(L, str, -1) : lua_pushnil(L);
+  return 1;
+}
+
+static int far_FormatFileSize (lua_State *L)
+{
+  wchar_t buf[256];
+  UINT64 Size = CAST(UINT64, luaL_checknumber(L, 1));
+  int Width = luaL_checkinteger(L, 2);
+  UINT64 Flags = CheckFlags(L, 3);
+  if (Flags & FFFS_MINSIZEINDEX)
+    Flags |= (luaL_optinteger(L, 4, 0) & FFFS_MINSIZEINDEX_MASK);
+  GetPluginData(L)->FSF->FormatFileSize(Size, Width, Flags, buf, DIM(buf));
+  push_utf8_string(L, buf, -1);
   return 1;
 }
 
@@ -5032,7 +5174,12 @@ const luaL_Reg far_funcs[] = {
   {"MacroGetLastError",   far_MacroGetLastError},
   {"DefDlgProc",          far_DefDlgProc},
   {"CreateFileFilter",    far_CreateFileFilter},
-  {"PluginsControl",      far_PluginsControl},
+  {"LoadPlugin",          far_LoadPlugin},
+  {"UnloadPlugin",        far_UnloadPlugin},
+  {"ForcedLoadPlugin",    far_ForcedLoadPlugin},
+  {"FindPlugin",          far_FindPlugin},
+  {"GetPluginInformation",far_GetPluginInformation},
+  {"GetPlugins",          far_GetPlugins},
   {"CreateSettings",      far_CreateSettings},
   {"FreeSettings",        far_FreeSettings},
   {"ColorDialog",         far_ColorDialog},
@@ -5063,6 +5210,7 @@ const luaL_Reg far_funcs[] = {
   {"RecursiveSearch",     far_RecursiveSearch},
   {"ConvertPath",         far_ConvertPath},
   {"XLat",                far_XLat},
+  {"FormatFileSize",      far_FormatFileSize},
 
   {"CPluginStartupInfo",  far_CPluginStartupInfo},
   {"GetCurrentDirectory", far_GetCurrentDirectory},
@@ -5181,6 +5329,9 @@ static int luaopen_far (lua_State *L)
   lua_setfield(L, LUA_REGISTRYINDEX, SettingsHandles);
 
   (void) luaL_dostring(L, far_Dialog);
+
+  luaL_newmetatable(L, PluginHandleType);
+
   return 0;
 }
 

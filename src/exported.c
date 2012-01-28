@@ -770,8 +770,9 @@ void LF_ExitFAR(lua_State* L, const struct ExitInfo *Info)
 void getPluginMenuItems(lua_State* L, struct PluginMenuItem *pmi, const char* namestrings,
                         const char* nameguids, int cpos)
 {
-  int count = 0;
-  pmi->Strings = CreateStringsArray (L, cpos, namestrings, &pmi->Count);
+  int count = 0, tmp;
+  pmi->Strings = CreateStringsArray (L, cpos, namestrings, &tmp);
+  pmi->Count = tmp;
   lua_getfield(L, -1, nameguids);
   if (lua_type(L, -1) == LUA_TSTRING) {
     pmi->Guids = (GUID*)lua_tostring(L,-1);
@@ -780,7 +781,7 @@ void getPluginMenuItems(lua_State* L, struct PluginMenuItem *pmi, const char* na
   }
   else
     lua_pop(L, 1);
-  if (pmi->Count > count)
+  if ((int)pmi->Count > count)
     pmi->Count = count;
 }
 
