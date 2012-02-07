@@ -1897,16 +1897,21 @@ id=110
 lv=2
 dt=Text
 nm=export.ProcessEditorEvent
-mtime=3509018955
+mtime=3537733478
 <article>
-#_result = export.ProcessEditorEvent (Event, Param)
+#_result = export.ProcessEditorEvent (EditorID, Event, Param)
 #_
 #_**Parameters:**
-#_  Event:  integer
-#_  Param:  integer, or nil
+#_  EditorID: integer
+#_  Event:    integer
+#_  Param:    integer (for EE_REDRAW)
+#_            table (for EE_CHANGE):
+#_              Type:         integer
+#_              StringNumber: integer
+#_            nil (for other events)
 #_
 #_**Returns:**
-#_  result: integer
+#_  result:   integer
 #_
 #_@@@
 #_
@@ -1946,16 +1951,17 @@ id=127
 lv=2
 dt=Text
 nm=export.ProcessViewerEvent
-mtime=3509018963
+mtime=3537733501
 <article>
-#_result = export.ProcessViewerEvent (Event, Param)
+#_result = export.ProcessViewerEvent (ViewerID, Event, Param)
 #_
 #_**Parameters:**
-#_  Event:  integer
-#_  Param:  integer, or nil
+#_  ViewerID: integer
+#_  Event:    integer
+#_  Param:    nil
 #_
 #_**Returns:**
-#_  result: integer
+#_  result:   integer
 #_
 #_@@@
 #_

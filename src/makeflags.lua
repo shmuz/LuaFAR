@@ -1,5 +1,9 @@
 -- This script is intended to generate the "flags.c" file
 
+local function enum_blacklist (s)
+  return s:find("^FMSG_") or s:find("^[EFMPSV]CTL_") or s:find("^FFCTL_") or s:find("^RECTL_")
+end
+
 local function add_defines (src, trg_keys, trg_vals)
   local cast1 = "%(HANDLE%)" -- suppress compiler warnings
   local cast2 = "%(void%*%)" -- suppress compiler warnings
@@ -18,7 +22,7 @@ end
 local function add_enums (src, trg_keys, trg_vals)
   for enum in src:gmatch("%senum%s*[%w_]*%s*(%b{})") do
     for c in enum:gmatch("\n%s*([%w_]+)") do
-      if not c:find("^[EFM]CTL_") then
+      if not enum_blacklist(c) then
         table.insert(trg_keys, c)
         table.insert(trg_vals, c)
       end

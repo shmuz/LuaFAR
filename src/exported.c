@@ -551,7 +551,7 @@ HANDLE LF_Open (lua_State* L, const struct OpenInfo *Info)
   }
   else if (Info->OpenFrom == OPEN_SHORTCUT || Info->OpenFrom == OPEN_COMMANDLINE)
     push_utf8_string(L, (const wchar_t*)Info->Data, -1);
-  else if (Info->OpenFrom==OPEN_DIALOG) {
+  else if (Info->OpenFrom == OPEN_DIALOG) {
     struct OpenDlgPluginData *data = (struct OpenDlgPluginData*)Info->Data;
     lua_createtable(L, 0, 1);
     NewDialogData(L, NULL, data->hDlg, FALSE);
@@ -827,18 +827,22 @@ int LF_ProcessEditorEvent (lua_State* L, const struct ProcessEditorEventInfo *In
 {
   int ret = 0;
   if (GetExportFunction(L, "ProcessEditorEvent"))  { //+1: Func
-    lua_pushinteger(L, Info->Event);  //+2;
+    lua_pushinteger(L, Info->EditorID); //+2;
+    lua_pushinteger(L, Info->Event);    //+3;
     switch(Info->Event) {
-      case EE_CLOSE:
-      case EE_GOTFOCUS:
-      case EE_KILLFOCUS:
-        lua_pushinteger(L, *(int*)Info->Param); break;
       case EE_REDRAW:
         lua_pushinteger(L, (INT_PTR)Info->Param); break;
+      case EE_CHANGE: {
+        const struct EditorChange *ec = (const struct EditorChange*) Info->Param;
+        lua_createtable(L, 0, 2);
+        PutNumToTable(L, "Type", ec->Type);
+        PutNumToTable(L, "StringNumber", ec->StringNumber);
+        break;
+      }
       default:
         lua_pushnil(L); break;
     }
-    if (pcall_msg(L, 2, 1) == 0) {    //+1
+    if (pcall_msg(L, 3, 1) == 0) {    //+1
       if (lua_isnumber(L,-1)) ret = lua_tointeger(L,-1);
       lua_pop(L,1);
     }
@@ -850,14 +854,10 @@ int LF_ProcessViewerEvent (lua_State* L, const struct ProcessViewerEventInfo *In
 {
   int ret = 0;
   if (GetExportFunction(L, "ProcessViewerEvent"))  { //+1: Func
+    lua_pushinteger(L, Info->ViewerID);
     lua_pushinteger(L, Info->Event);
-    switch(Info->Event) {
-      case VE_GOTFOCUS:
-      case VE_KILLFOCUS:
-      case VE_CLOSE:  lua_pushinteger(L, *(int*)Info->Param); break;
-      default:        lua_pushnil(L); break;
-    }
-    if (pcall_msg(L, 2, 1) == 0) {      //+1
+    lua_pushnil(L);
+    if (pcall_msg(L, 3, 1) == 0) {      //+1
       if (lua_isnumber(L,-1)) ret = lua_tointeger(L,-1);
       lua_pop(L,1);
     }
