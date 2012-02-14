@@ -15,4 +15,6 @@ Edit user's settings in the file "config.mak" then run make.
 
 Installation
 -------------
-luafar3.dll and lua5.1.dll should be placed in any directory on Windows' PATH.
+luafar3.dll and lua5.1.dll should be placed either
+-- into any directory on Windows' PATH, or
+-- into %FARHOME%.

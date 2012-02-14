@@ -1681,7 +1681,7 @@ id=109
 lv=2
 dt=Text
 nm=export.Open
-mtime=3536040622
+mtime=3538380099
 <article>
 #_ret = export.Open (OpenFrom, Guid, Item)
 #_
@@ -1689,9 +1689,10 @@ mtime=3536040622
 #_  OpenFrom: integer
 #_  Guid:     string
 #_  Item:
-#_    - If OpenFrom contains OPEN_FROMMACRO:
-#_        - string  (if OpenFrom contains OPEN_FROMMACROSTRING)
-#_        - integer (for other cases of OpenFrom)
+#_    - If OpenFrom is OPEN_FROMMACRO:
+#_        - table:
+#_            Type  : integer
+#_            Value : nil, flag, string, or number (depending on *Type*)
 #_    - else:
 #_        - string (if OpenFrom is OPEN_SHORTCUT or OPEN_COMMANDLINE)
 #_        - table  (if OpenFrom is OPEN_DIALOG)
@@ -7398,7 +7399,7 @@ id=191
 lv=2
 dt=Text
 nm=far.LuafarVersion
-mtime=3512121053
+mtime=3538381661
 <article>
 #_version = far.LuafarVersion ([mode])
 #_
@@ -7414,11 +7415,7 @@ mtime=3512121053
 #_    "1.2.3" - string representation, or
 #_    1, 2, 3 - three number representation.
 #_
-#_**Notes:**
-#_  1. LuaFAR versions prior to 1.0 did not have parameter *mode*.
-#_  2. LuaFAR versions prior to 0.8 did not have this function.
-#_
-#_**Extra:**
+#_**Note:**
 #_  The version of Far SDK used *in building LuaFAR* can be
 #_  determined as follows:
 #_    local F = far.Flags

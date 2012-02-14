@@ -540,14 +540,17 @@ HANDLE LF_Open (lua_State* L, const struct OpenInfo *Info)
   lua_pushinteger(L, Info->OpenFrom);
   lua_pushlstring(L, (const char*)Info->Guid, sizeof(GUID));
 
-  if (Info->OpenFrom & OPEN_FROMMACRO) {
-    int op_macro = Info->OpenFrom & OPEN_FROMMACRO_MASK & ~OPEN_FROMMACRO;
-    if (op_macro == 0)
-      lua_pushinteger(L, Info->Data);
-    else if (op_macro == OPEN_FROMMACROSTRING)
-      push_utf8_string(L, (const wchar_t*)Info->Data, -1);
-    else
-      lua_pushinteger(L, Info->Data);
+  if (Info->OpenFrom == OPEN_FROMMACRO) {
+    struct OpenMacroInfo* om_info = (struct OpenMacroInfo*)Info->Data;
+    struct FarMacroValue* fm_value = &om_info->Value;
+    lua_createtable(L, 0, 2);
+    PutIntToTable(L, "Type", fm_value->Type);
+    if (fm_value->Type == FMVT_INTEGER)
+      PutFlagsToTable(L, "Value", fm_value->Value.Integer);
+    else if (fm_value->Type == FMVT_DOUBLE)
+      PutNumToTable(L, "Value", fm_value->Value.Double);
+    else if (fm_value->Type == FMVT_STRING)
+      PutWStrToTable(L, "Value", fm_value->Value.String, -1);
   }
   else if (Info->OpenFrom == OPEN_SHORTCUT || Info->OpenFrom == OPEN_COMMANDLINE)
     push_utf8_string(L, (const wchar_t*)Info->Data, -1);
