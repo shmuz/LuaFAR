@@ -541,16 +541,18 @@ HANDLE LF_Open (lua_State* L, const struct OpenInfo *Info)
   lua_pushlstring(L, (const char*)Info->Guid, sizeof(GUID));
 
   if (Info->OpenFrom == OPEN_FROMMACRO) {
+    size_t i;
     struct OpenMacroInfo* om_info = (struct OpenMacroInfo*)Info->Data;
-    struct FarMacroValue* fm_value = &om_info->Value;
-    lua_createtable(L, 0, 2);
-    PutIntToTable(L, "Type", fm_value->Type);
-    if (fm_value->Type == FMVT_INTEGER)
-      PutFlagsToTable(L, "Value", fm_value->Value.Integer);
-    else if (fm_value->Type == FMVT_DOUBLE)
-      PutNumToTable(L, "Value", fm_value->Value.Double);
-    else if (fm_value->Type == FMVT_STRING)
-      PutWStrToTable(L, "Value", fm_value->Value.String, -1);
+    lua_createtable(L, om_info->Count, 0);
+    for (i=0; i < om_info->Count; i++) {
+      struct FarMacroValue* v = om_info->Values + i;
+      lua_createtable(L, 0, 2);
+      PutIntToTable(L, "Type", v->Type);
+      if (v->Type == FMVT_INTEGER)     PutFlagsToTable(L, "Value", v->Value.Integer);
+      else if (v->Type == FMVT_DOUBLE) PutNumToTable  (L, "Value", v->Value.Double);
+      else if (v->Type == FMVT_STRING) PutWStrToTable (L, "Value", v->Value.String, -1);
+      lua_rawseti(L, -2, i+1);
+    }
   }
   else if (Info->OpenFrom == OPEN_SHORTCUT || Info->OpenFrom == OPEN_COMMANDLINE)
     push_utf8_string(L, (const wchar_t*)Info->Data, -1);

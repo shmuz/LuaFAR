@@ -1681,7 +1681,7 @@ id=109
 lv=2
 dt=Text
 nm=export.Open
-mtime=3538380099
+mtime=3538458867
 <article>
 #_ret = export.Open (OpenFrom, Guid, Item)
 #_
@@ -1690,9 +1690,10 @@ mtime=3538380099
 #_  Guid:     string
 #_  Item:
 #_    - If OpenFrom is OPEN_FROMMACRO:
-#_        - table:
-#_            Type  : integer
-#_            Value : nil, flag, string, or number (depending on *Type*)
+#_        - table (array of arguments):
+#_            each argument is a table with the following fields:
+#_              Type  : integer
+#_              Value : nil, flag, string, or number (depending on *Type*)
 #_    - else:
 #_        - string (if OpenFrom is OPEN_SHORTCUT or OPEN_COMMANDLINE)
 #_        - table  (if OpenFrom is OPEN_DIALOG)
