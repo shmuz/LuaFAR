@@ -42,7 +42,8 @@ DLLFUNC int     LF_Message(lua_State *L, const wchar_t* aMsg, const wchar_t* aTi
 DLLFUNC void    LF_ProcessEnvVars (lua_State *L, const wchar_t* aEnvPrefix, const wchar_t* PluginDir);
 DLLFUNC BOOL    LF_RunDefaultScript(lua_State* L);
 
-DLLFUNC int     LF_Analyse (lua_State* L, const struct AnalyseInfo *Info);
+DLLFUNC HANDLE  LF_Analyse (lua_State* L, const struct AnalyseInfo *Info);
+DLLFUNC void    LF_CloseAnalyse (lua_State* L, const struct CloseAnalyseInfo *Info);
 DLLFUNC void    LF_ClosePanel (lua_State* L, const struct ClosePanelInfo *Info);
 DLLFUNC int     LF_Compare (lua_State* L, const struct CompareInfo *Info);
 DLLFUNC int     LF_Configure (lua_State* L, const struct ConfigureInfo *Info);

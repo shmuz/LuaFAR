@@ -3241,15 +3241,6 @@ static int win_SetEnv (lua_State *L)
   return lua_pushboolean (L, res), 1;
 }
 
-static int OneLevelUp (lua_State *L, wchar_t *trg)
-{
-  if (PushFarUserSubkey(L, FALSE, trg)) {
-    lua_pop(L, 1);
-    return TRUE;
-  }
-  return FALSE;
-}
-
 // SetRegKey (DataType, Key, ValueName, ValueData)
 //   DataType:        "string","expandstring","multistring","dword" or "binary", [string]
 //   Key:             registry key, [string]
@@ -3257,37 +3248,33 @@ static int OneLevelUp (lua_State *L, wchar_t *trg)
 //   ValueData:       registry value data, [string | number | lstring]
 // Returns:
 //   nothing.
-static int far_SetRegKey(lua_State *L)
+static int win_SetRegKey(lua_State *L)
 {
   const char* DataType    = luaL_checkstring(L, 1);
   wchar_t* Key            = (wchar_t*)check_utf8_string(L, 2, NULL);
   wchar_t* ValueName      = (wchar_t*)check_utf8_string(L, 3, NULL);
-  wchar_t farkey[512];
   size_t len;
-  if (!OneLevelUp(L, farkey))
-    return 0;
 
   if (!strcmp ("string", DataType)) {
-    SetRegKeyStr(HKEY_CURRENT_USER, farkey, Key, ValueName,
+    SetRegKeyStr(HKEY_CURRENT_USER, Key, ValueName,
               (wchar_t*)check_utf8_string(L, 4, NULL));
   }
   else if (!strcmp ("dword", DataType)) {
-    SetRegKeyDword(HKEY_CURRENT_USER, farkey, Key, ValueName,
-              luaL_checkinteger(L, 4));
+    SetRegKeyDword(HKEY_CURRENT_USER, Key, ValueName, luaL_checkinteger(L, 4));
   }
   else if (!strcmp ("binary", DataType)) {
     BYTE *data = (BYTE*)luaL_checklstring(L, 4, &len);
-    SetRegKeyArr(HKEY_CURRENT_USER, farkey, Key, ValueName, data, len);
+    SetRegKeyArr(HKEY_CURRENT_USER, Key, ValueName, data, len);
   }
   else if (!strcmp ("expandstring", DataType)) {
     const wchar_t* data = check_utf8_string(L, 4, NULL);
-    HKEY hKey = CreateRegKey(HKEY_CURRENT_USER, farkey, Key);
+    HKEY hKey = CreateRegKey(HKEY_CURRENT_USER, Key);
     RegSetValueExW(hKey, ValueName, 0, REG_EXPAND_SZ, (BYTE*)data, 1+wcslen(data));
     RegCloseKey(hKey);
   }
   else if (!strcmp ("multistring", DataType)) {
     const char* data = luaL_checklstring(L, 4, &len);
-    HKEY hKey = CreateRegKey(HKEY_CURRENT_USER, farkey, Key);
+    HKEY hKey = CreateRegKey(HKEY_CURRENT_USER, Key);
     RegSetValueExW(hKey, ValueName, 0, REG_MULTI_SZ, (BYTE*)data, len);
     RegCloseKey(hKey);
   }
@@ -3302,7 +3289,7 @@ static int far_SetRegKey(lua_State *L)
 //   ValueData:       registry value data, [string | number | lstring]
 //   DataType:        "string", "expandstring", "multistring", "dword"
 //                    or "binary", [string]
-static int far_GetRegKey(lua_State *L)
+static int win_GetRegKey(lua_State *L)
 {
   HKEY hKey;
   DWORD datatype, datasize;
@@ -3311,11 +3298,8 @@ static int far_GetRegKey(lua_State *L)
 
   wchar_t* Key = (wchar_t*)check_utf8_string(L, 1, NULL);
   const wchar_t* ValueName = check_utf8_string(L, 2, NULL);
-  wchar_t farkey[512];
-  if (!OneLevelUp(L, farkey))
-    return 0;
 
-  hKey = OpenRegKey(HKEY_CURRENT_USER, farkey, Key);
+  hKey = OpenRegKey(HKEY_CURRENT_USER, Key);
   if (hKey == NULL) {
     lua_pushnil(L);
     lua_pushstring(L, "OpenRegKey failed.");
@@ -3367,16 +3351,10 @@ static int far_GetRegKey(lua_State *L)
 // Result = DeleteRegKey (Key)
 //   Key:             registry key, [string]
 //   Result:          TRUE if success, FALSE if failure, [boolean]
-static int far_DeleteRegKey(lua_State *L)
+static int win_DeleteRegKey(lua_State *L)
 {
-  long res;
   const wchar_t* Key = check_utf8_string(L, 1, NULL);
-  wchar_t farkey[512];
-  if (!OneLevelUp(L, farkey))
-    return 0;
-  wcscat(farkey, L"\\");
-  wcscat(farkey, Key);
-  res = RegDeleteKeyW (HKEY_CURRENT_USER, farkey);
+  long res = RegDeleteKeyW (HKEY_CURRENT_USER, Key);
   lua_pushboolean (L, res==ERROR_SUCCESS);
   return 1;
 }
@@ -5185,9 +5163,6 @@ const luaL_Reg far_funcs[] = {
   {"ColorDialog",         far_ColorDialog},
 
   /* FUNCTIONS ADDED FOR VARIOUS REASONS */
-  {"SetRegKey",           far_SetRegKey},
-  {"GetRegKey",           far_GetRegKey},
-  {"DeleteRegKey",        far_DeleteRegKey},
   {"CopyToClipboard",     far_CopyToClipboard},
   {"PasteFromClipboard",  far_PasteFromClipboard},
   {"InputRecordToName",   far_InputRecordToName},
@@ -5229,18 +5204,21 @@ const luaL_Reg win_funcs[] = {
   {"CopyFile",            win_CopyFile},
   {"CreateDir",           win_CreateDir},
   {"DeleteFile",          win_DeleteFile},
+  {"DeleteRegKey",        win_DeleteRegKey},
   {"ExtractKey",          win_ExtractKey},
   {"FileTimeToLocalFileTime", win_FileTimeToLocalFileTime},
   {"FileTimeToSystemTime",win_FileTimeToSystemTime},
   {"GetConsoleScreenBufferInfo", win_GetConsoleScreenBufferInfo},
   {"GetEnv",              win_GetEnv},
   {"GetFileInfo",         win_GetFileInfo},
+  {"GetRegKey",           win_GetRegKey},
   {"GetSystemTimeAsFileTime", win_GetSystemTimeAsFileTime},
   {"GetVirtualKeys",      win_GetVirtualKeys},
   {"MoveFile",            win_MoveFile},
   {"RemoveDir",           win_RemoveDir},
   {"RenameFile",          win_MoveFile}, // alias
   {"SetEnv",              win_SetEnv},
+  {"SetRegKey",           win_SetRegKey},
   {"ShellExecute",        win_ShellExecute},
   {"SystemTimeToFileTime",win_SystemTimeToFileTime},
   {"wcscmp",              win_wcscmp},

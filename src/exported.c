@@ -374,17 +374,24 @@ static void PushAnalyseInfo(lua_State* L, const struct AnalyseInfo *Info)
   PutFlagsToTable(L, "OpMode", Info->OpMode);
 }
 
-int LF_Analyse(lua_State* L, const struct AnalyseInfo *Info)
+HANDLE LF_Analyse(lua_State* L, const struct AnalyseInfo *Info)
 {
-  int result = FALSE;
-  if (GetExportFunction(L, "Analyse")) {           //+1
-    PushAnalyseInfo(L, Info);                      //+2
-    if (!pcall_msg(L, 1, 1)) {                     //+1
-      result = lua_toboolean(L, -1);
-      lua_pop (L, 1);                              //+0
+  HANDLE result = INVALID_HANDLE_VALUE;
+  if (GetExportFunction(L, "Analyse")) { //+1
+    PushAnalyseInfo(L, Info);            //+2
+    if (!pcall_msg(L, 1, 1)) {           //+1
+      if (lua_toboolean(L, -1))
+        result = (HANDLE)(INT_PTR)luaL_ref(L, LUA_REGISTRYINDEX); //+0
+      else
+        lua_pop (L, 1);                  //+0
     }
   }
   return result;
+}
+
+void LF_CloseAnalyse (lua_State* L, const struct CloseAnalyseInfo *Info)
+{
+  luaL_unref(L, LUA_REGISTRYINDEX, CAST(INT_PTR, Info->Handle));
 }
 //---------------------------------------------------------------------------
 
@@ -562,8 +569,13 @@ HANDLE LF_Open (lua_State* L, const struct OpenInfo *Info)
     NewDialogData(L, NULL, data->hDlg, FALSE);
     lua_setfield(L, -2, "hDlg");
   }
-  else if (Info->OpenFrom == OPEN_ANALYSE)
-    PushAnalyseInfo(L, (const struct AnalyseInfo*)Info->Data);
+  else if (Info->OpenFrom == OPEN_ANALYSE) {
+    const struct OpenAnalyseInfo* oai = CAST(const struct OpenAnalyseInfo*, Info->Data);
+    PushAnalyseInfo(L, oai->Info);
+    lua_rawgeti(L, LUA_REGISTRYINDEX, CAST(INT_PTR, oai->Handle));
+    lua_setfield(L, -2, "Handle");
+    luaL_unref(L, LUA_REGISTRYINDEX, CAST(INT_PTR, oai->Handle));
+  }
   else
     lua_pushinteger(L, Info->Data);
 

@@ -343,10 +343,18 @@ void LUAPLUG FreeCustomDataW(wchar_t *CustomData)
 //---------------------------------------------------------------------------
 
 #ifdef EXPORT_ANALYSE
-int LUAPLUG AnalyseW(const struct AnalyseInfo *Info)
+HANDLE LUAPLUG AnalyseW(const struct AnalyseInfo *Info)
 {
   if(LS) return LF_Analyse(LS, Info);
   return 0;
+}
+#endif
+//---------------------------------------------------------------------------
+
+#ifdef EXPORT_CLOSEANALYSE
+void LUAPLUG CloseAnalyseW(const struct CloseAnalyseInfo *Info)
+{
+  if(LS) LF_CloseAnalyse(LS, Info);
 }
 #endif
 //---------------------------------------------------------------------------
