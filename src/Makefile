@@ -43,8 +43,11 @@ flags.c: $(INC_FAR)\plugin.hpp makeflags.lua
 keysandcolors.c: $(INC_FAR)/farcolor.hpp makefarkeys.lua
 	$(LUAEXE) makefarkeys.lua $(INC_FAR) $@
 
+version.h: define.lua version.h.mcr
+	$(LUAEXE) -erequire(\'macro\')(\'$<\',\'$@.mcr\',\'$@\')
+
 clean:
-	del *.o flags.c keysandcolors.c $(LUAFARDLL)
+	del *.o flags.c keysandcolors.c version.h $(LUAFARDLL)
 
 # Dependencies
 *.o        : $(INC_FAR)\plugin.hpp ustring.h
