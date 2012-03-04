@@ -3548,10 +3548,10 @@ mtime=3515169452
 id=223
 lv=2
 dt=Text
-nm=editor.AddStackBookmark
+nm=editor.AddSessionBookmark
 mtime=3507542580
 <article>
-#_result = editor.AddStackBookmark (EditorId)
+#_result = editor.AddSessionBookmark (EditorId)
 #_
 #_**Parameters:**
 #_  EditorId: integer, or nil
@@ -3560,7 +3560,7 @@ mtime=3507542580
 #_  result:   boolean
 #_
 #_**Far API used:**
-#_  EditorControl, ECTL_ADDSTACKBOOKMARK
+#_  EditorControl, ECTL_ADDSESSIONBOOKMARK
 #_
 #_
 </article>
@@ -3569,10 +3569,10 @@ mtime=3507542580
 id=224
 lv=2
 dt=Text
-nm=editor.ClearStackBookmarks
+nm=editor.ClearSessionBookmarks
 mtime=3507542594
 <article>
-#_result = editor.ClearStackBookmarks (EditorId)
+#_result = editor.ClearSessionBookmarks (EditorId)
 #_
 #_**Parameters:**
 #_  EditorId: integer, or nil
@@ -3581,7 +3581,7 @@ mtime=3507542594
 #_  result:   integer
 #_
 #_**Far API used:**
-#_  EditorControl, ECTL_CLEARSTACKBOOKMARKS
+#_  EditorControl, ECTL_CLEARSESSIONBOOKMARKS
 #_
 #_
 </article>
@@ -3659,10 +3659,10 @@ mtime=3507542619
 id=225
 lv=2
 dt=Text
-nm=editor.DeleteStackBookmark
+nm=editor.DeleteSessionBookmark
 mtime=3507542643
 <article>
-#_result = editor.DeleteStackBookmark (EditorId, position)
+#_result = editor.DeleteSessionBookmark (EditorId, position)
 #_
 #_**Parameters:**
 #_  EditorId: integer, or nil
@@ -3672,7 +3672,7 @@ mtime=3507542643
 #_  result:   boolean
 #_
 #_**Far API used:**
-#_  EditorControl, ECTL_DELETESTACKBOOKMARK
+#_  EditorControl, ECTL_DELETESESSIONBOOKMARK
 #_
 #_
 </article>
@@ -3915,10 +3915,10 @@ mtime=3507542774
 id=230
 lv=2
 dt=Text
-nm=editor.GetStackBookmarks
+nm=editor.GetSessionBookmarks
 mtime=3507542793
 <article>
-#_bookmarks = editor.GetStackBookmarks (EditorId)
+#_bookmarks = editor.GetSessionBookmarks (EditorId)
 #_
 #_**Parameters:**
 #_  EditorId:  integer, or nil
@@ -3933,11 +3933,11 @@ mtime=3507542793
 #_
 #_**Note:**
 #_  This function groups data differently from how Far API's
-#_  EditorControl(ECTL_GETSTACKBOOKMARKS) does. It places data
+#_  EditorControl(ECTL_GETSESSIONBOOKMARKS) does. It places data
 #_  of each bookmark into a separate table.
 #_
 #_**Far API used:**
-#_  EditorControl, ECTL_GETSTACKBOOKMARKS
+#_  EditorControl, ECTL_GETSESSIONBOOKMARKS
 #_
 #_@@@
 #_
@@ -4066,10 +4066,10 @@ mtime=3523911803
 id=227
 lv=2
 dt=Text
-nm=editor.NextStackBookmark
+nm=editor.NextSessionBookmark
 mtime=3507542898
 <article>
-#_result = editor.NextStackBookmark (EditorId)
+#_result = editor.NextSessionBookmark (EditorId)
 #_
 #_**Parameters:**
 #_  EditorId: integer, or nil
@@ -4078,7 +4078,7 @@ mtime=3507542898
 #_  result:   boolean
 #_
 #_**Far API used:**
-#_  EditorControl, ECTL_NEXTSTACKBOOKMARK
+#_  EditorControl, ECTL_NEXTSESSIONBOOKMARK
 #_
 #_
 </article>
@@ -4087,10 +4087,10 @@ mtime=3507542898
 id=226
 lv=2
 dt=Text
-nm=editor.PrevStackBookmark
+nm=editor.PrevSessionBookmark
 mtime=3507542972
 <article>
-#_result = editor.PrevStackBookmark (EditorId)
+#_result = editor.PrevSessionBookmark (EditorId)
 #_
 #_**Parameters:**
 #_  EditorId: integer, or nil
@@ -4099,7 +4099,7 @@ mtime=3507542972
 #_  result:   boolean
 #_
 #_**Far API used:**
-#_  EditorControl, ECTL_PREVSTACKBOOKMARK
+#_  EditorControl, ECTL_PREVSESSIONBOOKMARK
 #_
 #_
 </article>
@@ -6909,23 +6909,24 @@ id=190
 lv=2
 dt=Text
 nm=far.ProcessName
-mtime=3507818405
+mtime=3539893673
 <article>
-#_result = far.ProcessName (Param1, Param2, Flags)
+#_Result = far.ProcessName (Op, Mask, Name, Flags, Size)
 #_
 #_**Parameters:**
-#_  Param1: string
-#_  Param2: string
-#_  Flags : flags
+#_  Op:    flag (either of PN_CMPNAME, PN_CMPNAMELIST, PN_GENERATENAME, PN_CHECKMASK)
+#_  Mask:  string
+#_  Name:  string (ignored when Op==PN_CHECKMASK)
+#_  Flags: flags (any combination of PN_SKIPPATH, PN_SHOWERRORMESSAGE; default=0)
+#_  Size:  integer 0...0xFFFF (only used when Op==PN_GENERATENAME; default=0)
 #_
 #_**Returns:**
-#_  result: boolean, or string.
-#_          String can be returned if Flags==PN_GENERATENAME
+#_  Result: boolean, or string.
+#_          String is returned on success if Op==PN_GENERATENAME
 #_
 #_**Far API used:**
 #_  FSF.ProcessName
 #_
-#_@@@
 #_
 </article>
 </node>

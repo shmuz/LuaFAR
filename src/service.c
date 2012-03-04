@@ -873,52 +873,52 @@ static int editor_GetBookmarks(lua_State *L)
   return PushBookmarks(L, ei.BookMarkCount, ECTL_GETBOOKMARKS, EditorId);
 }
 
-static int editor_GetStackBookmarks(lua_State *L)
+static int editor_GetSessionBookmarks(lua_State *L)
 {
   int EditorId = luaL_optinteger(L, 1, -1);
   PSInfo *Info = GetPluginData(L)->Info;
-  int count = Info->EditorControl(EditorId, ECTL_GETSTACKBOOKMARKS, 0, 0);
-  return PushBookmarks(L, count, ECTL_GETSTACKBOOKMARKS, EditorId);
+  int count = Info->EditorControl(EditorId, ECTL_GETSESSIONBOOKMARKS, 0, 0);
+  return PushBookmarks(L, count, ECTL_GETSESSIONBOOKMARKS, EditorId);
 }
 
-static int editor_AddStackBookmark(lua_State *L)
+static int editor_AddSessionBookmark(lua_State *L)
 {
   int EditorId = luaL_optinteger(L, 1, -1);
   PSInfo *Info = GetPluginData(L)->Info;
-  lua_pushboolean(L, Info->EditorControl(EditorId, ECTL_ADDSTACKBOOKMARK, 0, 0));
+  lua_pushboolean(L, Info->EditorControl(EditorId, ECTL_ADDSESSIONBOOKMARK, 0, 0));
   return 1;
 }
 
-static int editor_ClearStackBookmarks(lua_State *L)
+static int editor_ClearSessionBookmarks(lua_State *L)
 {
   int EditorId = luaL_optinteger(L, 1, -1);
   PSInfo *Info = GetPluginData(L)->Info;
-  lua_pushinteger(L, Info->EditorControl(EditorId, ECTL_CLEARSTACKBOOKMARKS, 0, 0));
+  lua_pushinteger(L, Info->EditorControl(EditorId, ECTL_CLEARSESSIONBOOKMARKS, 0, 0));
   return 1;
 }
 
-static int editor_DeleteStackBookmark(lua_State *L)
+static int editor_DeleteSessionBookmark(lua_State *L)
 {
   int EditorId = luaL_optinteger(L, 1, -1);
   INT_PTR num = luaL_optinteger(L, 2, -1);
   PSInfo *Info = GetPluginData(L)->Info;
-  lua_pushboolean(L, Info->EditorControl(EditorId, ECTL_DELETESTACKBOOKMARK, 0, (void*)num));
+  lua_pushboolean(L, Info->EditorControl(EditorId, ECTL_DELETESESSIONBOOKMARK, 0, (void*)num));
   return 1;
 }
 
-static int editor_NextStackBookmark(lua_State *L)
+static int editor_NextSessionBookmark(lua_State *L)
 {
   int EditorId = luaL_optinteger(L, 1, -1);
   PSInfo *Info = GetPluginData(L)->Info;
-  lua_pushboolean(L, Info->EditorControl(EditorId, ECTL_NEXTSTACKBOOKMARK, 0, 0));
+  lua_pushboolean(L, Info->EditorControl(EditorId, ECTL_NEXTSESSIONBOOKMARK, 0, 0));
   return 1;
 }
 
-static int editor_PrevStackBookmark(lua_State *L)
+static int editor_PrevSessionBookmark(lua_State *L)
 {
   int EditorId = luaL_optinteger(L, 1, -1);
   PSInfo *Info = GetPluginData(L)->Info;
-  lua_pushboolean(L, Info->EditorControl(EditorId, ECTL_PREVSTACKBOOKMARK, 0, 0));
+  lua_pushboolean(L, Info->EditorControl(EditorId, ECTL_PREVSESSIONBOOKMARK, 0, 0));
   return 1;
 }
 
@@ -3468,23 +3468,38 @@ static int far_LStrnicmp (lua_State *L)
   return 1;
 }
 
+// Result = far.ProcessName (Op, Mask, Name, Flags, Size)
+//   @Op: PN_CMPNAME, PN_CMPNAMELIST, PN_GENERATENAME, PN_CHECKMASK
+//   @Mask: string
+//   @Name: string
+//   @Flags: PN_SKIPPATH, PN_SHOWERRORMESSAGE
+//   @Size: integer 0...0xFFFF
+//   @Result: boolean
 static int far_ProcessName (lua_State *L)
 {
-  int result;
-  const wchar_t* param1 = check_utf8_string(L, 1, NULL);
-  const wchar_t* param2 = check_utf8_string(L, 2, NULL);
-  UINT64 flags = CheckFlags(L, 3);
-
-  const int BUFSIZE = 1024;
-  wchar_t* buf = (wchar_t*)lua_newuserdata(L, BUFSIZE * sizeof(wchar_t));
-  wcsncpy(buf, param2, BUFSIZE-1);
-  buf[BUFSIZE-1] = 0;
-
-  result = GetPluginData(L)->FSF->ProcessName(param1, buf, BUFSIZE, flags);
-  if (flags == PN_GENERATENAME && result != 0)
-    push_utf8_string(L, buf, -1);
-  else
+  UINT64 Op = CheckFlags(L,1);
+  const wchar_t* Mask = check_utf8_string(L,2,NULL);
+  const wchar_t* Name = (Op==PN_CHECKMASK) ? L"" : check_utf8_string(L,3,NULL);
+	UINT64 Flags = CheckFlags(L,4);
+  if (Op == PN_CMPNAME || Op == PN_CMPNAMELIST || Op == PN_CHECKMASK) {
+    int result = GetPluginData(L)->FSF->ProcessName(Mask, (wchar_t*)Name, 0, Op|Flags);
     lua_pushboolean(L, result);
+  }
+  else if (Op == PN_GENERATENAME) {
+    UINT64 Size = luaL_optinteger(L,5,0) & 0xFFFF;
+    int result;
+    wchar_t* buf;
+    size_t len = wcslen(Mask), len2 = wcslen(Name), bufsize;
+    if (len < len2) len = len2;
+    bufsize = len < 1024 ? 1024 : len+1;
+    buf = (wchar_t*)lua_newuserdata(L, bufsize * sizeof(wchar_t));
+    wcsncpy(buf, Mask, bufsize-1);
+    buf[bufsize-1] = 0;
+    result = GetPluginData(L)->FSF->ProcessName(Name, buf, bufsize, Op|Flags|Size);
+    result ? push_utf8_string(L, buf, -1) : lua_pushboolean(L, 0);
+  }
+  else
+    lua_pushboolean(L, 0);
   return 1;
 }
 
@@ -5031,12 +5046,12 @@ const luaL_Reg Settings_methods[] = {
 
 const luaL_Reg editor_funcs[] = {
   {"AddColor",            editor_AddColor},
-  {"AddStackBookmark",    editor_AddStackBookmark},
-  {"ClearStackBookmarks", editor_ClearStackBookmarks},
+  {"AddSessionBookmark",  editor_AddSessionBookmark},
+  {"ClearSessionBookmarks", editor_ClearSessionBookmarks},
   {"DelColor",            editor_DelColor},
   {"DeleteBlock",         editor_DeleteBlock},
   {"DeleteChar",          editor_DeleteChar},
-  {"DeleteStackBookmark", editor_DeleteStackBookmark},
+  {"DeleteSessionBookmark", editor_DeleteSessionBookmark},
   {"DeleteString",        editor_DeleteString},
   {"Editor",              editor_Editor},
   {"ExpandTabs",          editor_ExpandTabs},
@@ -5045,14 +5060,14 @@ const luaL_Reg editor_funcs[] = {
   {"GetFileName",         editor_GetFileName},
   {"GetInfo",             editor_GetInfo},
   {"GetSelection",        editor_GetSelection},
-  {"GetStackBookmarks",   editor_GetStackBookmarks},
+  {"GetSessionBookmarks", editor_GetSessionBookmarks},
   {"GetString",           editor_GetString},
   {"GetStringW",          editor_GetStringW},
   {"InsertString",        editor_InsertString},
   {"InsertText",          editor_InsertText},
   {"InsertTextW",         editor_InsertTextW},
-  {"NextStackBookmark",   editor_NextStackBookmark},
-  {"PrevStackBookmark",   editor_PrevStackBookmark},
+  {"NextSessionBookmark", editor_NextSessionBookmark},
+  {"PrevSessionBookmark", editor_PrevSessionBookmark},
   {"ProcessInput",        editor_ProcessInput},
   {"Quit",                editor_Quit},
   {"ReadInput",           editor_ReadInput},

@@ -43,8 +43,8 @@ flags.c: $(INC_FAR)\plugin.hpp makeflags.lua
 keysandcolors.c: $(INC_FAR)/farcolor.hpp makefarkeys.lua
 	$(LUAEXE) makefarkeys.lua $(INC_FAR) $@
 
-version.h: define.lua version.h.mcr
-	$(LUAEXE) -erequire(\'macro\')(\'$<\',\'$@.mcr\',\'$@\')
+version.h : % : %.mcr define.lua
+	$(LUAEXE) -erequire([[macro]])([[define.lua]],[[$<]],[[$@]])
 
 clean:
 	del *.o flags.c keysandcolors.c version.h $(LUAFARDLL)
