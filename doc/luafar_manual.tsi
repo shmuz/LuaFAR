@@ -8300,19 +8300,19 @@ id=18
 lv=2
 dt=Text
 nm=win.DeleteRegKey
-mtime=3538497032
+mtime=3540381906
 <article>
-#_result = win.DeleteRegKey (Key)
+#_result = win.DeleteRegKey (RootKey, Key)
 #_
 #_**Parameters:**
-#_  Key: string
+#_  RootKey: string (one of: "HKLM", "HKCC", "HKCR", "HKCU", "HKU")
+#_  Key:     string
 #_
 #_**Returns:**
 #_  result: boolean
 #_
 #_**Description:**
 #_  This function deletes a registry key.
-#_  The *Key* argument is assumed to be under *HKEY_CURRENT_USER*.
 #_
 #_@@@
 #_
@@ -8671,25 +8671,25 @@ id=61
 lv=2
 dt=Text
 nm=win.GetRegKey
-mtime=3538497084
+mtime=3540381898
 <article>
-#_ValueData, DataType = win.GetRegKey (Key, ValueName)
+#_ValueData, DataType = win.GetRegKey (RootKey, Key, ValueName)
 #_
 #_**Parameters:**
+#_  RootKey:   string (one of: "HKLM", "HKCC", "HKCR", "HKCU", "HKU")
 #_  Key:       string
 #_  ValueName: string
 #_
 #_**Returns:**
 #_  ValueData: string, or number
-#_  DataType:  string (one of: "string", "expandstring",
-#_                     "multistring", "dword" and "binary")
+#_  DataType:  string (one of: "string", "expandstring", "multistring",
+#_                             "dword" and "binary")
 #_
 #_**Returns on failure:**
 #_  nil + error message
 #_
 #_**Description:**
 #_  This function gets a value from a registry key.
-#_  The *Key* argument is assumed to be under *HKEY_CURRENT_USER*.
 #_
 #_@@@
 #_
@@ -9007,15 +9007,16 @@ id=73
 lv=2
 dt=Text
 nm=win.SetRegKey
-mtime=3538497010
+mtime=3540381988
 <article>
-#_win.SetRegKey (DataType, Key, ValueName, ValueData)
+#_win.SetRegKey (RootKey, Key, ValueName, DataType, ValueData)
 #_
 #_**Parameters:**
-#_  DataType:  string (one of: "string", "expandstring",
-#_                     "multistring", "dword" and "binary")
+#_  RootKey:   string (one of: "HKLM", "HKCC", "HKCR", "HKCU", "HKU")
 #_  Key:       string
 #_  ValueName: string
+#_  DataType:  string (one of: "string", "expandstring", "multistring",
+#_                             "dword" and "binary")
 #_  ValueData: string or number
 #_
 #_**Returns:**
@@ -9023,7 +9024,6 @@ mtime=3538497010
 #_
 #_**Description:**
 #_  This function sets a value in a registry key.
-#_  The *Key* argument is assumed to be under *HKEY_CURRENT_USER*.
 #_
 #_@@@
 #_

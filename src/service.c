@@ -532,8 +532,8 @@ static int editor_GetInfo(lua_State *L)
  * i,i+1,i+2,...) то перед каждым ECTL_* надо делать ECTL_SETPOSITION а
  * сами ECTL_* вызывать с -1.
  */
-static BOOL FastGetString (PSInfo *Info, struct EditorGetString *egs,
-  int string_num, int EditorId)
+static BOOL FastGetString (int EditorId, int string_num,
+  struct EditorGetString *egs, PSInfo *Info)
 {
   struct EditorSetPosition esp;
   esp.CurLine   = string_num;
@@ -549,9 +549,9 @@ static BOOL FastGetString (PSInfo *Info, struct EditorGetString *egs,
   return Info->EditorControl(EditorId, ECTL_GETSTRING, 0, egs);
 }
 
-// LineInfo = EditorGetString (EditorId, line_num, [fast])
+// LineInfo = EditorGetString (EditorId, line_num, [mode])
 //   line_num:  number of line in the Editor, 0-based; a number
-//   fast:      0 = normal;
+//   mode:      0 = normal;
 //              1 = much faster, but changes current position;
 //              2 = the fastest: as 1 but returns StringText only;
 //   LineInfo:  a table
@@ -560,19 +560,19 @@ static int _EditorGetString(lua_State *L, int is_wide)
   int EditorId = luaL_optinteger(L, 1, -1);
   PSInfo *Info = GetPluginData(L)->Info;
   int line_num = luaL_optinteger(L, 2, -1);
-  int fast     = luaL_optinteger(L, 3, 0);
+  int mode     = luaL_optinteger(L, 3, 0);
   BOOL res;
   struct EditorGetString egs;
 
-  if (fast == 0) {
+  if (mode == 0) {
     egs.StringNumber = line_num;
     res = Info->EditorControl(EditorId, ECTL_GETSTRING, 0, &egs);
   }
   else
-    res = FastGetString(Info, &egs, line_num, EditorId);
+    res = FastGetString(EditorId, line_num, &egs, Info);
 
   if (res) {
-    if (fast == 2) {
+    if (mode == 2) {
       if (is_wide) {
         push_utf16_string (L, egs.StringText, egs.StringLength);
         push_utf16_string (L, egs.StringEOL, -1);
@@ -995,15 +995,12 @@ static int editor_GetSelection(lua_State *L)
   struct EditorSetPosition esp;
 
   Info->EditorControl(EditorId, ECTL_GETINFO, 0, &EI);
-  if (EI.BlockType == BTYPE_NONE)
+  if (EI.BlockType == BTYPE_NONE || !FastGetString(EditorId, EI.BlockStartLine, &egs, Info))
     return lua_pushnil(L), 1;
 
   lua_createtable (L, 0, 5);
   PutIntToTable (L, "BlockType", EI.BlockType);
   PutIntToTable (L, "StartLine", EI.BlockStartLine);
-
-  if(!FastGetString(Info, &egs, EI.BlockStartLine, EditorId))
-    return lua_pushnil(L), 1;
 
   BlockStartPos = egs.SelStart;
   PutIntToTable (L, "StartPos", BlockStartPos);
@@ -1012,7 +1009,7 @@ static int editor_GetSelection(lua_State *L)
   h = 100; // arbitrary small number
   from = EI.BlockStartLine;
   for (to = from+h; to < EI.TotalLines; to = from + (h*=2)) {
-    if(!FastGetString(Info, &egs, to, EditorId))
+    if(!FastGetString(EditorId, to, &egs, Info))
       return lua_pushnil(L), 1;
     if (egs.SelStart < 0 || egs.SelEnd == 0)
       break;
@@ -1023,7 +1020,7 @@ static int editor_GetSelection(lua_State *L)
   // binary search for the last block line
   while (from != to) {
     int curr = (from + to + 1) / 2;
-    if(!FastGetString(Info, &egs, curr, EditorId))
+    if(!FastGetString(EditorId, curr, &egs, Info))
       return lua_pushnil(L), 1;
     if (egs.SelStart < 0 || egs.SelEnd == 0) {
       if (curr == to)
@@ -1035,7 +1032,7 @@ static int editor_GetSelection(lua_State *L)
     }
   }
 
-  if(!FastGetString(Info, &egs, from, EditorId))
+  if(!FastGetString(EditorId, from, &egs, Info))
     return lua_pushnil(L), 1;
 
   PutIntToTable (L, "EndLine", from);
@@ -3241,53 +3238,68 @@ static int win_SetEnv (lua_State *L)
   return lua_pushboolean (L, res), 1;
 }
 
-// SetRegKey (DataType, Key, ValueName, ValueData)
-//   DataType:        "string","expandstring","multistring","dword" or "binary", [string]
-//   Key:             registry key, [string]
-//   ValueName:       registry value name, [string]
-//   ValueData:       registry value data, [string | number | lstring]
+static HKEY CheckHKey (lua_State *L, int pos)
+{
+  const char *str = luaL_checkstring(L, pos);
+  if (!strcmp(str, "HKLM")) return HKEY_LOCAL_MACHINE;
+  if (!strcmp(str, "HKCC")) return HKEY_CURRENT_CONFIG;
+  if (!strcmp(str, "HKCR")) return HKEY_CLASSES_ROOT;
+  if (!strcmp(str, "HKCU")) return HKEY_CURRENT_USER;
+  if (!strcmp(str, "HKU"))  return HKEY_USERS;
+  luaL_argerror(L, pos, "must be 'HKLM', 'HKCC', 'HKCR', 'HKCU' or 'HKU'");
+  return 0;
+}
+
+// SetRegKey (Root, Key, ValueName, DataType, ValueData)
+//   Root:       root, [string], one of "HKLM", "HKCC", "HKCR", "HKCU", "HKU"
+//   Key:        registry key, [string]
+//   ValueName:  registry value name, [string]
+//   DataType:   "string","expandstring","multistring","dword" or "binary", [string]
+//   ValueData:  registry value data, [string | number | lstring]
 // Returns:
 //   nothing.
 static int win_SetRegKey(lua_State *L)
 {
-  const char* DataType    = luaL_checkstring(L, 1);
-  wchar_t* Key            = (wchar_t*)check_utf8_string(L, 2, NULL);
-  wchar_t* ValueName      = (wchar_t*)check_utf8_string(L, 3, NULL);
+  HKEY hRoot           = CheckHKey(L, 1);
+  wchar_t* Key         = (wchar_t*)check_utf8_string(L, 2, NULL);
+  wchar_t* ValueName   = (wchar_t*)check_utf8_string(L, 3, NULL);
+  const char* DataType = luaL_checkstring(L, 4);
   size_t len;
 
   if (!strcmp ("string", DataType)) {
-    SetRegKeyStr(HKEY_CURRENT_USER, Key, ValueName,
-              (wchar_t*)check_utf8_string(L, 4, NULL));
+    SetRegKeyStr(hRoot, Key, ValueName,
+              (wchar_t*)check_utf8_string(L, 5, NULL));
   }
   else if (!strcmp ("dword", DataType)) {
-    SetRegKeyDword(HKEY_CURRENT_USER, Key, ValueName, luaL_checkinteger(L, 4));
+    SetRegKeyDword(hRoot, Key, ValueName, luaL_checkinteger(L, 5));
   }
   else if (!strcmp ("binary", DataType)) {
-    BYTE *data = (BYTE*)luaL_checklstring(L, 4, &len);
-    SetRegKeyArr(HKEY_CURRENT_USER, Key, ValueName, data, len);
+    BYTE *data = (BYTE*)luaL_checklstring(L, 5, &len);
+    SetRegKeyArr(hRoot, Key, ValueName, data, len);
   }
   else if (!strcmp ("expandstring", DataType)) {
-    const wchar_t* data = check_utf8_string(L, 4, NULL);
-    HKEY hKey = CreateRegKey(HKEY_CURRENT_USER, Key);
+    const wchar_t* data = check_utf8_string(L, 5, NULL);
+    HKEY hKey = CreateRegKey(hRoot, Key);
     RegSetValueExW(hKey, ValueName, 0, REG_EXPAND_SZ, (BYTE*)data, 1+wcslen(data));
     RegCloseKey(hKey);
   }
   else if (!strcmp ("multistring", DataType)) {
-    const char* data = luaL_checklstring(L, 4, &len);
-    HKEY hKey = CreateRegKey(HKEY_CURRENT_USER, Key);
+    const char* data = luaL_checklstring(L, 5, &len);
+    HKEY hKey = CreateRegKey(hRoot, Key);
     RegSetValueExW(hKey, ValueName, 0, REG_MULTI_SZ, (BYTE*)data, len);
     RegCloseKey(hKey);
   }
   else
-    luaL_argerror (L, 1, "unsupported value type");
+    luaL_argerror (L, 5, "unsupported value type");
   return 0;
 }
 
-// ValueData, DataType = GetRegKey (Key, ValueName)
-//   Key:             registry key, [string]
-//   ValueName:       registry value name, [string]
-//   ValueData:       registry value data, [string | number | lstring]
-//   DataType:        "string", "expandstring", "multistring", "dword"
+// ValueData, DataType = GetRegKey (Root, Key, ValueName)
+//   Root:       [string], one of "HKLM", "HKCC", "HKCR", "HKCU", "HKU"
+//   Key:        registry key, [string]
+//   ValueName:  registry value name, [string]
+//   ValueData:  registry value data, [string | number | lstring]
+//   DataType:   "string", "expandstring", "multistring", "dword"
 //                    or "binary", [string]
 static int win_GetRegKey(lua_State *L)
 {
@@ -3296,10 +3308,11 @@ static int win_GetRegKey(lua_State *L)
   char *data;
   LONG ret;
 
-  wchar_t* Key = (wchar_t*)check_utf8_string(L, 1, NULL);
-  const wchar_t* ValueName = check_utf8_string(L, 2, NULL);
+  HKEY hRoot = CheckHKey(L, 1);
+  wchar_t* Key = (wchar_t*)check_utf8_string(L, 2, NULL);
+  const wchar_t* ValueName = check_utf8_string(L, 3, NULL);
 
-  hKey = OpenRegKey(HKEY_CURRENT_USER, Key);
+  hKey = OpenRegKey(hRoot, Key);
   if (hKey == NULL) {
     lua_pushnil(L);
     lua_pushstring(L, "OpenRegKey failed.");
@@ -3348,13 +3361,15 @@ static int win_GetRegKey(lua_State *L)
   return 2;
 }
 
-// Result = DeleteRegKey (Key)
-//   Key:             registry key, [string]
-//   Result:          TRUE if success, FALSE if failure, [boolean]
+// Result = DeleteRegKey (Root, Key)
+//   Root:      [string], one of "HKLM", "HKCC", "HKCR", "HKCU", "HKU"
+//   Key:       registry key, [string]
+//   Result:    TRUE if success, FALSE if failure, [boolean]
 static int win_DeleteRegKey(lua_State *L)
 {
-  const wchar_t* Key = check_utf8_string(L, 1, NULL);
-  long res = RegDeleteKeyW (HKEY_CURRENT_USER, Key);
+  HKEY hRoot = CheckHKey(L, 1);
+  const wchar_t* Key = check_utf8_string(L, 2, NULL);
+  long res = RegDeleteKeyW (hRoot, Key);
   lua_pushboolean (L, res==ERROR_SUCCESS);
   return 1;
 }

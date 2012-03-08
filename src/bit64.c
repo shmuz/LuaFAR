@@ -2,7 +2,8 @@
 #include <lauxlib.h>
 #include <lualib.h>
 
-#define MAX32 0xffffffffULL
+#define MAX32 0xFFFFFFFFULL
+#define MAX51 0x7FFFFFFFFFFFFULL
 typedef unsigned __int64 UINT64;
 
 int push64(lua_State *L, UINT64 v)
@@ -28,7 +29,7 @@ UINT64 check64(lua_State *L, int pos, int* success)
   if (success) *success = 1;
   if (tp == LUA_TNUMBER) {
     double d = lua_tonumber(L, pos);
-    if (d <= MAX32) return (UINT64)d;
+    if (d >= 0 && d <= MAX51) return (UINT64)d;
   }
   else if (tp == LUA_TSTRING) {
     size_t len;
