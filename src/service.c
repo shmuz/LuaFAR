@@ -3819,7 +3819,9 @@ static int far_AdvControl (lua_State *L)
       r = Info->AdvControl(PluginId, Command, 0, &wi);
       if (!r)
         return lua_pushinteger(L,0), 1;
-      lua_createtable(L,0,5);
+      lua_createtable(L,0,6);
+      lua_pushlightuserdata(L, CAST(void*, wi.Id));
+      lua_setfield(L, -2, "Id");
       PutIntToTable(L, "Pos", wi.Pos);
       PutIntToTable(L, "Type", wi.Type);
       PutFlagsToTable(L, "Flags", wi.Flags);
