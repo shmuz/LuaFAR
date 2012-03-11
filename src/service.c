@@ -3719,7 +3719,6 @@ static int far_AdvControl (lua_State *L)
       return luaL_argerror(L, 1, "command not supported");
 
     case ACTL_COMMIT:
-    case ACTL_GETFARHWND:
     case ACTL_GETCONFIRMATIONS:
     case ACTL_GETDESCSETTINGS:
     case ACTL_GETDIALOGSETTINGS:
@@ -3732,6 +3731,10 @@ static int far_AdvControl (lua_State *L)
     case ACTL_QUIT:
     case ACTL_REDRAWALL:
       break;
+
+    case ACTL_GETFARHWND:
+      lua_pushlightuserdata(L, CAST(void*, Info->AdvControl(PluginId, Command, 0, NULL)));
+      return 1;
 
     case ACTL_SETCURRENTWINDOW:
       Param1 = luaL_checkinteger(L, 2);

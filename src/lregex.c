@@ -427,6 +427,7 @@ const luaL_Reg regex_functions[] = {
   {"gmatchW",       func_GmatchW},
   {"gsubW",         func_gsubW},
   {"matchW",        func_matchW},
+  {NULL, NULL}
 };
 
 int luaopen_regex (lua_State *L)
