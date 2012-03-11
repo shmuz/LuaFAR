@@ -2360,6 +2360,14 @@ HANDLE CheckDialogHandle (lua_State* L, int pos)
   return CheckValidDialog(L, pos)->hDlg;
 }
 
+int DialogHandleEqual (lua_State* L)
+{
+  TDialogData* dd1 = CheckDialog(L, 1);
+  TDialogData* dd2 = CheckDialog(L, 2);
+  lua_pushboolean(L, dd1->hDlg == dd2->hDlg);
+  return 1;
+}
+
 static int far_SendDlgMessage (lua_State *L)
 {
   PSInfo *Info = GetPluginData(L)->Info;
@@ -3820,8 +3828,15 @@ static int far_AdvControl (lua_State *L)
       if (!r)
         return lua_pushinteger(L,0), 1;
       lua_createtable(L,0,6);
-      lua_pushlightuserdata(L, CAST(void*, wi.Id));
-      lua_setfield(L, -2, "Id");
+      switch(wi.Type) {
+        case WTYPE_DIALOG:
+          NewDialogData(L, Info, CAST(HANDLE, wi.Id), FALSE);
+          lua_setfield(L, -2, "Id");
+          break;
+        default:
+          PutIntToTable(L, "Id", CAST(int, wi.Id));
+          break;
+      }
       PutIntToTable(L, "Pos", wi.Pos);
       PutIntToTable(L, "Type", wi.Type);
       PutFlagsToTable(L, "Flags", wi.Flags);
@@ -5328,6 +5343,8 @@ static int luaopen_far (lua_State *L)
   luaL_newmetatable(L, FarDialogType);
   lua_pushvalue(L,-1);
   lua_setfield(L, -2, "__index");
+  lua_pushcfunction(L, DialogHandleEqual);
+  lua_setfield(L, -2, "__eq");
   luaL_register(L, NULL, dialog_methods);
 
   luaL_newmetatable(L, SettingsType);

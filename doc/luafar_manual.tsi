@@ -2088,7 +2088,7 @@ id=153
 lv=2
 dt=Text
 nm=far.AdvControl
-mtime=3540572327
+mtime=3540635231
 <article>
 #_Result = far.AdvControl (Command, Param1, Param2)
 #_
@@ -2150,7 +2150,7 @@ mtime=3540572327
 #_ACTL_GETWINDOWINFO:
 #_    Param1:  window number; 0-based integer (optional; default=-1)
 #_    Result:  table (see its fields below)
-#_        Id:        light userdata
+#_        Id:        userdata (if Type==WTYPE_DIALOG), or integer
 #_        Pos:       integer
 #_        Type:      integer
 #_        Flags:     flags
