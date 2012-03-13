@@ -2088,7 +2088,7 @@ id=153
 lv=2
 dt=Text
 nm=far.AdvControl
-mtime=3540640092
+mtime=3540789669
 <article>
 #_Result = far.AdvControl (Command, Param1, Param2)
 #_
@@ -2103,13 +2103,6 @@ mtime=3540640092
 #_**Details:**
 #_
 #_ACTL_COMMIT,
-#_ACTL_GETCONFIRMATIONS,
-#_ACTL_GETDESCSETTINGS,
-#_ACTL_GETDIALOGSETTINGS,
-#_ACTL_GETINTERFACESETTINGS,
-#_ACTL_GETPANELSETTINGS,
-#_ACTL_GETPLUGINMAXREADDATA,
-#_ACTL_GETSYSTEMSETTINGS,
 #_ACTL_GETWINDOWCOUNT,
 #_ACTL_PROGRESSNOTIFY,
 #_ACTL_QUIT,
@@ -2132,9 +2125,6 @@ mtime=3540640092
 #_    Param1:  integer
 #_    Result:  table FarColor, or nil
 #_
-#_ACTL_GETSYSWORDDIV:
-#_    Result:  string
-#_    
 #_ACTL_EJECTMEDIA:
 #_    Param2:  table (see its fields below)
 #_        Letter:  string (only the first character matters)
@@ -2152,9 +2142,9 @@ mtime=3540640092
 #_ACTL_GETWINDOWINFO:
 #_    Param1:  window number; 0-based integer (optional; default=-1)
 #_    Result:  table (see its fields below)
+#_        Type:      integer
 #_        Id:        userdata (if Type==WTYPE_DIALOG), or integer
 #_        Pos:       integer
-#_        Type:      integer
 #_        Flags:     flags
 #_        TypeName:  string
 #_        Name:      string

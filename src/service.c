@@ -3702,7 +3702,6 @@ static int far_AdvControl (lua_State *L)
   int Command = CAST(int, check_env_flag (L, 1));
   int Param1 = 0;
   void *Param2 = NULL;
-  wchar_t buf[300];
   struct ActlEjectMedia em;
   struct FarColor fc;
   struct FarSetColors fsc;
@@ -3719,13 +3718,6 @@ static int far_AdvControl (lua_State *L)
       return luaL_argerror(L, 1, "command not supported");
 
     case ACTL_COMMIT:
-    case ACTL_GETCONFIRMATIONS:
-    case ACTL_GETDESCSETTINGS:
-    case ACTL_GETDIALOGSETTINGS:
-    case ACTL_GETINTERFACESETTINGS:
-    case ACTL_GETPANELSETTINGS:
-    case ACTL_GETPLUGINMAXREADDATA:
-    case ACTL_GETSYSTEMSETTINGS:
     case ACTL_GETWINDOWCOUNT:
     case ACTL_PROGRESSNOTIFY:
     case ACTL_QUIT:
@@ -3772,10 +3764,6 @@ static int far_AdvControl (lua_State *L)
       pv.Total = (UINT64)GetOptNumFromTable(L, "Total", 100.0);
       Param2 = &pv;
       break;
-
-    case ACTL_GETSYSWORDDIV:
-      Info->AdvControl(PluginId, Command, DIM(buf), buf);
-      return push_utf8_string(L,buf,-1), 1;
 
     case ACTL_EJECTMEDIA:
       luaL_checktype(L, 3, LUA_TTABLE);
