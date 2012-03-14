@@ -3519,7 +3519,7 @@ static int far_ProcessName (lua_State *L)
     wcsncpy(buf, Mask, bufsize-1);
     buf[bufsize-1] = 0;
     result = GetPluginData(L)->FSF->ProcessName(Name, buf, bufsize, Op|Flags|Size);
-    result ? push_utf8_string(L, buf, -1) : lua_pushboolean(L, 0);
+    result ? (void)push_utf8_string(L, buf, -1) : lua_pushboolean(L, 0);
   }
   else
     lua_pushboolean(L, 0);
@@ -3702,15 +3702,6 @@ static int far_AdvControl (lua_State *L)
   int Command = CAST(int, check_env_flag (L, 1));
   int Param1 = 0;
   void *Param2 = NULL;
-  struct ActlEjectMedia em;
-  struct FarColor fc;
-  struct FarSetColors fsc;
-  struct ProgressValue pv;
-  struct WindowInfo wi;
-  struct WindowType wt;
-  SMALL_RECT sr;
-  COORD coord;
-  INPUT_RECORD ir;
 
   lua_settop(L,3);  /* for proper calling GetOptIntFromTable and the like */
   switch (Command) {
@@ -3732,20 +3723,24 @@ static int far_AdvControl (lua_State *L)
       Param1 = luaL_checkinteger(L, 2);
       break;
 
-    case ACTL_WAITKEY:
+    case ACTL_WAITKEY: {
       if (!lua_isnoneornil(L, 3)) {
+        INPUT_RECORD ir;
         OptInputRecord(L, pd, 3, &ir);
         Param2 = &ir;
       }
       break;
+    }
 
-    case ACTL_GETCOLOR:
+    case ACTL_GETCOLOR: {
+      struct FarColor fc;
       Param1 = luaL_checkinteger(L, 2);
       if (Info->AdvControl(PluginId, Command, Param1, &fc))
         PushFarColor(L, &fc);
       else
         lua_pushnil(L);
       return 1;
+    }
 
     case ACTL_SYNCHRO: {
       int p = luaL_checkinteger(L, 2);
@@ -3758,20 +3753,24 @@ static int far_AdvControl (lua_State *L)
       Param1 = (INT_PTR) check_env_flag(L, 2);
       break;
 
-    case ACTL_SETPROGRESSVALUE:
+    case ACTL_SETPROGRESSVALUE: {
+      struct ProgressValue pv;
       luaL_checktype(L, 3, LUA_TTABLE);
       pv.Completed = (UINT64)GetOptNumFromTable(L, "Completed", 0.0);
       pv.Total = (UINT64)GetOptNumFromTable(L, "Total", 100.0);
       Param2 = &pv;
       break;
+    }
 
-    case ACTL_EJECTMEDIA:
+    case ACTL_EJECTMEDIA: {
+      struct ActlEjectMedia em;
       luaL_checktype(L, 3, LUA_TTABLE);
       lua_getfield(L, 3, "Letter");
       em.Letter = lua_isstring(L,-1) ? lua_tostring(L,-1)[0] : '\0';
       em.Flags = CheckFlagsFromTable(L, 3, "Flags");
       Param2 = &em;
       break;
+    }
 
     case ACTL_GETARRAYCOLOR: {
       int size = Info->AdvControl(PluginId, Command, 0, NULL), i;
@@ -3804,6 +3803,7 @@ static int far_AdvControl (lua_State *L)
     case ACTL_GETWINDOWINFO:
     {
       int r;
+      struct WindowInfo wi;
       memset(&wi, 0, sizeof(wi));
       wi.StructSize = sizeof(wi);
       wi.Pos = luaL_optinteger(L, 2, -1);
@@ -3838,6 +3838,7 @@ static int far_AdvControl (lua_State *L)
 
     case ACTL_SETARRAYCOLOR:
     {
+      struct FarSetColors fsc;
       size_t size, i;
       luaL_checktype(L, 3, LUA_TTABLE);
       fsc.StartIndex = GetOptIntFromTable(L, "StartIndex", 0);
@@ -3857,7 +3858,8 @@ static int far_AdvControl (lua_State *L)
       break;
     }
 
-    case ACTL_GETFARRECT:
+    case ACTL_GETFARRECT: {
+      SMALL_RECT sr;
       if (!Info->AdvControl(PluginId, Command, 0, &sr))
         return 0;
       lua_createtable(L, 0, 4);
@@ -3866,16 +3868,20 @@ static int far_AdvControl (lua_State *L)
       PutIntToTable(L, "Right",  sr.Right);
       PutIntToTable(L, "Bottom", sr.Bottom);
       return 1;
+    }
 
-    case ACTL_GETCURSORPOS:
+    case ACTL_GETCURSORPOS: {
+      COORD coord;
       if (!Info->AdvControl(PluginId, Command, 0, &coord))
         return 0;
       lua_createtable(L, 0, 2);
       PutIntToTable(L, "X", coord.X);
       PutIntToTable(L, "Y", coord.Y);
       return 1;
+    }
 
-    case ACTL_SETCURSORPOS:
+    case ACTL_SETCURSORPOS: {
+      COORD coord;
       luaL_checktype(L, 3, LUA_TTABLE);
       lua_getfield(L, 3, "X");
       coord.X = lua_tointeger(L, -1);
@@ -3883,8 +3889,10 @@ static int far_AdvControl (lua_State *L)
       coord.Y = lua_tointeger(L, -1);
       Param2 = &coord;
       break;
+    }
 
-    case ACTL_GETWINDOWTYPE:
+    case ACTL_GETWINDOWTYPE: {
+      struct WindowType wt;
       wt.StructSize = sizeof(wt);
       if (Info->AdvControl(PluginId, Command, 0, &wt)) {
         lua_createtable(L, 0, 1);
@@ -3893,6 +3901,7 @@ static int far_AdvControl (lua_State *L)
       }
       else lua_pushnil(L);
       return 1;
+    }
   }
   lua_pushinteger(L, Info->AdvControl(PluginId, Command, Param1, Param2));
   return 1;
@@ -4789,7 +4798,7 @@ static int far_CreateSettings (lua_State *L)
     }
     ParamId = CAST(const GUID*, (IsFarSettings ? FarGuid : strId));
   }
-  location = OptFlags(L, 2, PSL_ROAMING);
+  location = CAST(int, OptFlags(L, 2, PSL_ROAMING));
 
   fsc.StructSize = sizeof(fsc);
   fsc.Guid = *ParamId;
