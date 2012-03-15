@@ -3785,20 +3785,23 @@ id=28
 lv=2
 dt=Text
 nm=editor.GetColor
-mtime=3508691626
+mtime=3541023889
 <article>
-#_color = editor.GetColor(EditorId, StringNumber, StartPos, EndPos, ColorItem, Flags)
+#_colordata = editor.GetColor(EditorId, StringNumber, ColorItem)
 #_
 #_**Parameters:**
 #_  EditorId:     integer, or nil
 #_  StringNumber: integer, or nil
-#_  StartPos:     integer
-#_  EndPos:       integer
 #_  ColorItem:    integer
-#_  Flags:        flags
 #_
 #_**Returns:**
-#_  color:        table FarColor, or nil
+#_  colordata:    table (or nil)
+#_                  StartPos:     integer
+#_                  EndPos:       integer
+#_                  Priority:     integer
+#_                  Flags:        flags
+#_                  Color:        table FarColor
+#_                  Owner:        string (GUID)
 #_
 #_**Far API used:**
 #_  EditorControl, ECTL_GETCOLOR
@@ -5525,7 +5528,7 @@ lv=1
 dt=Text
 nm=File Filter Control
 ctime=3480243081
-mtime=3480252933
+mtime=3540924794
 <article>
 #_<markdown>
 #_File filter control is implemented as bindings of Far API
@@ -5548,10 +5551,11 @@ mtime=3480252933
 #_          AFilter:StartingToFilter()
 #_
 #_          -- manipulate panel elements
+#_          local pInfo = panel.GetPanelInfo(nil, 1)
 #_          for i=1, pInfo.ItemsNumber do
 #_            -- apply the filter...
 #_            local item = panel.GetPanelItem(nil, 1, i)
-#_            if AFilter:IsFileInFilter(item.FindData) then
+#_            if AFilter:IsFileInFilter(item) then
 #_              -- the element matches filter conditions;
 #_              -- process the element...
 #_            end

@@ -1083,8 +1083,8 @@ static void GetFarColorFromTable (lua_State *L, int pos, struct FarColor* Color)
 {
   lua_pushvalue(L, pos);
   Color->Flags  = CheckFlagsFromTable(L, -1, "Flags");
-  Color->ForegroundColor = GetOptIntFromTable(L, "ForegroundColor", 0);
-  Color->BackgroundColor = GetOptIntFromTable(L, "BackgroundColor", 0);
+  Color->ForegroundColor = GetOptNumFromTable(L, "ForegroundColor", 0);
+  Color->BackgroundColor = GetOptNumFromTable(L, "BackgroundColor", 0);
   lua_pop(L, 1);
 }
 
@@ -1092,8 +1092,8 @@ static void PushFarColor (lua_State *L, const struct FarColor* Color)
 {
   lua_createtable(L, 0, 3);
   PutFlagsToTable(L, "Flags", Color->Flags);
-  PutIntToTable(L, "ForegroundColor", Color->ForegroundColor);
-  PutIntToTable(L, "BackgroundColor", Color->BackgroundColor);
+  PutNumToTable(L, "ForegroundColor", Color->ForegroundColor);
+  PutNumToTable(L, "BackgroundColor", Color->BackgroundColor);
 }
 
 static int editor_AddColor(lua_State *L)
@@ -1142,12 +1142,17 @@ static int editor_GetColor(lua_State *L)
   ec.StructSize = sizeof(ec);
   EditorId        = luaL_optinteger(L, 1, -1);
   ec.StringNumber = luaL_optinteger(L, 2, -1);
-  ec.StartPos     = luaL_checkinteger(L, 3);
-  ec.EndPos       = luaL_checkinteger(L, 4);
-  ec.ColorItem    = luaL_checkinteger(L, 5);
-  ec.Flags        = CheckFlags(L, 6);
-  if (Info->EditorControl(EditorId, ECTL_GETCOLOR, 0, &ec))
+  ec.ColorItem    = luaL_checkinteger(L, 3);
+  if (Info->EditorControl(EditorId, ECTL_GETCOLOR, 0, &ec)) {
+    lua_createtable(L, 0, 6);
+    PutNumToTable(L, "StartPos", ec.StartPos);
+    PutNumToTable(L, "EndPos",   ec.EndPos);
+    PutNumToTable(L, "Priority", ec.Priority);
+    PutFlagsToTable(L, "Flags",  ec.Flags);
     PushFarColor(L, &ec.Color);
+    lua_setfield(L, -2, "Color");
+    PutLStrToTable(L, "Owner", (const void*)&ec.Owner, sizeof(ec.Owner));
+  }
   else
     lua_pushnil(L);
   return 1;
@@ -5032,7 +5037,7 @@ static int far_ColorDialog (lua_State *L)
 
   if (pd->Info->ColorDialog(pd->PluginId, Flags, &Color)) {
     if (istable) PushFarColor(L, &Color);
-    else lua_pushinteger(L, Color.ForegroundColor | (Color.BackgroundColor << 4));
+    else lua_pushnumber(L, Color.ForegroundColor | (Color.BackgroundColor << 4));
   }
   else
     lua_pushnil(L);
