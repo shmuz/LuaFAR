@@ -1071,14 +1071,6 @@ static int editor_RealToTab(lua_State *L)
   return _EditorTabConvert(L, ECTL_REALTOTAB);
 }
 
-static int editor_TurnOffMarkingBlock(lua_State *L)
-{
-  int EditorId = luaL_optinteger(L, 1, -1);
-  PSInfo *Info = GetPluginData(L)->Info;
-  Info->EditorControl(EditorId, ECTL_TURNOFFMARKINGBLOCK, 0, 0);
-  return 0;
-}
-
 static void GetFarColorFromTable (lua_State *L, int pos, struct FarColor* Color)
 {
   lua_pushvalue(L, pos);
@@ -5119,7 +5111,6 @@ const luaL_Reg editor_funcs[] = {
   {"SetStringW",          editor_SetStringW},
   {"SetTitle",            editor_SetTitle},
   {"TabToReal",           editor_TabToReal},
-  {"TurnOffMarkingBlock", editor_TurnOffMarkingBlock},
   {"UndoRedo",            editor_UndoRedo},
   {NULL, NULL},
 };

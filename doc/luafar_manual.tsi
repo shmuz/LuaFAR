@@ -1705,7 +1705,7 @@ id=109
 lv=2
 dt=Text
 nm=export.Open
-mtime=3538458867
+mtime=3541356859
 <article>
 #_ret = export.Open (OpenFrom, Guid, Item)
 #_
@@ -1713,17 +1713,24 @@ mtime=3538458867
 #_  OpenFrom: integer
 #_  Guid:     string
 #_  Item:
-#_    - If OpenFrom is OPEN_FROMMACRO:
-#_        - table (array of arguments):
-#_            each argument is a table with the following fields:
-#_              Type  : integer
-#_              Value : nil, flag, string, or number (depending on *Type*)
-#_    - else:
-#_        - string (if OpenFrom is OPEN_SHORTCUT or OPEN_COMMANDLINE)
-#_        - table  (if OpenFrom is OPEN_DIALOG)
-#_            hDlg : userdata
-#_        - table AnalyseInfo (if OpenFrom is OPEN_ANALYSE)
-#_        - integer (for other cases of OpenFrom)
+#_    if OpenFrom == OPEN_FROMMACRO:
+#_      table (array of arguments):
+#_        each argument is a table with the following fields:
+#_          Type  : integer
+#_          Value : nil, flag, string, or number (depending on *Type*)
+#_    if OpenFrom == OPEN_COMMANDLINE:
+#_      string
+#_    if OpenFrom == OPEN_SHORTCUT:
+#_      table:
+#_        HostFile: string
+#_        ShortcutData: string
+#_    if OpenFrom == OPEN_DIALOG:
+#_      table:
+#_        hDlg : userdata
+#_    if OpenFrom == OPEN_ANALYSE:
+#_      table AnalyseInfo
+#_    if OpenFrom == something else:
+#_      integer
 #_
 #_**Returns:**
 #_  ret: any Lua value; it is processed by LuaFAR as follows:
@@ -4455,29 +4462,6 @@ mtime=3507543313
 #_
 #_**Far API used:**
 #_  EditorControl, ECTL_TABTOREAL
-#_
-#_
-#_@@@
-#_
-</article>
-</node>
-<node>
-id=137
-lv=2
-dt=Text
-nm=editor.TurnOffMarkingBlock
-mtime=3507543324
-<article>
-#_editor.TurnOffMarkingBlock (EditorId)
-#_
-#_**Parameters:**
-#_  EditorId: integer, or nil
-#_
-#_**Returns:**
-#_  nothing
-#_
-#_**Far API used:**
-#_  EditorControl, ECTL_TURNOFFMARKINGBLOCK
 #_
 #_
 #_@@@

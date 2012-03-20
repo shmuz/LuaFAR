@@ -561,16 +561,22 @@ HANDLE LF_Open (lua_State* L, const struct OpenInfo *Info)
       lua_rawseti(L, -2, i+1);
     }
   }
-  else if (Info->OpenFrom == OPEN_SHORTCUT || Info->OpenFrom == OPEN_COMMANDLINE)
-    push_utf8_string(L, (const wchar_t*)Info->Data, -1);
+  else if (Info->OpenFrom == OPEN_SHORTCUT) {
+    struct OpenShortcutInfo *osi = CAST(struct OpenShortcutInfo*, Info->Data);
+    lua_createtable(L, 0, 2);
+    PutWStrToTable(L, "HostFile", osi->HostFile, -1);
+    PutWStrToTable(L, "ShortcutData", osi->ShortcutData, -1);
+  }
+  else if (Info->OpenFrom == OPEN_COMMANDLINE)
+    push_utf8_string(L, CAST(const wchar_t*, Info->Data), -1);
   else if (Info->OpenFrom == OPEN_DIALOG) {
-    struct OpenDlgPluginData *data = (struct OpenDlgPluginData*)Info->Data;
+    struct OpenDlgPluginData *data = CAST(struct OpenDlgPluginData*, Info->Data);
     lua_createtable(L, 0, 1);
     NewDialogData(L, NULL, data->hDlg, FALSE);
     lua_setfield(L, -2, "hDlg");
   }
   else if (Info->OpenFrom == OPEN_ANALYSE) {
-    const struct OpenAnalyseInfo* oai = CAST(const struct OpenAnalyseInfo*, Info->Data);
+    struct OpenAnalyseInfo* oai = CAST(struct OpenAnalyseInfo*, Info->Data);
     PushAnalyseInfo(L, oai->Info);
     lua_rawgeti(L, LUA_REGISTRYINDEX, CAST(INT_PTR, oai->Handle));
     lua_setfield(L, -2, "Handle");
