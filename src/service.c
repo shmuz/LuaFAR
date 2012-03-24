@@ -1075,8 +1075,8 @@ static void GetFarColorFromTable (lua_State *L, int pos, struct FarColor* Color)
 {
   lua_pushvalue(L, pos);
   Color->Flags  = CheckFlagsFromTable(L, -1, "Flags");
-  Color->ForegroundColor = GetOptNumFromTable(L, "ForegroundColor", 0);
-  Color->BackgroundColor = GetOptNumFromTable(L, "BackgroundColor", 0);
+  Color->ForegroundColor = CAST(COLORREF, GetOptNumFromTable(L, "ForegroundColor", 0));
+  Color->BackgroundColor = CAST(COLORREF, GetOptNumFromTable(L, "BackgroundColor", 0));
   lua_pop(L, 1);
 }
 
