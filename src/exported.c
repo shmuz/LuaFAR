@@ -5,9 +5,8 @@
 #include "ustring.h"
 
 #define CAST(tp,expr) (tp)(expr)
-#define NOPANEL_HANDLE_VALUE(h) ((INT_PTR)h > -3 && (INT_PTR)h <= 0)
-#define TRANSFORM_REF(h)        (h > 0 ? h : h - 3)
-#define UNTRANSFORM_REF(h)      ((INT_PTR)h > 0 ? (INT_PTR)h : (INT_PTR)h + 3)
+#define TRANSFORM_REF(h)        (h > 0 ? h : h - 2)
+#define UNTRANSFORM_REF(h)      ((INT_PTR)h > 0 ? (INT_PTR)h : (INT_PTR)h + 2)
 
 typedef unsigned __int64 UINT64;
 extern int push64(lua_State *L, UINT64 v);
@@ -376,12 +375,23 @@ static void PushAnalyseInfo(lua_State* L, const struct AnalyseInfo *Info)
 
 HANDLE LF_Analyse(lua_State* L, const struct AnalyseInfo *Info)
 {
-  HANDLE result = INVALID_HANDLE_VALUE;
+  HANDLE result = NULL;
   if (GetExportFunction(L, "Analyse")) { //+1
     PushAnalyseInfo(L, Info);            //+2
     if (!pcall_msg(L, 1, 1)) {           //+1
-      if (lua_toboolean(L, -1))
-        result = (HANDLE)(INT_PTR)luaL_ref(L, LUA_REGISTRYINDEX); //+0
+      if (lua_toboolean(L, -1)) {
+        INT_PTR ref;
+        lua_pushvalue(L, -1);                 //+2
+        ref = luaL_ref(L, LUA_REGISTRYINDEX); //+1
+        if (ref != 0) /* Lua 5.1 manual doesn't guarantee ref != 0 */
+          lua_pop(L,1);                       //+0
+        else {
+          INT_PTR ref2 = luaL_ref(L, LUA_REGISTRYINDEX); //+0
+          luaL_unref(L, LUA_REGISTRYINDEX, ref);
+          ref = ref2;
+        }
+        result = (HANDLE)ref;            //+0
+      }
       else
         lua_pop (L, 1);                  //+0
     }
@@ -586,18 +596,15 @@ HANDLE LF_Open (lua_State* L, const struct OpenInfo *Info)
     lua_pushinteger(L, Info->Data);
 
   if (pcall_msg(L, 3, 1) == 0) {
-    if (lua_type(L,-1) == LUA_TNUMBER) {
-      INT_PTR ret = lua_tointeger(L,-1);
-      if (NOPANEL_HANDLE_VALUE(ret)) {
-        lua_pop(L,1);
-        return (HANDLE) ret;
-      }
+    if (lua_type(L,-1) == LUA_TNUMBER && lua_tonumber(L,-1) == -1) {
+      lua_pop(L,1);
+      return PANEL_STOP;
     }
     if (lua_toboolean(L, -1))            //+1: Obj
       return (HANDLE) RegisterObject(L); //+0
     lua_pop(L,1);
   }
-  return INVALID_HANDLE_VALUE;
+  return NULL;
 }
 
 void LF_ClosePanel(lua_State* L, const struct ClosePanelInfo *Info)

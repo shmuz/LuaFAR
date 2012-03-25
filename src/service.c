@@ -484,14 +484,14 @@ static int push_editor_filename(lua_State *L, int EditorId)
 }
 
 static int editor_GetFileName(lua_State *L) {
-  int EditorId = luaL_optinteger(L, 1, -1);
+  int EditorId = luaL_optinteger(L, 1, CURRENT_EDITOR);
   if (!push_editor_filename(L, EditorId)) lua_pushnil(L);
   return 1;
 }
 
 static int editor_GetInfo(lua_State *L)
 {
-  int EditorId = luaL_optinteger(L, 1, -1);
+  int EditorId = luaL_optinteger(L, 1, CURRENT_EDITOR);
   PSInfo *Info = GetPluginData(L)->Info;
   struct EditorInfo ei;
   if (!Info->EditorControl(EditorId, ECTL_GETINFO, 0, &ei))
@@ -557,7 +557,7 @@ static BOOL FastGetString (int EditorId, int string_num,
 //   LineInfo:  a table
 static int _EditorGetString(lua_State *L, int is_wide)
 {
-  int EditorId = luaL_optinteger(L, 1, -1);
+  int EditorId = luaL_optinteger(L, 1, CURRENT_EDITOR);
   PSInfo *Info = GetPluginData(L)->Info;
   int line_num = luaL_optinteger(L, 2, -1);
   int mode     = luaL_optinteger(L, 3, 0);
@@ -612,7 +612,7 @@ static int _EditorSetString(lua_State *L, int is_wide)
 {
   PSInfo *Info = GetPluginData(L)->Info;
   struct EditorSetString ess;
-  int EditorId = luaL_optinteger(L, 1, -1);
+  int EditorId = luaL_optinteger(L, 1, CURRENT_EDITOR);
   ess.StringNumber = luaL_optinteger(L, 2, -1);
   if (is_wide) {
     ess.StringText = check_utf16_string(L, 3, &ess.StringLength);
@@ -638,7 +638,7 @@ static int editor_SetStringW (lua_State *L) { return _EditorSetString(L, 1); }
 static int editor_InsertString(lua_State *L)
 {
   PSInfo *Info = GetPluginData(L)->Info;
-  int EditorId = luaL_optinteger(L, 1, -1);
+  int EditorId = luaL_optinteger(L, 1, CURRENT_EDITOR);
   int indent = lua_toboolean(L, 2);
   lua_pushboolean(L, Info->EditorControl(EditorId, ECTL_INSERTSTRING, 0, &indent));
   return 1;
@@ -647,14 +647,14 @@ static int editor_InsertString(lua_State *L)
 static int editor_DeleteString(lua_State *L)
 {
   PSInfo *Info = GetPluginData(L)->Info;
-  int EditorId = luaL_optinteger(L, 1, -1);
+  int EditorId = luaL_optinteger(L, 1, CURRENT_EDITOR);
   lua_pushboolean(L, Info->EditorControl(EditorId, ECTL_DELETESTRING, 0, 0));
   return 1;
 }
 
 static int _EditorInsertText(lua_State *L, int is_wide)
 {
-  int EditorId = luaL_optinteger(L, 1, -1);
+  int EditorId = luaL_optinteger(L, 1, CURRENT_EDITOR);
   PSInfo *Info = GetPluginData(L)->Info;
   const wchar_t* text = is_wide ? check_utf16_string(L,2,NULL) : check_utf8_string(L,2,NULL);
   lua_pushboolean(L, Info->EditorControl(EditorId, ECTL_INSERTTEXT, 0, (void*)text));
@@ -666,7 +666,7 @@ static int editor_InsertTextW (lua_State *L) { return _EditorInsertText(L, 1); }
 
 static int editor_DeleteChar(lua_State *L)
 {
-  int EditorId = luaL_optinteger(L, 1, -1);
+  int EditorId = luaL_optinteger(L, 1, CURRENT_EDITOR);
   PSInfo *Info = GetPluginData(L)->Info;
   lua_pushboolean(L, Info->EditorControl(EditorId, ECTL_DELETECHAR, 0, 0));
   return 1;
@@ -674,7 +674,7 @@ static int editor_DeleteChar(lua_State *L)
 
 static int editor_DeleteBlock(lua_State *L)
 {
-  int EditorId = luaL_optinteger(L, 1, -1);
+  int EditorId = luaL_optinteger(L, 1, CURRENT_EDITOR);
   PSInfo *Info = GetPluginData(L)->Info;
   lua_pushboolean(L, Info->EditorControl(EditorId, ECTL_DELETEBLOCK, 0, 0));
   return 1;
@@ -682,7 +682,7 @@ static int editor_DeleteBlock(lua_State *L)
 
 static int editor_UndoRedo(lua_State *L)
 {
-  int EditorId = luaL_optinteger(L, 1, -1);
+  int EditorId = luaL_optinteger(L, 1, CURRENT_EDITOR);
   struct EditorUndoRedo eur;
   memset(&eur, 0, sizeof(eur));
   eur.Command = check_env_flag(L, 2);
@@ -766,7 +766,7 @@ static int editor_SetParam(lua_State *L)
 {
   wchar_t buf[256];
   int tp, result;
-  int EditorId = luaL_optinteger(L, 1, -1);
+  int EditorId = luaL_optinteger(L, 1, CURRENT_EDITOR);
   PSInfo *Info = GetPluginData(L)->Info;
   struct EditorSetParameter esp;
   memset(&esp, 0, sizeof(esp));
@@ -797,7 +797,7 @@ static int editor_SetParam(lua_State *L)
 
 static int editor_SetPosition(lua_State *L)
 {
-  int EditorId = luaL_optinteger(L, 1, -1);
+  int EditorId = luaL_optinteger(L, 1, CURRENT_EDITOR);
   PSInfo *Info = GetPluginData(L)->Info;
   struct EditorSetPosition esp;
   if (lua_istable(L, 2)) {
@@ -819,7 +819,7 @@ static int editor_SetPosition(lua_State *L)
 
 static int editor_Redraw(lua_State *L)
 {
-  int EditorId = luaL_optinteger(L, 1, -1);
+  int EditorId = luaL_optinteger(L, 1, CURRENT_EDITOR);
   PSInfo *Info = GetPluginData(L)->Info;
   if (Info->EditorControl(EditorId, ECTL_REDRAW, 0, 0))
     return lua_pushboolean(L, 1), 1;
@@ -828,7 +828,7 @@ static int editor_Redraw(lua_State *L)
 
 static int editor_ExpandTabs(lua_State *L)
 {
-  int EditorId = luaL_optinteger(L, 1, -1);
+  int EditorId = luaL_optinteger(L, 1, CURRENT_EDITOR);
   PSInfo *Info = GetPluginData(L)->Info;
   int line_num = luaL_optinteger(L, 2, -1);
   if (Info->EditorControl(EditorId, ECTL_EXPANDTABS, 0, &line_num))
@@ -866,7 +866,7 @@ static int PushBookmarks(lua_State *L, int count, int command, int EditorId)
 static int editor_GetBookmarks(lua_State *L)
 {
   struct EditorInfo ei;
-  int EditorId = luaL_optinteger(L, 1, -1);
+  int EditorId = luaL_optinteger(L, 1, CURRENT_EDITOR);
   PSInfo *Info = GetPluginData(L)->Info;
   if (!Info->EditorControl(EditorId, ECTL_GETINFO, 0, &ei))
     return 0;
@@ -875,7 +875,7 @@ static int editor_GetBookmarks(lua_State *L)
 
 static int editor_GetSessionBookmarks(lua_State *L)
 {
-  int EditorId = luaL_optinteger(L, 1, -1);
+  int EditorId = luaL_optinteger(L, 1, CURRENT_EDITOR);
   PSInfo *Info = GetPluginData(L)->Info;
   int count = Info->EditorControl(EditorId, ECTL_GETSESSIONBOOKMARKS, 0, 0);
   return PushBookmarks(L, count, ECTL_GETSESSIONBOOKMARKS, EditorId);
@@ -883,7 +883,7 @@ static int editor_GetSessionBookmarks(lua_State *L)
 
 static int editor_AddSessionBookmark(lua_State *L)
 {
-  int EditorId = luaL_optinteger(L, 1, -1);
+  int EditorId = luaL_optinteger(L, 1, CURRENT_EDITOR);
   PSInfo *Info = GetPluginData(L)->Info;
   lua_pushboolean(L, Info->EditorControl(EditorId, ECTL_ADDSESSIONBOOKMARK, 0, 0));
   return 1;
@@ -891,7 +891,7 @@ static int editor_AddSessionBookmark(lua_State *L)
 
 static int editor_ClearSessionBookmarks(lua_State *L)
 {
-  int EditorId = luaL_optinteger(L, 1, -1);
+  int EditorId = luaL_optinteger(L, 1, CURRENT_EDITOR);
   PSInfo *Info = GetPluginData(L)->Info;
   lua_pushinteger(L, Info->EditorControl(EditorId, ECTL_CLEARSESSIONBOOKMARKS, 0, 0));
   return 1;
@@ -899,7 +899,7 @@ static int editor_ClearSessionBookmarks(lua_State *L)
 
 static int editor_DeleteSessionBookmark(lua_State *L)
 {
-  int EditorId = luaL_optinteger(L, 1, -1);
+  int EditorId = luaL_optinteger(L, 1, CURRENT_EDITOR);
   INT_PTR num = luaL_optinteger(L, 2, -1);
   PSInfo *Info = GetPluginData(L)->Info;
   lua_pushboolean(L, Info->EditorControl(EditorId, ECTL_DELETESESSIONBOOKMARK, 0, (void*)num));
@@ -908,7 +908,7 @@ static int editor_DeleteSessionBookmark(lua_State *L)
 
 static int editor_NextSessionBookmark(lua_State *L)
 {
-  int EditorId = luaL_optinteger(L, 1, -1);
+  int EditorId = luaL_optinteger(L, 1, CURRENT_EDITOR);
   PSInfo *Info = GetPluginData(L)->Info;
   lua_pushboolean(L, Info->EditorControl(EditorId, ECTL_NEXTSESSIONBOOKMARK, 0, 0));
   return 1;
@@ -916,7 +916,7 @@ static int editor_NextSessionBookmark(lua_State *L)
 
 static int editor_PrevSessionBookmark(lua_State *L)
 {
-  int EditorId = luaL_optinteger(L, 1, -1);
+  int EditorId = luaL_optinteger(L, 1, CURRENT_EDITOR);
   PSInfo *Info = GetPluginData(L)->Info;
   lua_pushboolean(L, Info->EditorControl(EditorId, ECTL_PREVSESSIONBOOKMARK, 0, 0));
   return 1;
@@ -924,7 +924,7 @@ static int editor_PrevSessionBookmark(lua_State *L)
 
 static int editor_SetTitle(lua_State *L)
 {
-  int EditorId = luaL_optinteger(L, 1, -1);
+  int EditorId = luaL_optinteger(L, 1, CURRENT_EDITOR);
   PSInfo *Info = GetPluginData(L)->Info;
   const wchar_t* text = opt_utf8_string(L, 2, NULL);
   if (Info->EditorControl(EditorId, ECTL_SETTITLE, 0, (void*)text))
@@ -934,7 +934,7 @@ static int editor_SetTitle(lua_State *L)
 
 static int editor_Quit(lua_State *L)
 {
-  int EditorId = luaL_optinteger(L, 1, -1);
+  int EditorId = luaL_optinteger(L, 1, CURRENT_EDITOR);
   PSInfo *Info = GetPluginData(L)->Info;
   if (Info->EditorControl(EditorId, ECTL_QUIT, 0, 0))
     return lua_pushboolean(L, 1), 1;
@@ -961,7 +961,7 @@ static int FillEditorSelect(lua_State *L, int pos_table, struct EditorSelect *es
 
 static int editor_Select(lua_State *L)
 {
-  int EditorId = luaL_optinteger(L, 1, -1);
+  int EditorId = luaL_optinteger(L, 1, CURRENT_EDITOR);
   PSInfo *Info = GetPluginData(L)->Info;
   struct EditorSelect es;
   if (lua_istable(L, 2)) {
@@ -988,7 +988,7 @@ static int editor_Select(lua_State *L)
 static int editor_GetSelection(lua_State *L)
 {
   int BlockStartPos, h, from, to;
-  int EditorId = luaL_optinteger(L, 1, -1);
+  int EditorId = luaL_optinteger(L, 1, CURRENT_EDITOR);
   PSInfo *Info = GetPluginData(L)->Info;
   struct EditorInfo EI;
   struct EditorGetString egs;
@@ -1051,7 +1051,7 @@ static int editor_GetSelection(lua_State *L)
 
 static int _EditorTabConvert(lua_State *L, int Operation)
 {
-  int EditorId = luaL_optinteger(L, 1, -1);
+  int EditorId = luaL_optinteger(L, 1, CURRENT_EDITOR);
   PSInfo *Info = GetPluginData(L)->Info;
   struct EditorConvertPos ecp;
   ecp.StringNumber = luaL_optinteger(L, 2, -1);
@@ -1097,7 +1097,7 @@ static int editor_AddColor(lua_State *L)
   ec.StructSize = sizeof(ec);
   ec.ColorItem = 0;
 
-  EditorId        = luaL_optinteger(L, 1, -1);
+  EditorId        = luaL_optinteger(L, 1, CURRENT_EDITOR);
   ec.StringNumber = luaL_optinteger(L, 2, -1);
   ec.StartPos     = luaL_checkinteger(L, 3);
   ec.EndPos       = luaL_checkinteger(L, 4);
@@ -1118,7 +1118,7 @@ static int editor_DelColor(lua_State *L)
   edc.StructSize = sizeof(edc);
   edc.Owner = *pd->PluginId;
 
-  EditorId         = luaL_optinteger(L, 1, -1);
+  EditorId         = luaL_optinteger(L, 1, CURRENT_EDITOR);
   edc.StringNumber = luaL_optinteger(L, 2, -1);
   edc.StartPos     = luaL_checkinteger(L, 3);
   lua_pushboolean(L, pd->Info->EditorControl(EditorId, ECTL_DELCOLOR, 0, &edc));
@@ -1132,7 +1132,7 @@ static int editor_GetColor(lua_State *L)
   struct EditorColor ec;
   memset(&ec, 0, sizeof(ec));
   ec.StructSize = sizeof(ec);
-  EditorId        = luaL_optinteger(L, 1, -1);
+  EditorId        = luaL_optinteger(L, 1, CURRENT_EDITOR);
   ec.StringNumber = luaL_optinteger(L, 2, -1);
   ec.ColorItem    = luaL_checkinteger(L, 3);
   if (Info->EditorControl(EditorId, ECTL_GETCOLOR, 0, &ec)) {
@@ -1154,7 +1154,7 @@ static int editor_SaveFile(lua_State *L)
 {
   PSInfo *Info = GetPluginData(L)->Info;
   struct EditorSaveFile esf;
-  int EditorId = luaL_optinteger(L, 1, -1);
+  int EditorId = luaL_optinteger(L, 1, CURRENT_EDITOR);
   esf.FileName = opt_utf8_string(L, 2, L"");
   esf.FileEOL = opt_utf8_string(L, 3, NULL);
   if (Info->EditorControl(EditorId, ECTL_SAVEFILE, 0, &esf))
@@ -1202,7 +1202,7 @@ int pushInputRecord(lua_State *L, const INPUT_RECORD* ir)
 
 static int editor_ReadInput(lua_State *L)
 {
-  int EditorId = luaL_optinteger(L, 1, -1);
+  int EditorId = luaL_optinteger(L, 1, CURRENT_EDITOR);
   PSInfo *Info = GetPluginData(L)->Info;
   INPUT_RECORD ir;
   if (!Info->EditorControl(EditorId, ECTL_READINPUT, 0, &ir))
@@ -1272,7 +1272,7 @@ static void OptInputRecord (lua_State* L, TPluginData *pd, int pos, INPUT_RECORD
 static int editor_ProcessInput(lua_State *L)
 {
   INPUT_RECORD ir;
-  int EditorId = luaL_optinteger(L, 1, -1);
+  int EditorId = luaL_optinteger(L, 1, CURRENT_EDITOR);
   luaL_checktype(L, 2, LUA_TTABLE);
   FillInputRecord(L, 2, &ir);
   lua_pushboolean(L, GetPluginData(L)->Info->EditorControl(EditorId, ECTL_PROCESSINPUT, 0, &ir));
