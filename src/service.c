@@ -2289,7 +2289,7 @@ static void PushDlgItem (lua_State *L, const struct FarDialogItem* pItem, BOOL t
 static void PushDlgItemNum (lua_State *L, HANDLE hDlg, int numitem, int pos_table,
   PSInfo *Info)
 {
-  struct FarGetDialogItem fgdi = {0,0};
+  struct FarGetDialogItem fgdi = { sizeof(struct FarGetDialogItem), 0, 0 };
   fgdi.Size = Info->SendDlgMessage(hDlg, DM_GETDLGITEM, numitem, &fgdi);
   if (fgdi.Size > 0) {
     BOOL table_exist;
@@ -2373,21 +2373,8 @@ static int far_SendDlgMessage (lua_State *L)
   void* Param2 = NULL;
   wchar_t buf[512];
   //---------------------------------------------------------------------------
-  COORD                      coord;
-  struct DialogInfo          dlg_info;
-  struct EditorSelect        es;
-  struct EditorSetPosition   esp;
-  struct FarDialogItemData   fdid;
-  struct FarListDelete       fld;
-  struct FarListFind         flf;
-  struct FarListGetItem      flgi;
-  struct FarListInfo         fli;
-  struct FarListInsert       flins;
-  struct FarListPos          flp;
-  struct FarListTitles       flt;
-  struct FarListUpdate       flu;
-  struct FarListItemData     flid;
-  SMALL_RECT                 small_rect;
+  COORD coord;
+  SMALL_RECT small_rect;
   //---------------------------------------------------------------------------
   HANDLE hDlg = CheckDialogHandle(L, 1);
   Msg = CAST(int, check_env_flag (L, 2));
@@ -2448,7 +2435,8 @@ static int far_SendDlgMessage (lua_State *L)
       }
       return lua_pushnil(L), 1;
 
-    case DM_GETDIALOGINFO:
+    case DM_GETDIALOGINFO: {
+      struct DialogInfo dlg_info;
       dlg_info.StructSize = sizeof(dlg_info);
       if (Info->SendDlgMessage (hDlg, Msg, Param1, &dlg_info)) {
         lua_createtable(L,0,3);
@@ -2458,6 +2446,7 @@ static int far_SendDlgMessage (lua_State *L)
         return 1;
       }
       return lua_pushnil(L), 1;
+    }
 
     case DM_GETDLGRECT:
     case DM_GETITEMPOSITION:
@@ -2471,12 +2460,15 @@ static int far_SendDlgMessage (lua_State *L)
       }
       return lua_pushnil(L), 1;
 
-    case DM_GETEDITPOSITION:
+    case DM_GETEDITPOSITION: {
+      struct EditorSetPosition esp;
       if (Info->SendDlgMessage (hDlg, Msg, Param1, &esp))
         return PushEditorSetPosition(L, &esp), 1;
       return lua_pushnil(L), 1;
+    }
 
-    case DM_GETSELECTION:
+    case DM_GETSELECTION: {
+      struct EditorSelect es;
       if (Info->SendDlgMessage (hDlg, Msg, Param1, &es)) {
         lua_createtable(L,0,5);
         PutNumToTable(L, "BlockType", es.BlockType);
@@ -2487,31 +2479,40 @@ static int far_SendDlgMessage (lua_State *L)
         return 1;
       }
       return lua_pushnil(L), 1;
+    }
 
-    case DM_SETSELECTION:
+    case DM_SETSELECTION: {
+      struct EditorSelect es;
       luaL_checktype(L, 4, LUA_TTABLE);
       if (FillEditorSelect(L, 4, &es)) {
         Param2 = &es;
         break;
       }
       return lua_pushinteger(L,0), 1;
+    }
 
-    case DM_GETTEXT:
+    case DM_GETTEXT: {
+      struct FarDialogItemData fdid;
+      fdid.StructSize = sizeof(fdid);
       fdid.PtrData = buf;
       fdid.PtrLength = sizeof(buf)/sizeof(buf[0]) - 1;
       Info->SendDlgMessage (hDlg, Msg, Param1, &fdid);
       push_utf8_string(L, fdid.PtrData, -1);
       return 1;
+    }
 
     case DM_GETCONSTTEXTPTR:
       push_utf8_string(L, (wchar_t*)Info->SendDlgMessage (hDlg, Msg, Param1, 0), -1);
       return 1;
 
-    case DM_SETTEXT:
+    case DM_SETTEXT: {
+      struct FarDialogItemData fdid;
+      fdid.StructSize = sizeof(fdid);
       fdid.PtrData = (wchar_t*)check_utf8_string(L, 4, NULL);
       fdid.PtrLength = 0; // wcslen(fdid.PtrData);
       Param2 = &fdid;
       break;
+    }
 
     case DM_KEY: { //TODO
       DWORD *arr;
@@ -2539,14 +2540,19 @@ static int far_SendDlgMessage (lua_State *L)
       break;
     }
 
-    case DM_LISTDELETE:
+    case DM_LISTDELETE: {
+      struct FarListDelete fld;
+      fld.StructSize = sizeof(fld);
       luaL_checktype(L, 4, LUA_TTABLE);
       fld.StartIndex = GetOptIntFromTable(L, "StartIndex", 1) - 1;
       fld.Count = GetOptIntFromTable(L, "Count", 1);
       Param2 = &fld;
       break;
+    }
 
-    case DM_LISTFINDSTRING:
+    case DM_LISTFINDSTRING: {
+      struct FarListFind flf;
+      flf.StructSize = sizeof(flf);
       luaL_checktype(L, 4, LUA_TTABLE);
       flf.StartIndex = GetOptIntFromTable(L, "StartIndex", 1) - 1;
       lua_getfield(L, 4, "Pattern");
@@ -2556,15 +2562,21 @@ static int far_SendDlgMessage (lua_State *L)
       res = Info->SendDlgMessage (hDlg, Msg, Param1, &flf);
       res < 0 ? lua_pushnil(L) : lua_pushinteger (L, res+1);
       return 1;
+    }
 
-    case DM_LISTGETCURPOS:
+    case DM_LISTGETCURPOS: {
+      struct FarListPos flp;
+      flp.StructSize = sizeof(flp);
       Info->SendDlgMessage (hDlg, Msg, Param1, &flp);
       lua_createtable(L,0,2);
       PutIntToTable(L, "SelectPos", flp.SelectPos+1);
       PutIntToTable(L, "TopPos", flp.TopPos+1);
       return 1;
+    }
 
-    case DM_LISTGETITEM:
+    case DM_LISTGETITEM: {
+      struct FarListGetItem flgi;
+      flgi.StructSize = sizeof(flgi);
       flgi.ItemIndex = luaL_checkinteger(L, 4) - 1;
       res = Info->SendDlgMessage (hDlg, Msg, Param1, &flgi);
       if (res) {
@@ -2574,8 +2586,11 @@ static int far_SendDlgMessage (lua_State *L)
         return 1;
       }
       return lua_pushnil(L), 1;
+    }
 
-    case DM_LISTGETTITLES:
+    case DM_LISTGETTITLES: {
+      struct FarListTitles flt;
+      flt.StructSize = sizeof(flt);
       flt.Title = buf;
       flt.Bottom = buf + sizeof(buf)/2;
       flt.TitleSize = sizeof(buf)/2;
@@ -2588,8 +2603,11 @@ static int far_SendDlgMessage (lua_State *L)
         return 1;
       }
       return lua_pushnil(L), 1;
+    }
 
-    case DM_LISTSETTITLES:
+    case DM_LISTSETTITLES: {
+      struct FarListTitles flt;
+      flt.StructSize = sizeof(flt);
       luaL_checktype(L, 4, LUA_TTABLE);
       lua_getfield(L, 4, "Title");
       flt.Title = lua_isstring(L,-1) ? check_utf8_string(L,-1,NULL) : NULL;
@@ -2597,8 +2615,11 @@ static int far_SendDlgMessage (lua_State *L)
       flt.Bottom = lua_isstring(L,-1) ? check_utf8_string(L,-1,NULL) : NULL;
       Param2 = &flt;
       break;
+    }
 
-    case DM_LISTINFO:
+    case DM_LISTINFO: {
+      struct FarListInfo fli;
+      fli.StructSize = sizeof(fli);
       res = Info->SendDlgMessage (hDlg, Msg, Param1, &fli);
       if (res) {
         lua_createtable(L,0,6);
@@ -2611,8 +2632,11 @@ static int far_SendDlgMessage (lua_State *L)
         return 1;
       }
       return lua_pushnil(L), 1;
+    }
 
-    case DM_LISTINSERT:
+    case DM_LISTINSERT: {
+      struct FarListInsert flins;
+      flins.StructSize = sizeof(flins);
       luaL_checktype(L, 4, LUA_TTABLE);
       flins.Index = GetOptIntFromTable(L, "Index", 1) - 1;
       lua_getfield(L, 4, "Text");
@@ -2621,8 +2645,11 @@ static int far_SendDlgMessage (lua_State *L)
       res = Info->SendDlgMessage (hDlg, Msg, Param1, &flins);
       res < 0 ? lua_pushnil(L) : lua_pushinteger (L, res);
       return 1;
+    }
 
-    case DM_LISTUPDATE:
+    case DM_LISTUPDATE: {
+      struct FarListUpdate flu;
+      flu.StructSize = sizeof(flu);
       luaL_checktype(L, 4, LUA_TTABLE);
       flu.Index = GetOptIntFromTable(L, "Index", 1) - 1;
       lua_getfield(L, 4, "Text");
@@ -2630,18 +2657,24 @@ static int far_SendDlgMessage (lua_State *L)
       flu.Item.Flags = CheckFlagsFromTable(L, 4, "Flags");
       lua_pushboolean(L, Info->SendDlgMessage (hDlg, Msg, Param1, &flu));
       return 1;
+    }
 
-    case DM_LISTSETCURPOS:
+    case DM_LISTSETCURPOS: {
+      struct FarListPos flp;
+      flp.StructSize = sizeof(flp);
       luaL_checktype(L, 4, LUA_TTABLE);
       flp.SelectPos = GetOptIntFromTable(L, "SelectPos", 1) - 1;
       flp.TopPos = GetOptIntFromTable(L, "TopPos", 1) - 1;
       Param2 = &flp;
       break;
+    }
 
     case DM_LISTSETDATA:
     {
+      struct FarListItemData flid;
       int ref;
       memset(&flid, 0, sizeof(flid));
+      flid.StructSize = sizeof(flid);
       luaL_checktype(L, 4, LUA_TTABLE);
       flid.Index = GetOptIntFromTable(L, "Index", 1) - 1;
       lua_getfenv(L, 1);
@@ -2698,12 +2731,14 @@ static int far_SendDlgMessage (lua_State *L)
       Param2 = (void*)(INT_PTR)CheckFlags(L, 4);
       break;
 
-    case DM_SETEDITPOSITION:
+    case DM_SETEDITPOSITION: {
+      struct EditorSetPosition   esp;
       luaL_checktype(L, 4, LUA_TTABLE);
       lua_settop(L, 4);
       FillEditorSetPosition(L, &esp);
       Param2 = &esp;
       break;
+    }
 
     //~ case DM_GETTEXTPTR:
   }
