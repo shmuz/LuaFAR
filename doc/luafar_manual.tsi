@@ -180,84 +180,13 @@ mtime=3512990593
 </article>
 </node>
 <node>
-id=404
-lv=0
-dt=Text
-nm=Changes between LuaFAR 3.0 and 2.0
-ctime=3507043384
-mtime=3512120998
-<article>
-#_<markdown>
-#_**NOTE:** only major changes are listed here. It is recommended to study
-#_changes in Far Manager API in the **Far Encyclopedia**. When in doubt, refer
-#_to a relevant article in this manual or (as a last resort) to LuaFAR source code.
-#_
-#_### Common
-#_1. All "exported" Lua functions should be in the namespace **`export`**, not **`far`**.
-#_2. 32 functions moved from the namespace **`far`** to the namespace **`win`**.
-#_1. Handling of 64-bit flags. See [`bit64` library](405.html) and
-#_   [`far.Flags`](57.html).
-#_1. [`PluginPanelItem`](85.html) no more contains a table [`FindData`](90.html).
-#_   Former members of `FindData` are included in `PluginPanelItem` directly.
-#_1. [`PanelMode`](121.html) - changes due to the new Far API.
-#_
-#_### Exported functions
-#_Too many changes to be listed here. Almost all exported functions changed their signatures, some changed their names.
-#_
-#_### Service functions
-#_1. To all functions using `EditorControl` Far API, added 1-st parameter `EditorId`.
-#_1. To all functions using `ViewerControl` Far API, added 1-st parameter `ViewerId`.
-#_1. Function `far.CmpName` removed. Use [`far.ProcessName`](190.html) instead.
-#_1. `ACTL_KEYMACRO` removed. Use [`far.MacroLoadAll`](410.html), [`far.MacroSaveAll`](411.html), [`far.MacroGetState`](412.html), [`far.MacroGetArea`](413.html), [`far.MacroPost`](414.html), [`far.MacroCheck`](415.html) instead.
-#_1. Struct [`FarDialogItem`](295.html)
-#_1. [`far.CtrlGetPanelInfo`](7.html)
-#_1. [`far.Dialog`](20.html)
-#_1. [`far.DialogInit`](378.html)
-#_1. [`far.EditorSetKeyBar`](139.html) - changes due to the new Far API.
-#_1. [`far.Flags`](57.html) - a table that replaced the removed `far.GetFlags` function.
-#_1. [`far.GetPluginDirList`](60.html)
-#_1. [`far.MkLink`](208.html)
-#_1. [`far.PluginStartupInfo`](68.html)
-#_
-</article>
-</node>
-<node>
 id=149
 lv=0
 dt=Text
 nm=What's new in this version
-mtime=3536353822
+mtime=3541947364
 <article>
 #_<markdown>
-#_
-#_###Added functions and tables
-#_1. [`bit64` library](405.html)
-#_1. [`export.Analyse`](425.html)
-#_1. [`export.GetGlobalInfo`](402.html)
-#_1. [Far Settings Control](403.html)
-#_1. [`far.ColorDialog`](435.html)
-#_1. [`far.Colors`](437.html)
-#_1. [`far.EditorDelColor`](444.html)
-#_1. [`far.InputRecordToName`](186.html)
-#_1. [`far.NameToInputRecord`](426.html)
-#_1. [`win.GetFileAttr`](433.html)
-#_1. [`win.GlobalMemoryStatus`](431.html)
-#_1. [`win.SearchPath`](429.html)
-#_1. [`win.SetFileAttr`](434.html)
-#_1. [`win.SHGetFolderPath`](440.html)
-#_1. [`win.ShellExecute`](428.html)
-#_1. [`win.Sleep`](432.html)
-#_1. [`win.Uuid`](399.html)
-#_
-#_###Removed functions
-#_1. `far.GetFlags` -- replaced by [`far.Flags`](57.html).
-#_1. `BitOp` library -- replaced by [`bit64`](405.html).
-#_1. `uio` library -- replaced by **`io`**.
-#_1. `far.LoadFile` -- replaced by **`loadfile`**.
-#_1. `far.LoadLib` -- replaced by **`package.loadlib`**.
-#_1. `far.Require` -- replaced by **`require`**.
-#_1. `far.FarInputRecordToKey`
-#_1. `far.FarKeyToInputRecord`
 #_
 </article>
 </node>

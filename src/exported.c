@@ -3,6 +3,7 @@
 #include "luafar.h"
 #include "util.h"
 #include "ustring.h"
+#include "compat52.h"
 
 #define CAST(tp,expr) (tp)(expr)
 #define TRANSFORM_REF(h)        (h > 0 ? h : h - 2)
@@ -30,7 +31,7 @@ const char KEY_OBJECT[]    = "Object";
 
 // taken from lua.c v5.1.2
 int traceback (lua_State *L) {
-  lua_getfield(L, LUA_GLOBALSINDEX, "debug");
+  lua_getglobal(L, "debug");
   if (!lua_istable(L, -1)) {
     lua_pop(L, 1);
     return 1;
@@ -380,17 +381,13 @@ HANDLE LF_Analyse(lua_State* L, const struct AnalyseInfo *Info)
     PushAnalyseInfo(L, Info);            //+2
     if (!pcall_msg(L, 1, 1)) {           //+1
       if (lua_toboolean(L, -1)) {
-        INT_PTR ref;
-        lua_pushvalue(L, -1);                 //+2
-        ref = luaL_ref(L, LUA_REGISTRYINDEX); //+1
-        if (ref != 0) /* Lua 5.1 manual doesn't guarantee ref != 0 */
-          lua_pop(L,1);                       //+0
-        else {
-          INT_PTR ref2 = luaL_ref(L, LUA_REGISTRYINDEX); //+0
-          luaL_unref(L, LUA_REGISTRYINDEX, ref);
-          ref = ref2;
+        INT_PTR ref = luaL_ref(L, LUA_REGISTRYINDEX); //+0
+        if (ref == 0) { /* Lua 5.1 manual doesn't guarantee ref != 0 */
+          lua_rawgeti(L, LUA_REGISTRYINDEX, 0); //+1
+          ref = luaL_ref(L, LUA_REGISTRYINDEX); //+0
+          luaL_unref(L, LUA_REGISTRYINDEX, 0);
         }
-        result = (HANDLE)ref;            //+0
+        result = CAST(HANDLE, ref);
       }
       else
         lua_pop (L, 1);                  //+0

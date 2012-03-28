@@ -50,7 +50,7 @@ clean:
 	del *.o flags.c keysandcolors.c version.h $(LUAFARDLL)
 
 # Dependencies
-*.o        : $(INC_FAR)\plugin.hpp ustring.h
+*.o        : $(INC_FAR)\plugin.hpp ustring.h compat52.h
 reg.o      : reg.h
 service.o  : reg.h luafar.h util.h version.h
 exported.o : luafar.h util.h

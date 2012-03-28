@@ -8,9 +8,14 @@
 #include "util.h"
 #include "ustring.h"
 #include "version.h"
+#include "compat52.h"
 
 #ifndef LUADLL
-#define LUADLL "lua5.1.dll"
+# if LUA_VERSION_NUM == 501
+#  define LUADLL "lua5.1.dll"
+# elif LUA_VERSION_NUM == 502
+#  define LUADLL "lua52.dll"
+# endif
 #endif
 
 typedef struct PluginStartupInfo PSInfo;

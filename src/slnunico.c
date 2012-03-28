@@ -116,6 +116,7 @@ THE SOFTWARE.
 
 #include "lauxlib.h"
 #include "lualib.h"
+//#include "compat52.h"
 
 /*
 ** maximum number of captures that a pattern can do during
@@ -170,10 +171,14 @@ typedef const unsigned char cuc; /* it's just toooo long :) */
 
 static int get_mode (lua_State *L)
 {
+#if LUA_VERSION_NUM == 501
 	int mode;
 	lua_getfield(L, LUA_ENVIRONINDEX, "mode");
 	mode = lua_tointeger(L, -1);
 	lua_pop(L, 1);
+#elif LUA_VERSION_NUM == 502
+	int mode = lua_tointeger(L, lua_upvalueindex(1));
+#endif
 	return mode;
 }
 
@@ -1423,12 +1428,20 @@ static void createmetatable (lua_State *L) {
 ** Register separate library
 */
 static void register_lib (lua_State *L, int mode, const char *name) {
+#if LUA_VERSION_NUM == 501
 	lua_newtable(L);
 	lua_pushinteger(L, mode);
 	lua_setfield(L, -2, "mode");
-    lua_pushvalue(L, -1);
+	lua_pushvalue(L, -1);
 	lua_replace(L, LUA_ENVIRONINDEX);
 	luaL_register(L, name, uniclib);
+#elif LUA_VERSION_NUM == 502
+	lua_createtable(L, 0, 16);
+	lua_pushvalue(L, -1);
+	lua_setglobal(L, name);
+	lua_pushinteger(L, mode);
+	luaL_setfuncs(L, uniclib, 1);
+#endif
 }
 
 /*
@@ -1448,14 +1461,7 @@ LUALIB_API int luaopen_unicode (lua_State *L) {
 #ifdef STRING_WITH_METAT
 	createmetatable(L);
 #endif
-#if LUA_VERSION_NUM < 502
-	lua_setfield(L, LUA_GLOBALSINDEX, "string");
-#else
-	lua_rawgeti(L, LUA_REGISTRYINDEX, LUA_RIDX_GLOBALS);
-	lua_pushvalue(L, -2);
-	lua_setfield(L, -2, "string");
-	lua_pop(L, 2);
-#endif
+	lua_setglobal(L, "string");
 #endif
 	register_lib(L, MODE_LATIN, SLN_UNICODENAME ".latin1");
 	register_lib(L, MODE_GRAPH, SLN_UNICODENAME ".grapheme");

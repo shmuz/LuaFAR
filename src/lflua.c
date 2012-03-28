@@ -1,5 +1,6 @@
 #include "ustring.h"
 #include "luafar.h"
+#include "compat52.h"
 
 /* Taken from Lua 5.1; modified to work with Unicode filenames. */
 /* ------------------------------------------------------------ */

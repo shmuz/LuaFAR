@@ -1,6 +1,7 @@
 #include <lua.h>
 #include <lauxlib.h>
 #include <lualib.h>
+#include "compat52.h"
 
 #define MAX32 0xFFFFFFFFULL
 #define MAX51 0x7FFFFFFFFFFFFULL
