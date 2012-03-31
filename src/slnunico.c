@@ -116,7 +116,6 @@ THE SOFTWARE.
 
 #include "lauxlib.h"
 #include "lualib.h"
-//#include "compat52.h"
 
 /*
 ** maximum number of captures that a pattern can do during
@@ -1438,10 +1437,11 @@ static void register_lib (lua_State *L, int mode, const char *name) {
 #elif LUA_VERSION_NUM == 502
 	lua_createtable(L, 0, 16);
 	lua_pushvalue(L, -1);
-	lua_setglobal(L, name);
+	lua_setfield(L, -3, name + sizeof(SLN_UNICODENAME));
 	lua_pushinteger(L, mode);
 	luaL_setfuncs(L, uniclib, 1);
 #endif
+	lua_pop(L, 1);
 }
 
 /*
@@ -1449,15 +1449,17 @@ static void register_lib (lua_State *L, int mode, const char *name) {
 */
 LUALIB_API int luaopen_unicode (lua_State *L) {
 	/* register unicode itself so require("unicode") works */
+#if LUA_VERSION_NUM == 501
 	luaL_register(L, SLN_UNICODENAME,
 		uniclib + (sizeof uniclib/sizeof uniclib[0] - 1)); /* empty func list */
-	//lua_pop(L, 1);
+#else
+	lua_createtable(L, 0, 0);
+	lua_pushvalue(L, -1);
+	lua_setglobal(L, SLN_UNICODENAME);
+	luaL_setfuncs(L, uniclib + (sizeof uniclib/sizeof uniclib[0] - 1), 0); /* empty func list */
+#endif
 	register_lib(L, MODE_ASCII, SLN_UNICODENAME ".ascii");
 #ifdef SLNUNICODE_AS_STRING
-#if defined(LUA_COMPAT_GFIND)
-	lua_getfield(L, -1, "gmatch");
-	lua_setfield(L, -2, "gfind");
-#endif
 #ifdef STRING_WITH_METAT
 	createmetatable(L);
 #endif
@@ -1494,7 +1496,6 @@ LUALIB_API int luaopen_unicode (lua_State *L) {
 	}
 #endif
 
-        lua_settop(L, 2);
 
 	return 1;
 }

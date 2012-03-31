@@ -3,31 +3,19 @@
 #ifndef COMPAT52_H
 #define COMPAT52_H
 
-#if LUA_VERSION_NUM == 502
-
 #include <lua.h>
 #include <lauxlib.h>
+
+#if LUA_VERSION_NUM == 502
 
 #define lua_objlen lua_rawlen
 #define lua_setfenv lua_setuservalue
 #define lua_getfenv lua_getuservalue
 #define lua_load(a,b,c,d) lua_load((a),(b),(c),(d),NULL)
 
-void luaL_register (lua_State *L, const char *libname, const luaL_Reg *l)
-{
-  if (libname) {
-    lua_createtable(L, 0, 16);
-    lua_pushvalue(L, -1);
-    lua_setglobal(L, libname);
-  }
-  luaL_setfuncs(L, l, 0);
-}
-
-int luaL_typerror (lua_State *L, int narg, const char *tname) {
-  const char *msg = lua_pushfstring(L, "%s expected, got %s",
-                                    tname, luaL_typename(L, narg));
-  return luaL_argerror(L, narg, msg);
-}
+void luaL_register (lua_State *L, const char *libname, const luaL_Reg *l);
+int luaL_typerror (lua_State *L, int narg, const char *tname);
 
 #endif /* #if LUA_VERSION_NUM == 502 */
+
 #endif /* #ifndef COMPAT52_H */

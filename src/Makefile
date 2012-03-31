@@ -18,7 +18,7 @@ vpath %.dll $(PATH)
 %.o : %.rc
 	windres $< -o $@ $(RESTARGET)
 
-OBJ = \
+OBJ1 = \
   bit64.o          \
   exported.o       \
   flags.o          \
@@ -29,10 +29,15 @@ OBJ = \
   reg.o            \
   service.o        \
   slnunico.o       \
-  uliolib.o        \
-  uloadlib.o       \
   ustring.o        \
-  util.o
+  util.o           \
+  win.o
+
+ifeq ($(LUAVERSION),52)
+  OBJ = $(OBJ1) compat52.o uliolib52.o uloadlib52.o
+else
+  OBJ = $(OBJ1) uliolib51.o uloadlib51.o
+endif
 
 $(LUAFARDLL): $(OBJ) $(LUADLLNAME).dll
 	$(CC) -o $@ $^ $(LDFLAGS)
@@ -49,14 +54,19 @@ version.h : % : %.mcr define.lua
 clean:
 	del *.o flags.c keysandcolors.c version.h $(LUAFARDLL)
 
+lftest.exe: lftest.o
+	$(CC) -o $@ $< luafar3.dll -l$(LUADLLNAME) -s
+
 # Dependencies
 *.o        : $(INC_FAR)\plugin.hpp ustring.h compat52.h
-reg.o      : reg.h
-service.o  : reg.h luafar.h util.h version.h
+compat52.o : compat52.h
 exported.o : luafar.h util.h
-lregex.o   : luafar.h
-util.o     : util.h
 lflua.o    : luafar.h
+lregex.o   : luafar.h
 luafar.o   : version.h
+reg.o      : reg.h
+service.o  : luafar.h util.h version.h
+util.o     : util.h
+win.o      : util.h reg.h
 
 # (end of Makefile)
