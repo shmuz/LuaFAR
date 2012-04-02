@@ -1,6 +1,5 @@
 #include "ustring.h"
 #include "luafar.h"
-#include "compat52.h"
 
 /* Taken from Lua 5.1; modified to work with Unicode filenames. */
 /* ------------------------------------------------------------ */
@@ -71,7 +70,11 @@ int LF_LoadFile (lua_State *L, const wchar_t *filename) {
     lf.extraline = 0;
   }
   ungetc(c, lf.f);
+#if LUA_VERSION_NUM == 501
   status = lua_load(L, getF, &lf, lua_tostring(L, -1));
+#else
+  status = lua_load(L, getF, &lf, lua_tostring(L, -1), NULL);
+#endif
   readstatus = ferror(lf.f);
   if (filename) fclose(lf.f);  /* close file (even in case of errors) */
   if (readstatus) {

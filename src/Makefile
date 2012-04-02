@@ -55,7 +55,7 @@ clean:
 	del *.o flags.c keysandcolors.c version.h $(LUAFARDLL)
 
 lftest.exe: lftest.o
-	$(CC) -o $@ $< luafar3.dll -l$(LUADLLNAME) -s
+	$(CC) -o $@ $< luafar3.dll -m32 -municode -s
 
 # Dependencies
 *.o        : $(INC_FAR)\plugin.hpp ustring.h compat52.h

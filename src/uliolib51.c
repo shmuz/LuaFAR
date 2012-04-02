@@ -40,9 +40,9 @@
 static const char *const fnames[] = {"input", "output"};
 
 
-static int pushresult (lua_State *L, int i, const wchar_t *filename) {
+static int pushresult (lua_State *L, int stat, const wchar_t *filename) {
   int en = errno;  /* calls to Lua API may change this value */
-  if (i) {
+  if (stat) {
     lua_pushboolean(L, 1);
     return 1;
   }

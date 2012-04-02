@@ -7,8 +7,39 @@ id=91
 lv=0
 dt=Text
 nm=Manual of LuaFAR 3.0
-mtime=3532769479
+mtime=3542521459
 <article>
+#_<markdown>
+#_### Brief description of LuaFAR package
+#_
+#_This package's purpose is to facilitate writing plugins for FAR in Lua programming language. The package provides source code for **`luafar3.dll`** (main product) and a **`luaplug.dll`** ("generic" plugin).
+#_
+#_`luafar3.dll` allows:
+#_
+#_* To program functions exported by the plugin in Lua: e.g., the function `OpenW` should be named [`export.Open`](109.html) in the Lua program, the same goes for all functions exported by the plugin.
+#_ 
+#_* To call FAR service functions from a Lua program. The service functions are placed in the `far`, `editor`, `viewer` and `panel` tables, and their names aren't identical to the names of the respective FAR API functions. For instance, function `EditorControl` with parameter `ECTL_GETINFO` will be named [`editor.GetInfo`](29.html) in Lua programs.
+#_
+#_* **Note:** the functions of the Unicode LuaFAR library assume string arguments and string return values to be in the **UTF-8** encoding. (There are a few exceptions from this rule, mostly when strings are used to exchange binary data).
+#_
+#_Currently, the documentation on LuaFAR API is incomplete and may be somewhat inaccurate. When in doubt, consult the source code. The API may change in the future.
+#_ 
+#_As `luafar3.dll` itself is not a plugin, it should not be placed in the `%FARHOME%\Plugins` subtree (instead, place it in any directory listed in `PATH`). The usual way of using `luafar3.dll` is to create a wrapper plugin that redirects FAR's calls of the exported functions to `luafar3.dll`, that in turn calls the functions written in Lua. This way, one instance of `luafar3.dll` can "serve" arbitrary number of plugins at the same time. An example of "wrapper plugin" is `luaplug.dll` (its source code is part of this package).
+#_ 
+#_There are two Lua files that must be present in plugin's DLL directory:
+#_
+#_1. **`_globalinfo.lua`** (it should only contain the function
+#_   [`export.GetGlobalInfo`](402.html)).<br>
+#_   This script must not call functions from [`far`](131.html) library (e.g., `far.Message`),
+#_   as they are not yet available to LuaFAR when Far calls `GetGlobalInfoW`.
+#_
+#_1. The starting (or "default") Lua script, that is searched in the following order (see [`LF_RunDefaultScript`](130.html) for details):
+#_    1. The plugin name with the extension `.lua` is looked for, e.g.:
+#_       `luaplug.dll -> luaplug.lua`
+#_    1. If the plugin name contains a hyphen, then its part preceding the last
+#_       hyphen is looked for, e.g.: `luaplug-x64.dll -> luaplug.lua`.
+#_
+#_
 </article>
 </node>
 <node>
@@ -47,7 +78,7 @@ lv=1
 dt=Text
 nm=Unicode support
 ctime=3480525243
-mtime=3523911147
+mtime=3542481865
 <article>
 #_<markdown>
 #_
@@ -57,6 +88,15 @@ mtime=3523911147
 #_arguments and string return values to be in the **UTF-8**
 #_encoding. (There are a few exceptions from this rule, mostly
 #_when strings are used to exchange binary data).
+#_
+#_### Calling functions on strings with colon syntax
+#_
+#_LuaFAR modifies the `__index` field of the strings metatable
+#_to point to `unicode.utf8` table of [Selene Unicode](250.html)
+#_library, rather than to `string` table.<br>
+#_That means `("abc"):match("b")` is equivalent to `unicode.utf8.match("abc", "b")`
+#_rather than to `string.match("abc", "b")`.<br>
+#_Operator # is not affected by this change.
 #_
 #_### Unicode-capable Lua libraries and functions
 #_
@@ -77,53 +117,6 @@ mtime=3523911147
 #_* [`win.MoveFile`](362.html)
 #_* [`win.RemoveDir`](373.html)
 #_* [`win.RenameFile`](363.html)
-#_
-#_
-</article>
-</node>
-<node>
-id=126
-lv=0
-dt=Text
-nm=Introduction
-mtime=3523956920
-<article>
-#_<markdown>
-#_### Brief description of LuaFAR package
-#_
-#_This package's purpose is to facilitate writing plugins for FAR in Lua programming language. The package provides source code for **`luafar3.dll`** (main product) and a **`luaplug.dll`** ("generic" plugin).
-#_
-#_`luafar3.dll` allows:
-#_
-#_* To program functions exported by the plugin in Lua: e.g., the function `OpenW` should be named [`export.Open`](109.html) in the Lua program, the same goes for all functions exported by the plugin.
-#_ 
-#_* To call FAR service functions from a Lua program. The service functions are placed in the `far`, `editor`, `viewer` and `panel` tables, and their names aren't identical to the names of the respective FAR API functions. For instance, function `EditorControl` with parameter `ECTL_GETINFO` will be named [`editor.GetInfo`](29.html) in Lua programs.
-#_
-#_* **Note:** the functions of the Unicode LuaFAR library assume string arguments and string return values to be in the **UTF-8** encoding. (There are a few exceptions from this rule, mostly when strings are used to exchange binary data).
-#_
-#_Currently, the documentation on LuaFAR API is incomplete and may be somewhat inaccurate. When in doubt, consult the source code. The API may change in the future.
-#_ 
-#_As `luafar3.dll` itself is not a plugin, it should not be placed in the `%FARHOME%\Plugins` subtree (instead, place it in any directory listed in `PATH`). The usual way of using `luafar3.dll` is to create a wrapper plugin that redirects FAR's calls of the exported functions to `luafar3.dll`, that in turn calls the functions written in Lua. This way, one instance of `luafar3.dll` can "serve" arbitrary number of plugins at the same time. An example of "wrapper plugin" is `luaplug.dll` (its source code is part of this package).
-#_ 
-#_There are two Lua files that must be present in plugin's DLL directory:
-#_
-#_1. **`_globalinfo.lua`** (it should only contain the function
-#_   [`export.GetGlobalInfo`](402.html)).<br>
-#_   This script must not call functions from [`far`](131.html) library (e.g., `far.Message`),
-#_   as they are not yet available to LuaFAR when Far calls `GetGlobalInfoW`.
-#_
-#_1. The starting (or "default") Lua script, that is searched in the following order (see [`LF_RunDefaultScript`](130.html) for details):
-#_    1. The plugin name with the extension `.lua` is looked for, e.g.:
-#_       `luaplug.dll -> luaplug.lua`
-#_    1. If the plugin name contains a hyphen, then its part preceding the last
-#_       hyphen is looked for, e.g.: `luaplug-x64.dll -> luaplug.lua`.
-#_
-#_
-#_
-#_
-#_
-#_
-#_
 #_
 #_
 </article>
@@ -10170,6 +10163,45 @@ nm=Service functions
 </article>
 </node>
 <node>
+id=475
+lv=2
+dt=Text
+nm=LF_DoFile
+ctime=3542468968
+mtime=3542475359
+<article>
+#_<markdown>
+#_    int LF_DoFile (lua_State *L, const wchar_t *filename, int argc, wchar_t *argv[])
+#_
+#_#### Description:
+#_
+#_Runs Lua script *filename* passing it *argc* string arguments from *argv*.
+#_The script receives the arguments in UTF-8 encoding. The function returns 0
+#_if no error occured. Otherwise, it prints error message on *stderr* and returns
+#_an error code.
+#_
+#_This function can be used for testing some LuaFAR libraries (`bit64`, `win`, `unicode`)
+#_and functions (`require`, `package.loadlib`, etc.) from an application that is not Far
+#_plugin, for example:
+#_
+#_        #include "luafar.h"
+#_        int wmain (int argc, wchar_t* argv[])
+#_        {
+#_          int status = 0;
+#_          if (argc >= 2) {
+#_            lua_State *L = LF_LuaOpen();
+#_            LF_InitLuaState1(L, NULL);
+#_            status = LF_DoFile(L, argv[1], argc-2, argv+2);
+#_            LF_LuaClose(L);
+#_          }
+#_          return status;
+#_        }
+#_
+#_@@@
+#_
+</article>
+</node>
+<node>
 id=341
 lv=2
 dt=Text
@@ -10517,6 +10549,28 @@ nm=Lua 5.1
 #_THE SOFTWARE.
 #_
 #_
+</article>
+</node>
+<node>
+id=476
+lv=1
+dt=Text
+nm=Lua 5.2
+ctime=3542521667
+mtime=3542521877
+<article>
+#_<markdown>
+#_Lua is free software distributed under the terms of the MIT license reproduced below; it may be used for any purpose, including commercial purposes, at absolutely no cost without having to ask us. The only requirement is that if you do use Lua, then you should give us credit by including the appropriate copyright notice somewhere in your product or its documentation. For details, see this.
+#_
+#_<HR>
+#_
+#_Copyright © 1994–2011 Lua.org, PUC-Rio.
+#_
+#_Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+#_
+#_The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+#_
+#_THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 </article>
 </node>
 <node>

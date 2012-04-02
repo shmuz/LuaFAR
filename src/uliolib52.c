@@ -1,4 +1,13 @@
 /*
+** uliolib52.c, copyright 2010-2012, Shmuel Zeigerman.
+** A modification of Standard I/O (and system) library
+** giving it capability of working with Unicode paths.
+** Same license as Lua 5.2.
+**
+** This modification contains an implementation for Windows only.
+*/
+
+/*
 ** $Id: liolib.c,v 2.108 2011/11/25 12:50:03 roberto Exp $
 ** Standard I/O (and system) library
 ** See Copyright Notice in lua.h
@@ -28,6 +37,7 @@
 #include "lauxlib.h"
 #include "lualib.h"
 
+#include "ustring.h"
 
 
 /*
@@ -46,7 +56,7 @@
 
 #elif defined(LUA_WIN)		/* }{ */
 
-#define lua_popen(L,c,m)		((void)L, _popen(c,m))
+#define lua_popen(L,c,m)		((void)L, _wpopen(c,m))
 #define lua_pclose(L,file)		((void)L, _pclose(file))
 
 
@@ -110,6 +120,27 @@ typedef luaL_Stream LStream;
 #define tolstream(L)	((LStream *)luaL_checkudata(L, 1, LUA_FILEHANDLE))
 
 #define isclosed(p)	((p)->closef == NULL)
+
+
+static int pushresult (lua_State *L, int stat, const wchar_t *filename) {
+  int en = errno;  /* calls to Lua API may change this value */
+  if (stat) {
+    lua_pushboolean(L, 1);
+    return 1;
+  }
+  else {
+    lua_pushnil(L);
+    if (filename) {
+      const char *utf8name = push_utf8_string(L, filename, -1);
+      lua_pushfstring(L, "%s: %s", utf8name, strerror(en));
+      lua_remove(L, -2);
+    }
+    else
+      lua_pushfstring(L, "%s", strerror(en));
+    lua_pushinteger(L, en);
+    return 3;
+  }
+}
 
 
 static int io_type (lua_State *L) {
@@ -200,28 +231,32 @@ static LStream *newfile (lua_State *L) {
 }
 
 
-static void opencheck (lua_State *L, const char *fname, const char *mode) {
+static void opencheck (lua_State *L, const wchar_t *fname, const wchar_t *mode) {
   LStream *p = newfile(L);
-  p->f = fopen(fname, mode);
-  if (p->f == NULL)
-    luaL_error(L, "cannot open file " LUA_QS " (%s)", fname, strerror(errno));
+  p->f = _wfopen(fname, mode);
+  if (p->f == NULL) {
+    push_utf8_string(L, fname, -1);
+    luaL_error(L, "cannot open file " LUA_QS " (%s)", lua_tostring(L, -1), strerror(errno));
+  }
 }
 
 
 static int io_open (lua_State *L) {
-  const char *filename = luaL_checkstring(L, 1);
-  const char *mode = luaL_optstring(L, 2, "r");
+  const wchar_t *filename = check_utf8_string(L, 1, NULL);
+  const wchar_t *mode = opt_utf8_string(L, 2, L"r");
   LStream *p = newfile(L);
   int i = 0;
   /* check whether 'mode' matches '[rwa]%+?b?' */
-  if (!(mode[i] != '\0' && strchr("rwa", mode[i++]) != NULL &&
-       (mode[i] != '+' || ++i) &&  /* skip if char is '+' */
-       (mode[i] != 'b' || ++i) &&  /* skip if char is 'b' */
-       (mode[i] == '\0')))
+  if (!(mode[i] != L'\0' && wcschr(L"rwa", mode[i++]) != NULL &&
+       (mode[i] != L'+' || ++i) &&  /* skip if char is '+' */
+       (mode[i] != L'b' || ++i) &&  /* skip if char is 'b' */
+       (mode[i] == L'\0'))) {
+    push_utf8_string(L, mode, -1);
     return luaL_error(L, "invalid mode " LUA_QS
-                         " (should match " LUA_QL("[rwa]%%+?b?") ")", mode);
-  p->f = fopen(filename, mode);
-  return (p->f == NULL) ? luaL_fileresult(L, 0, filename) : 1;
+                         " (should match " LUA_QL("[rwa]%%+?b?") ")", lua_tostring(L, -1));
+  }
+  p->f = _wfopen(filename, mode);
+  return (p->f == NULL) ? pushresult(L, 0, filename) : 1;
 }
 
 
@@ -235,12 +270,12 @@ static int io_pclose (lua_State *L) {
 
 
 static int io_popen (lua_State *L) {
-  const char *filename = luaL_checkstring(L, 1);
-  const char *mode = luaL_optstring(L, 2, "r");
+  const wchar_t *filename = check_utf8_string(L, 1, NULL);
+  const wchar_t *mode = opt_utf8_string(L, 2, L"r");
   LStream *p = newprefile(L);
   p->f = lua_popen(L, filename, mode);
   p->closef = &io_pclose;
-  return (p->f == NULL) ? luaL_fileresult(L, 0, filename) : 1;
+  return (p->f == NULL) ? pushresult(L, 0, filename) : 1;
 }
 
 
@@ -261,11 +296,12 @@ static FILE *getiofile (lua_State *L, const char *findex) {
 }
 
 
-static int g_iofile (lua_State *L, const char *f, const char *mode) {
+static int g_iofile (lua_State *L, const char *f, const wchar_t *mode) {
   if (!lua_isnoneornil(L, 1)) {
-    const char *filename = lua_tostring(L, 1);
-    if (filename)
+    if (lua_tostring(L, 1)) {
+      const wchar_t *filename = check_utf8_string(L, 1, NULL);
       opencheck(L, filename, mode);
+    }
     else {
       tofile(L);  /* check that it's a valid file handle */
       lua_pushvalue(L, 1);
@@ -279,12 +315,12 @@ static int g_iofile (lua_State *L, const char *f, const char *mode) {
 
 
 static int io_input (lua_State *L) {
-  return g_iofile(L, IO_INPUT, "r");
+  return g_iofile(L, IO_INPUT, L"r");
 }
 
 
 static int io_output (lua_State *L) {
-  return g_iofile(L, IO_OUTPUT, "w");
+  return g_iofile(L, IO_OUTPUT, L"w");
 }
 
 
@@ -321,8 +357,8 @@ static int io_lines (lua_State *L) {
     toclose = 0;  /* do not close it after iteration */
   }
   else {  /* open a new file */
-    const char *filename = luaL_checkstring(L, 1);
-    opencheck(L, filename, "r");
+    const wchar_t *filename = check_utf8_string(L, 1, NULL);
+    opencheck(L, filename, L"r");
     lua_replace(L, 1);  /* put file at index 1 */
     toclose = 1;  /* close it after iteration */
   }

@@ -5054,6 +5054,13 @@ static void luaL_openlibs2 (lua_State *L) {
     lua_pop(L, 1);  /* remove lib */
 #endif
   }
+  // getmetatable("").__index = unicode.utf8
+  lua_pushliteral(L, "");
+  lua_getmetatable(L, -1);
+  lua_getglobal(L, "unicode");
+  lua_getfield(L, -1, "utf8");
+  lua_setfield(L, -3, "__index");
+  lua_pop(L, 3);
 
 #if LUA_VERSION_NUM == 501
   {
@@ -5119,3 +5126,18 @@ void LF_LuaClose (lua_State* L)
   lua_close(L);
 }
 
+int LF_DoFile (lua_State *L, const wchar_t *fname, int argc, wchar_t* argv[])
+{
+  int status;
+  if ((status = LF_LoadFile(L, fname)) == 0) {
+    int i;
+    for (i=0; i < argc; i++)
+      push_utf8_string(L, argv[i], -1);
+    status = lua_pcall(L, argc, 0, 0);
+  }
+  if (status) {
+    fprintf(stderr, "%s\n", lua_tostring(L, -1));
+    lua_pop(L, 1);
+  }
+  return status;
+}

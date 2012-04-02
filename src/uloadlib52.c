@@ -1,4 +1,13 @@
 /*
+** uloadlib52.c, copyright 2010-2012, Shmuel Zeigerman.
+** A modification of Dynamic library loader for Lua
+** giving it capability of working with Unicode paths.
+** Same license as Lua 5.2.
+**
+** This modification contains an implementation for Windows only.
+*/
+
+/*
 ** $Id: loadlib.c,v 1.108 2011/12/12 16:34:03 roberto Exp $
 ** Dynamic library loader for Lua
 ** See Copyright Notice in lua.h
@@ -33,8 +42,6 @@
 int LF_LoadFile        (lua_State *L, const wchar_t *filename);
 const wchar_t* LF_Gsub (lua_State *L, const wchar_t *s, const wchar_t *p,
                                       const wchar_t *r);
-#undef LUA_DIRSEP
-#define LUA_DIRSEP L"\\"
 
 
 /*
@@ -64,7 +71,7 @@ const wchar_t* LF_Gsub (lua_State *L, const wchar_t *s, const wchar_t *p,
 #define LUA_CPATH_DEFAULT \
 		LUA_CDIR L"?.dll;" LUA_CDIR L"loadall.dll;" L".\\?.dll"
 
-#define LUA_PATHSUFFIX		"_" LUA_VERSION_MAJOR "_" LUA_VERSION_MINOR
+#define LUA_PATHSUFFIX		L"_5_2"
 
 #define LUA_PATHVERSION		LUA_PATH LUA_PATHSUFFIX
 #define LUA_CPATHVERSION	LUA_CPATH LUA_PATHSUFFIX
@@ -91,6 +98,9 @@ const wchar_t* LF_Gsub (lua_State *L, const wchar_t *s, const wchar_t *p,
 #define LUA_IGMARK		L"-"
 #endif
 
+
+#undef LUA_DIRSEP
+#define LUA_DIRSEP L"\\"
 
 /*
 ** LUA_CSUBSEP is the character that replaces dots in submodule names
@@ -261,8 +271,9 @@ static lua_CFunction ll_sym (lua_State *L, void *lib, const char *sym) {
 
 
 
-static void **ll_register (lua_State *L, const wchar_t *path) {
+static void **ll_register (lua_State *L, const wchar_t *wpath) {
   void **plib;
+  const char *path = push_utf8_string(L, wpath, -1);
   lua_pushfstring(L, "%s%s", LIBPREFIX, path);
   lua_gettable(L, LUA_REGISTRYINDEX);  /* check library in registry? */
   if (!lua_isnil(L, -1))  /* is there an entry? */
@@ -363,7 +374,6 @@ static const wchar_t *searchpath (lua_State *L, const char *name,
   luaL_buffinit(L, &msg);
   lua_pushstring(L, name);
   wname = utf8_to_utf16(L, -1, NULL);  /* `name' is encoded in UTF-8 */
-  wname = LF_Gsub(L, wname, L".", L"\\");
   if (*sep != 0)  /* non-empty separator? */
     wname = LF_Gsub(L, wname, sep, dirsep);  /* replace it by 'dirsep' */
   while ((path = pushnexttemplate(L, path)) != NULL) {
@@ -372,8 +382,10 @@ static const wchar_t *searchpath (lua_State *L, const char *name,
     lua_remove(L, -2);  /* remove path template */
     if (readable(filename))  /* does file exist and is readable? */
       return filename;  /* return that file name */
-    lua_pushfstring(L, "\n\tno file " LUA_QS, filename);
-    lua_remove(L, -2);  /* remove file name */
+    push_utf8_string(L, filename, -1);
+    lua_pushfstring(L, "\n\tno file " LUA_QS, lua_tostring(L, -1));
+    lua_remove(L, -2);  /* remove UTF-8 file name */
+    lua_remove(L, -2);  /* remove UTF-16 file name */
     luaL_addvalue(&msg);  /* concatenate error msg. entry */
   }
   luaL_pushresult(&msg);  /* create error message */
@@ -399,10 +411,6 @@ static const wchar_t *findfile (lua_State *L, const char *name,
                                               const char *pname,
                                               const wchar_t *dirsep) {
   const wchar_t *path;
-  const wchar_t *wname;
-  lua_pushstring(L, name);
-  wname = utf8_to_utf16(L, -1, NULL);  /* `name' is encoded in UTF-8 */
-  wname = LF_Gsub(L, wname, L".", L"\\"); //!! dirsep argument ?
   lua_getfield(L, lua_upvalueindex(1), pname);
   if (lua_tostring(L, -1) == NULL)
     luaL_error(L, LUA_QL("package.%s") " must be a string", pname);
@@ -414,14 +422,14 @@ static const wchar_t *findfile (lua_State *L, const char *name,
 
 
 static int checkload (lua_State *L, int stat, const wchar_t *filename) {
+  push_utf8_string(L, filename, -1);  /* will be 2nd argument to module */
   if (stat) {  /* module loaded successfully? */
-    push_utf8_string(L, filename, -1);  /* will be 2nd argument to module */
     return 2;  /* return open function and file name */
   }
   else
     return luaL_error(L, "error loading module " LUA_QS
                          " from file " LUA_QS ":\n\t%s",
-                          lua_tostring(L, 1), filename, lua_tostring(L, -1));
+                          lua_tostring(L, 1), lua_tostring(L, -1), lua_tostring(L, -2));
 }
 
 
@@ -430,7 +438,7 @@ static int searcher_Lua (lua_State *L) {
   const char *name = luaL_checkstring(L, 1);
   filename = findfile(L, name, "path", LUA_LSUBSEP);
   if (filename == NULL) return 1;  /* module not found in this path */
-  return checkload(L, (LF_LoadFile(L, filename) == LUA_OK), filename);
+  return checkload(L, (LF_LoadFile(L, filename) == 0), filename);
 }
 
 
@@ -473,8 +481,9 @@ static int searcher_Croot (lua_State *L) {
     if (stat != ERRFUNC)
       return checkload(L, 0, filename);  /* real error */
     else {  /* open function not found */
+      push_utf8_string(L, filename, -1);
       lua_pushfstring(L, "\n\tno module " LUA_QS " in file " LUA_QS,
-                         name, filename);
+                         name, lua_tostring(L, -1));
       return 1;
     }
   }

@@ -5,9 +5,10 @@ Prerequisites for building
 ---------------------------
 *  MinGW (Minimalist GNU for Windows)
 *  FAR 3.0 PluginSDK include files (plugin.hpp, farcolor.hpp)
-*  Lua 5.1 include files (lua.h, ...), or Lua 5.1 source directory
-*  Lua 5.1 interpreter: lua.exe
-*  Lua 5.1 DLL (either lua5.1.dll or lua51.dll)
+*  Lua include files (lua.h, ...), or Lua source directory
+*  Lua interpreter: lua.exe
+*  Lua DLL: lua5.1.dll or lua51.dll if building against Lua 5.1;
+            lua52.dll if building against Lua 5.2.
 
 Steps required to build
 ------------------------
@@ -15,6 +16,5 @@ Edit user's settings in the file "config.mak" then run make.
 
 Installation
 -------------
-luafar3.dll and lua5.1.dll should be placed either
--- into any directory on Windows' PATH, or
--- into %FARHOME%.
+luafar3.dll and lua5.1.dll (or lua52.dll) should be placed either
+into any directory on Windows' PATH, or into %FARHOME%.

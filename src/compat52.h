@@ -11,7 +11,6 @@
 #define lua_objlen lua_rawlen
 #define lua_setfenv lua_setuservalue
 #define lua_getfenv lua_getuservalue
-#define lua_load(a,b,c,d) lua_load((a),(b),(c),(d),NULL)
 
 void luaL_register (lua_State *L, const char *libname, const luaL_Reg *l);
 int luaL_typerror (lua_State *L, int narg, const char *tname);
