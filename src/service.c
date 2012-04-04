@@ -37,7 +37,6 @@ extern void SetFarColors (lua_State *L);
 
 #define CAST(tp,expr) (tp)(expr)
 #define DIM(buff) (sizeof(buff)/sizeof(buff[0]))
-#define OptHandle(L,i) ((HANDLE)luaL_optinteger (L,i,(INT_PTR)INVALID_HANDLE_VALUE))
 
 const char FarFileFilterType[] = "FarFileFilter";
 const char FarTimerType[]      = "FarTimer";
@@ -131,6 +130,19 @@ const char* VirtualKeyStrings[256] = {
   "EXSEL", "EREOF", "PLAY", "ZOOM",
   "NONAME", "PA1", "OEM_CLEAR", NULL,
 };
+
+HANDLE OptHandle (lua_State *L)
+{
+  return lua_isnoneornil(L, 1) ?
+         INVALID_HANDLE_VALUE : (HANDLE)luaL_checkinteger(L, 1);
+}
+
+HANDLE OptHandle2 (lua_State *L)
+{
+  return lua_isnoneornil(L, 1) ?
+         (luaL_checkinteger(L, 2) % 2 ? PANEL_ACTIVE:PANEL_PASSIVE) :
+         (HANDLE)luaL_checkinteger(L, 1);
+}
 
 static UINT64 get_env_flag (lua_State *L, int pos, int *success)
 {
@@ -1624,7 +1636,7 @@ static int far_Message(lua_State *L)
 static int panel_CheckPanelsExist(lua_State *L)
 {
   PSInfo *Info = GetPluginData(L)->Info;
-  HANDLE handle = OptHandle (L, 1);
+  HANDLE handle = OptHandle(L);
   if (Info->PanelControl(handle, FCTL_CHECKPANELSEXIST, 0, 0))
     return lua_pushboolean(L, 1), 1;
   return 0;
@@ -1633,8 +1645,8 @@ static int panel_CheckPanelsExist(lua_State *L)
 static int panel_ClosePanel(lua_State *L)
 {
   PSInfo *Info = GetPluginData(L)->Info;
-  HANDLE handle = OptHandle (L, 1);
-  const wchar_t *dir = opt_utf8_string(L, 2, L".");
+  HANDLE handle = OptHandle(L);
+  const wchar_t *dir = opt_utf8_string(L, 2, NULL);
   if (Info->PanelControl(handle, FCTL_CLOSEPANEL, 0, (void*)dir))
     return lua_pushboolean(L, 1), 1;
   return 0;
@@ -1643,13 +1655,9 @@ static int panel_ClosePanel(lua_State *L)
 static int panel_GetPanelInfo(lua_State *L)
 {
   PSInfo *Info = GetPluginData(L)->Info;
-  HANDLE handle;
+  HANDLE handle = OptHandle2(L);
   struct PanelInfo pi;
   pi.StructSize = sizeof(pi);
-  handle = OptHandle (L, 1);
-  if (handle == INVALID_HANDLE_VALUE) {
-    handle = (luaL_checkinteger(L,2) % 2) ? PANEL_ACTIVE:PANEL_PASSIVE;
-  }
   if (!Info->PanelControl(handle, FCTL_GETPANELINFO, 0, &pi))
     return lua_pushnil(L), 1;
 
@@ -1682,14 +1690,10 @@ static int panel_GetPanelInfo(lua_State *L)
 
 static int get_panel_item(lua_State *L, int command)
 {
-  int index;
   struct FarGetPluginPanelItem fgppi = {0,0};
   PSInfo *Info = GetPluginData(L)->Info;
-  HANDLE handle = OptHandle (L, 1);
-  if (handle == INVALID_HANDLE_VALUE) {
-    handle = (luaL_checkinteger(L,2) % 2) ? PANEL_ACTIVE:PANEL_PASSIVE;
-  }
-  index = luaL_optinteger(L,3,1) - 1;
+  HANDLE handle = OptHandle2(L);
+  int index = luaL_optinteger(L,3,1) - 1;
   if (index < 0) index = 0;
   fgppi.Size = Info->PanelControl(handle, command, index, &fgppi);
   if (fgppi.Size) {
@@ -1716,13 +1720,9 @@ static int panel_GetCurrentPanelItem(lua_State *L) {
 
 static int get_string_info(lua_State *L, int command)
 {
-  int size;
   PSInfo *Info = GetPluginData(L)->Info;
-  HANDLE handle = OptHandle (L, 1);
-  if (handle == INVALID_HANDLE_VALUE) {
-    handle = (luaL_checkinteger(L,2) % 2) ? PANEL_ACTIVE:PANEL_PASSIVE;
-  }
-  size = Info->PanelControl(handle, command, 0, 0);
+  HANDLE handle = OptHandle2(L);
+  int size = Info->PanelControl(handle, command, 0, 0);
   if (size) {
     wchar_t *buf = (wchar_t*)lua_newuserdata(L, size * sizeof(wchar_t));
     if (Info->PanelControl(handle, command, size, buf)) {
@@ -1758,10 +1758,7 @@ static int panel_RedrawPanel(lua_State *L)
   PSInfo *Info = GetPluginData(L)->Info;
   void *param2 = NULL;
   struct PanelRedrawInfo pri;
-  HANDLE handle = OptHandle (L, 1);
-  if (handle == INVALID_HANDLE_VALUE) {
-    handle = (luaL_checkinteger(L,2) % 2) ? PANEL_ACTIVE:PANEL_PASSIVE;
-  }
+  HANDLE handle = OptHandle2(L);
   if (lua_istable(L, 3)) {
     param2 = &pri;
     lua_getfield(L, 3, "CurrentItem");
@@ -1775,26 +1772,18 @@ static int panel_RedrawPanel(lua_State *L)
 
 static int SetPanelBooleanProperty(lua_State *L, int command)
 {
-  int param1;
   PSInfo *Info = GetPluginData(L)->Info;
-  HANDLE handle = OptHandle (L, 1);
-  if (handle == INVALID_HANDLE_VALUE) {
-    handle = (luaL_checkinteger(L,2) % 2) ? PANEL_ACTIVE:PANEL_PASSIVE;
-  }
-  param1 = lua_toboolean(L,3);
+  HANDLE handle = OptHandle2(L);
+  int param1 = lua_toboolean(L,3);
   lua_pushboolean(L, Info->PanelControl(handle, command, param1, 0));
   return 1;
 }
 
 static int SetPanelIntegerProperty(lua_State *L, int command)
 {
-  int param1;
   PSInfo *Info = GetPluginData(L)->Info;
-  HANDLE handle = OptHandle (L, 1);
-  if (handle == INVALID_HANDLE_VALUE) {
-    handle = (luaL_checkinteger(L,2) % 2) ? PANEL_ACTIVE:PANEL_PASSIVE;
-  }
-  param1 = CAST(int, check_env_flag(L,3));
+  HANDLE handle = OptHandle2(L);
+  int param1 = CAST(int, check_env_flag(L,3));
   lua_pushboolean(L, Info->PanelControl(handle, command, param1, 0));
   return 1;
 }
@@ -1825,13 +1814,9 @@ static int panel_SetViewMode(lua_State *L) {
 
 static int panel_GetPanelDirectory(lua_State *L)
 {
-  int size;
   TPluginData *pd = GetPluginData(L);
-  HANDLE handle = OptHandle (L, 1);
-  if (handle == INVALID_HANDLE_VALUE) {
-    handle = (luaL_checkinteger(L,2) % 2) ? PANEL_ACTIVE:PANEL_PASSIVE;
-  }
-  size = pd->Info->PanelControl(handle, FCTL_GETPANELDIRECTORY, 0, NULL);
+  HANDLE handle = OptHandle2(L);
+  int size = pd->Info->PanelControl(handle, FCTL_GETPANELDIRECTORY, 0, NULL);
   if (size) {
     struct FarPanelDirectory *fpd = (struct FarPanelDirectory*)lua_newuserdata(L, size);
     memset(fpd, 0, size);
@@ -1852,10 +1837,7 @@ static int panel_SetPanelDirectory(lua_State *L)
 {
   TPluginData *pd = GetPluginData(L);
   struct FarPanelDirectory fpd;
-  HANDLE handle = OptHandle (L, 1);
-  if (handle == INVALID_HANDLE_VALUE) {
-    handle = (luaL_checkinteger(L,2) % 2) ? PANEL_ACTIVE:PANEL_PASSIVE;
-  }
+  HANDLE handle = OptHandle2(L);
   memset(&fpd, 0, sizeof(fpd)); // also sets fpd.PluginId = FarId
   fpd.StructSize = sizeof(fpd);
   if (lua_istable(L, 3)) {
@@ -1879,7 +1861,7 @@ static int panel_SetPanelDirectory(lua_State *L)
 static int panel_GetCmdLine(lua_State *L)
 {
   PSInfo *Info = GetPluginData(L)->Info;
-  HANDLE handle = OptHandle (L, 1);
+  HANDLE handle = OptHandle(L);
   int size = Info->PanelControl(handle, FCTL_GETCMDLINE, 0, 0);
   wchar_t *buf = (wchar_t*) malloc(size*sizeof(wchar_t));
   Info->PanelControl(handle, FCTL_GETCMDLINE, size, buf);
@@ -1891,7 +1873,7 @@ static int panel_GetCmdLine(lua_State *L)
 static int panel_SetCmdLine(lua_State *L)
 {
   PSInfo *Info = GetPluginData(L)->Info;
-  HANDLE handle = OptHandle (L, 1);
+  HANDLE handle = OptHandle(L);
   wchar_t* str = check_utf8_string(L, 2, NULL);
   lua_pushboolean(L, Info->PanelControl(handle, FCTL_SETCMDLINE, 0, str));
   return 1;
@@ -1900,7 +1882,7 @@ static int panel_SetCmdLine(lua_State *L)
 static int panel_GetCmdLinePos(lua_State *L)
 {
   PSInfo *Info = GetPluginData(L)->Info;
-  HANDLE handle = OptHandle (L, 1);
+  HANDLE handle = OptHandle(L);
   int pos;
   Info->PanelControl(handle, FCTL_GETCMDLINEPOS, 0, &pos) ?
     lua_pushinteger(L, pos+1) : lua_pushnil(L);
@@ -1910,7 +1892,7 @@ static int panel_GetCmdLinePos(lua_State *L)
 static int panel_SetCmdLinePos(lua_State *L)
 {
   PSInfo *Info = GetPluginData(L)->Info;
-  HANDLE handle = OptHandle (L, 1);
+  HANDLE handle = OptHandle(L);
   int pos = luaL_checkinteger(L, 2) - 1;
   int ret = Info->PanelControl(handle, FCTL_SETCMDLINEPOS, pos, 0);
   return lua_pushboolean(L, ret), 1;
@@ -1919,7 +1901,7 @@ static int panel_SetCmdLinePos(lua_State *L)
 static int panel_InsertCmdLine(lua_State *L)
 {
   PSInfo *Info = GetPluginData(L)->Info;
-  HANDLE handle = OptHandle (L, 1);
+  HANDLE handle = OptHandle(L);
   wchar_t* str = check_utf8_string(L, 2, NULL);
   lua_pushboolean(L, Info->PanelControl(handle, FCTL_INSERTCMDLINE, 0, str));
   return 1;
@@ -1929,7 +1911,7 @@ static int panel_GetCmdLineSelection(lua_State *L)
 {
   struct CmdLineSelect cms;
   PSInfo *Info = GetPluginData(L)->Info;
-  HANDLE handle = OptHandle (L, 1);
+  HANDLE handle = OptHandle(L);
   if (Info->PanelControl(handle, FCTL_GETCMDLINESELECTION, 0, &cms)) {
     if (cms.SelStart < 0) cms.SelStart = 0;
     if (cms.SelEnd < 0) cms.SelEnd = 0;
@@ -1944,7 +1926,7 @@ static int panel_SetCmdLineSelection(lua_State *L)
 {
   struct CmdLineSelect cms;
   PSInfo *Info = GetPluginData(L)->Info;
-  HANDLE handle = OptHandle (L, 1);
+  HANDLE handle = OptHandle(L);
   cms.SelStart = luaL_checkinteger(L, 2) - 1;
   cms.SelEnd = luaL_checkinteger(L, 3);
   if (cms.SelStart < -1) cms.SelStart = -1;
@@ -1965,10 +1947,7 @@ static int ChangePanelSelection(lua_State *L, BOOL op_set)
   int itemindex = -1, numItems, command;
   INT_PTR state;
   struct PanelInfo pi;
-  HANDLE handle = OptHandle (L, 1);
-  if (handle == INVALID_HANDLE_VALUE) {
-    handle = (luaL_checkinteger(L,2) % 2) ? PANEL_ACTIVE:PANEL_PASSIVE;
-  }
+  HANDLE handle = OptHandle2(L);
   if (lua_isnumber(L,3)) {
     itemindex = lua_tointeger(L,3) - 1;
     if (itemindex < 0) return luaL_argerror(L, 3, "non-positive index");
@@ -2019,7 +1998,7 @@ static int panel_ClearSelection(lua_State *L) {
 static int panel_SetUserScreen(lua_State *L)
 {
   PSInfo *Info = GetPluginData(L)->Info;
-  HANDLE handle = OptHandle (L, 1);
+  HANDLE handle = OptHandle(L);
   int ret = Info->PanelControl(handle, FCTL_SETUSERSCREEN, 0, 0);
   if(ret)
     return lua_pushboolean(L, 1), 1;
@@ -2031,7 +2010,7 @@ static int panel_SetUserScreen(lua_State *L)
 static int panel_GetUserScreen(lua_State *L)
 {
   PSInfo *Info = GetPluginData(L)->Info;
-  HANDLE handle = OptHandle (L, 1);
+  HANDLE handle = OptHandle(L);
   int ret = Info->PanelControl(handle, FCTL_GETUSERSCREEN, 0, 0);
   if(ret)
     return lua_pushboolean(L, 1), 1;
@@ -2041,7 +2020,7 @@ static int panel_GetUserScreen(lua_State *L)
 static int panel_IsActivePanel(lua_State *L)
 {
   PSInfo *Info = GetPluginData(L)->Info;
-  HANDLE handle = OptHandle (L, 1);
+  HANDLE handle = OptHandle(L);
   return lua_pushboolean(L, Info->PanelControl(handle, FCTL_ISACTIVEPANEL, 0, 0)), 1;
 }
 
@@ -2074,7 +2053,7 @@ static int far_GetDirList (lua_State *L)
 static int far_GetPluginDirList (lua_State *L)
 {
   TPluginData *pd = GetPluginData(L);
-  HANDLE handle = OptHandle (L, 1);
+  HANDLE handle = OptHandle(L);
   const wchar_t *Dir = check_utf8_string (L, 2, NULL);
   struct PluginPanelItem *PanelItems;
   size_t ItemsNumber;

@@ -2,9 +2,16 @@ ifndef PATH_LUAFAR
   PATH_LUAFAR = ..
 endif
 
-INC_FAR = $(PATH_LUAFAR)\..\..\system\include\far\unicode
-INC_LUA = $(PATH_LUAFAR)\..\..\system\include
+ifeq ($(LUAVERSION),52)
+  INC_LUA = $(PATH_LUAFAR)\..\..\system\include\lua52
+  LUADLLNAME = lua52
+else
+  INC_LUA = $(PATH_LUAFAR)\..\..\system\include\lua51
+  LUADLLNAME = lua5.1
+endif
 
-LUADLLNAME = lua5.1
-LUAFARDLL  = luafar3.dll
-LUAEXE     = c:\exe32\lua.exe
+INC_FAR = $(PATH_LUAFAR)\..\..\system\include\far\unicode
+LUAFARDLL = luafar3.dll
+LUAEXE = c:\exe32\lua.exe
+
+

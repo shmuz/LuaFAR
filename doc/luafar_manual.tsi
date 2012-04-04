@@ -4480,13 +4480,14 @@ id=4
 lv=2
 dt=Text
 nm=panel.ClosePanel
-mtime=3507873011
+mtime=3542652302
 <article>
 #_result = panel.ClosePanel (handle [, dir])
 #_
 #_**Parameters:**
 #_  handle: panel handle
-#_  dir:    string (defaults to ".")
+#_  dir:    string (optional);
+#_          nil/nothing pass NULL to Far.
 #_
 #_**Returns:**
 #_  result: boolean
