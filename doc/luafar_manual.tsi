@@ -3514,14 +3514,15 @@ lv=2
 dt=Text
 nm=editor.DelColor
 ctime=3515093666
-mtime=3515093738
+mtime=3542901902
 <article>
-#_result = editor.DelColor (EditorId, StringNumber, StartPos)
+#_result = editor.DelColor (EditorId, StringNumber, StartPos, Owner)
 #_
 #_**Parameters:**
-#_  EditorId:     integer, or nil
-#_  StringNumber: integer, or nil
-#_  StartPos:     integer
+#_  EditorId:     integer, or nil (defaults to CURRENT_EDITOR)
+#_  StringNumber: integer, or nil (defaults to -1)
+#_  StartPos:     integer, or nil (defaults to -1)
+#_  Owner:        string, or nil  (defaults to the calling plugin's GUID)
 #_
 #_**Returns:**
 #_  result:       boolean

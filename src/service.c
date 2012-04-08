@@ -1121,11 +1121,16 @@ static int editor_DelColor(lua_State *L)
   int EditorId;
   struct EditorDeleteColor edc;
   edc.StructSize = sizeof(edc);
-  edc.Owner = *pd->PluginId;
 
   EditorId         = luaL_optinteger(L, 1, CURRENT_EDITOR);
   edc.StringNumber = luaL_optinteger(L, 2, -1);
-  edc.StartPos     = luaL_checkinteger(L, 3);
+  edc.StartPos     = luaL_optinteger(L, 3, -1);
+  if (lua_type(L, 4) == LUA_TSTRING && lua_objlen(L, 4) >= sizeof(GUID))
+    edc.Owner = *CAST(const GUID*, lua_tostring(L, 4));
+  else if(lua_isnoneornil(L, 4))
+    edc.Owner = *pd->PluginId;
+  else
+    luaL_argerror(L, 4, "GUID required");
   lua_pushboolean(L, pd->Info->EditorControl(EditorId, ECTL_DELCOLOR, 0, &edc));
   return 1;
 }
