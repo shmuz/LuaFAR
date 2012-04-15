@@ -3030,7 +3030,7 @@ static int editor_Editor(lua_State *L)
   UINT64 Flags = CheckFlags(L,7);
   int StartLine = luaL_optinteger(L, 8, -1);
   int StartChar = luaL_optinteger(L, 9, -1);
-  int CodePage  = luaL_optinteger(L, 10, CP_AUTODETECT);
+  int CodePage  = luaL_optinteger(L, 10, CP_DEFAULT);
   int ret = Info->Editor(FileName, Title, X1, Y1, X2, Y2, Flags,
                          StartLine, StartChar, CodePage);
   lua_pushinteger(L, ret);
@@ -3047,7 +3047,7 @@ static int viewer_Viewer(lua_State *L)
   int X2 = luaL_optinteger(L, 5, -1);
   int Y2 = luaL_optinteger(L, 6, -1);
   UINT64 Flags = CheckFlags(L, 7);
-  int CodePage = luaL_optinteger(L, 8, CP_AUTODETECT);
+  int CodePage = luaL_optinteger(L, 8, CP_DEFAULT);
   int ret = Info->Viewer(FileName, Title, X1, Y1, X2, Y2, Flags, CodePage);
   lua_pushboolean(L, ret);
   return 1;
