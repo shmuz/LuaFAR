@@ -1,5 +1,6 @@
 //---------------------------------------------------------------------------
 #include <windows.h>
+#include <signal.h>
 #include "lua.h"
 #include "luafar.h"
 
@@ -30,19 +31,31 @@ int WINAPI MacroCallback (void* Id, FARADDKEYMACROFLAGS Flags)
   return LF_MacroCallback(LS, Id, Flags);
 }
 
+static void laction (int i); /* forward declaration */
 struct PluginStartupInfo Info;
 struct FarStandardFunctions FSF;
 GUID PluginId;
-TPluginData PluginData = { &Info, &FSF, &PluginId, DlgProc, MacroCallback, NULL, NULL };
+TPluginData PluginData = { &Info, &FSF, &PluginId, DlgProc, MacroCallback, NULL, NULL, laction, SIG_DFL };
 wchar_t PluginName[512], PluginDir[512];
 int Init1_Done = 0, Init2_Done = 0; // Ensure intializations are done only once
+
+static void lstop (lua_State *L, lua_Debug *ar) {
+  (void)ar;  /* unused arg. */
+  lua_sethook(L, NULL, 0, 0);
+  luaL_error(L, "interrupted!");
+}
+
+static void laction (int i) {
+  signal(i, PluginData.old_action);
+  lua_sethook(LS, lstop, LUA_MASKCALL | LUA_MASKRET | LUA_MASKCOUNT, 1);
+}
 //---------------------------------------------------------------------------
 
 BOOL WINAPI DllMain (HANDLE hDll, DWORD dwReason, LPVOID lpReserved)
 {
   (void) lpReserved;
   if (DLL_PROCESS_ATTACH == dwReason && hDll) {
-    if ((LS = LF_LuaOpen()) != NULL) {
+    if ((LS = luaL_newstate()) != NULL) {
       GetModuleFileNameW((HINSTANCE)hDll, PluginName, sizeof(PluginName)/sizeof(PluginName[0]));
       wcscpy(PluginDir, PluginName);
       wcsrchr(PluginDir, L'\\')[1] = 0;
@@ -50,7 +63,7 @@ BOOL WINAPI DllMain (HANDLE hDll, DWORD dwReason, LPVOID lpReserved)
   }
   else if (DLL_PROCESS_DETACH == dwReason) {
     if (LS) {
-      LF_LuaClose(LS);
+      lua_close(LS);
       LS = NULL;
     }
   }
@@ -77,7 +90,7 @@ void LUAPLUG GetGlobalInfoW(struct GlobalInfo *globalInfo)
     if (LF_GetGlobalInfo(LS, globalInfo, PluginDir))
       PluginId = globalInfo->Guid;
     else {
-      LF_LuaClose(LS);
+      lua_close(LS);
       LS = NULL;
     }
   }
@@ -94,7 +107,7 @@ void LUAPLUG SetStartupInfoW(const struct PluginStartupInfo *aInfo)
     LF_InitLuaState2(LS, &PluginData);
     LF_ProcessEnvVars(LS, ENV_PREFIX, PluginDir);
     if (LF_RunDefaultScript(LS) == FALSE) {
-      LF_LuaClose(LS);
+      lua_close(LS);
       LS = NULL;
     }
   }
@@ -179,7 +192,7 @@ void LUAPLUG ExitFARW(const struct ExitInfo *Info)
 {
   if(LS) {
     LF_ExitFAR(LS, Info);
-    LF_LuaClose(LS); LS = NULL;
+    lua_close(LS); LS = NULL;
   }
 }
 #endif

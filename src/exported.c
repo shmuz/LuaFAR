@@ -1,5 +1,6 @@
 //---------------------------------------------------------------------------
 #include <windows.h>
+#include <signal.h>
 #include "luafar.h"
 #include "util.h"
 #include "ustring.h"
@@ -49,11 +50,14 @@ int traceback (lua_State *L) {
 
 // taken from lua.c v5.1.2 (modified)
 int docall (lua_State *L, int narg, int nret) {
+  TPluginData *pdata = GetPluginData(L);
   int status;
   int base = lua_gettop(L) - narg;  /* function index */
   lua_pushcfunction(L, traceback);  /* push traceback function */
   lua_insert(L, base);  /* put it under chunk and args */
+  pdata->old_action = signal(SIGBREAK, pdata->new_action);
   status = lua_pcall(L, narg, nret, base);
+  signal(SIGBREAK, pdata->old_action);
   lua_remove(L, base);  /* remove traceback function */
   /* force a complete garbage collection in case of errors */
   if (status != 0) lua_gc(L, LUA_GCCOLLECT, 0);
@@ -548,13 +552,15 @@ void LF_GetOpenPanelInfo(lua_State* L, struct OpenPanelInfo *aInfo)
 
 HANDLE LF_Open (lua_State* L, const struct OpenInfo *Info)
 {
+  const unsigned OPEN_MACROINIT=100, OPEN_MACROSTEP=101, OPEN_MACROFINAL=102;
+
   if (!CheckReloadDefaultScript(L) || !GetExportFunction(L, "Open"))
     return INVALID_HANDLE_VALUE;
 
   lua_pushinteger(L, Info->OpenFrom);
   lua_pushlstring(L, (const char*)Info->Guid, sizeof(GUID));
 
-  if (Info->OpenFrom == OPEN_FROMMACRO) {
+  if (Info->OpenFrom == OPEN_FROMMACRO || Info->OpenFrom == OPEN_MACROINIT) {
     size_t i;
     struct OpenMacroInfo* om_info = (struct OpenMacroInfo*)Info->Data;
     lua_createtable(L, om_info->Count, 0);
@@ -593,12 +599,26 @@ HANDLE LF_Open (lua_State* L, const struct OpenInfo *Info)
     lua_pushinteger(L, Info->Data);
 
   if (pcall_msg(L, 3, 1) == 0) {
-    if (lua_type(L,-1) == LUA_TNUMBER && lua_tonumber(L,-1) == -1) {
+    if (Info->OpenFrom == OPEN_MACROINIT || Info->OpenFrom == OPEN_MACROFINAL) {
+      if (lua_type(L,-1) == LUA_TNUMBER) {
+        int ret = lua_tointeger(L, -1);
+        lua_pop(L, 1);
+        return CAST(HANDLE, ret);
+      }
+    }
+    else if (Info->OpenFrom == OPEN_MACROSTEP) {
+      if (lua_type(L,-1) == LUA_TSTRING) {
+        const void* ret = lua_tostring(L, -1); // already in UTF-16
+        lua_pop(L, 1);
+        return CAST(HANDLE, ret);
+      }
+    }
+    else if (lua_type(L,-1) == LUA_TNUMBER && lua_tonumber(L,-1) == -1) {
       lua_pop(L,1);
       return PANEL_STOP;
     }
-    if (lua_toboolean(L, -1))            //+1: Obj
-      return (HANDLE) RegisterObject(L); //+0
+    else if (lua_toboolean(L, -1))            //+1: Obj
+      return CAST(HANDLE, RegisterObject(L)); //+0
     lua_pop(L,1);
   }
   return NULL;

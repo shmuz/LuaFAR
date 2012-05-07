@@ -5100,16 +5100,6 @@ void LF_InitLuaState2 (lua_State *L, TPluginData *aInfo)
   lua_call(L, 1, 0);
 }
 
-lua_State* LF_LuaOpen()
-{
-  return luaL_newstate();
-}
-
-void LF_LuaClose (lua_State* L)
-{
-  lua_close(L);
-}
-
 int LF_DoFile (lua_State *L, const wchar_t *fname, int argc, wchar_t* argv[])
 {
   int status;

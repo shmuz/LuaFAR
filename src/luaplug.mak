@@ -26,7 +26,7 @@ vpath %.c $(PATH_LUAFARSRC)
 vpath %.h $(PATH_LUAFARSRC)
 
 $(TARGET): $(OBJ) $(PATH_LUAFARSRC)\$(LUAFARDLL)
-	$(CC) -o $@ $^ $(LDFLAGS)
+	$(CC) -o $@ $^ $(LDFLAGS) -l$(LUADLLNAME)
 
 $(PATH_LUAFARSRC)\$(LUAFARDLL):
 	cd $(PATH_LUAFARSRC) && $(MAKE) PATH_LUAFAR=..

@@ -5614,7 +5614,7 @@ lv=2
 dt=Text
 nm=far.MacroAdd
 ctime=3523354795
-mtime=3535530026
+mtime=3545230563
 <article>
 #_Id = far.MacroAdd (Area, Flags, AKey, SequenceText, Description, Callback)
 #_
@@ -5651,7 +5651,6 @@ mtime=3535530026
 #_@@@
 #_<lua> Links = {
 #_  InputRecord="187.html",
-#_  ["far.MacroGetArea"]="413.html",
 #_  ["far.MacroDelete"]="447.html",
 #_} </lua>
 #_
@@ -10228,51 +10227,6 @@ mtime=3481109892
 #_
 #_The function can be used as a replacement for `luaL_loadfile`,
 #_working with wide char *filename* parameter, otherwise identical.
-#_
-#_@@@
-#_
-#_
-</article>
-</node>
-<node>
-id=129
-lv=2
-dt=Text
-nm=LF_LuaOpen
-mtime=3509716382
-<article>
-#_<markdown>
-#_    lua_State* LF_LuaOpen ()
-#_
-#_#### Parameters:
-#_      none
-#_
-#_#### Returns:
-#_      Pointer to a newly created lua_State.
-#_
-#_@@@
-#_
-</article>
-</node>
-<node>
-id=155
-lv=2
-dt=Text
-nm=LF_LuaClose
-mtime=3509716502
-<article>
-#_<markdown>
-#_    void LF_LuaClose(lua_State* L)
-#_
-#_#### Parameters:
-#_      L:  Lua state
-#_
-#_#### Returns:
-#_      nothing
-#_
-#_#### Description:
-#_
-#_Closes the Lua state.
 #_
 #_@@@
 #_
