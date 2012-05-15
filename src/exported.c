@@ -552,15 +552,13 @@ void LF_GetOpenPanelInfo(lua_State* L, struct OpenPanelInfo *aInfo)
 
 HANDLE LF_Open (lua_State* L, const struct OpenInfo *Info)
 {
-  const unsigned OPEN_MACROINIT=100, OPEN_MACROSTEP=101, OPEN_MACROFINAL=102;
-
   if (!CheckReloadDefaultScript(L) || !GetExportFunction(L, "Open"))
     return INVALID_HANDLE_VALUE;
 
   lua_pushinteger(L, Info->OpenFrom);
   lua_pushlstring(L, (const char*)Info->Guid, sizeof(GUID));
 
-  if (Info->OpenFrom == OPEN_FROMMACRO || Info->OpenFrom == OPEN_MACROINIT) {
+  if (Info->OpenFrom == OPEN_FROMMACRO) {
     size_t i;
     struct OpenMacroInfo* om_info = (struct OpenMacroInfo*)Info->Data;
     lua_createtable(L, om_info->Count, 0);
@@ -599,21 +597,7 @@ HANDLE LF_Open (lua_State* L, const struct OpenInfo *Info)
     lua_pushinteger(L, Info->Data);
 
   if (pcall_msg(L, 3, 1) == 0) {
-    if (Info->OpenFrom == OPEN_MACROINIT || Info->OpenFrom == OPEN_MACROFINAL) {
-      if (lua_type(L,-1) == LUA_TNUMBER) {
-        int ret = lua_tointeger(L, -1);
-        lua_pop(L, 1);
-        return CAST(HANDLE, ret);
-      }
-    }
-    else if (Info->OpenFrom == OPEN_MACROSTEP) {
-      if (lua_type(L,-1) == LUA_TSTRING) {
-        const void* ret = lua_tostring(L, -1); // already in UTF-16
-        lua_pop(L, 1);
-        return CAST(HANDLE, ret);
-      }
-    }
-    else if (lua_type(L,-1) == LUA_TNUMBER && lua_tonumber(L,-1) == -1) {
+    if (lua_type(L,-1) == LUA_TNUMBER && lua_tonumber(L,-1) == -1) {
       lua_pop(L,1);
       return PANEL_STOP;
     }

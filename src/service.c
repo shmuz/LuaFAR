@@ -4890,31 +4890,28 @@ static int luaopen_far (lua_State *L)
 BOOL LF_RunDefaultScript(lua_State* L)
 {
   int pos = lua_gettop (L);
-  int status = 1, embedded, i;
+  int status = 1, i;
   wchar_t *defscript;
   FILE *fp = NULL;
   const char *name = "<boot";
-  PSInfo *Info = GetPluginData(L)->Info;
+  const wchar_t *ModuleName = GetPluginData(L)->Info->ModuleName;
   const wchar_t delims[] = L".-";
 
   // First: try to load the default script embedded into the plugin.
-  // For speed, prevent calling require() on non-embedded plugins.
   lua_getglobal(L, "package");
   lua_getfield(L, -1, "preload");
   lua_getfield(L, -1, name);
-  embedded = !lua_isnil(L, -1);
-  lua_pop(L, 3);
-  if (embedded) {
-    lua_getglobal(L, "require");
+  if (lua_isfunction(L, -1)) {
     lua_pushstring(L, name);
     status = lua_pcall(L,1,1,0) || pcall_msg(L,0,0);
     lua_settop (L, pos);
     return !status;
   }
+  lua_pop(L, 3);
 
   // Second: try to load the default script from a disk file
-  defscript = (wchar_t*)lua_newuserdata (L, sizeof(wchar_t) * (wcslen(Info->ModuleName) + 5));
-  wcscpy(defscript, Info->ModuleName);
+  defscript = (wchar_t*)lua_newuserdata (L, sizeof(wchar_t)*(wcslen(ModuleName)+5));
+  wcscpy(defscript, ModuleName);
 
   for (i=0; delims[i]; i++) {
     wchar_t *end = wcsrchr(defscript, delims[i]);
