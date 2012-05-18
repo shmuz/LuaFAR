@@ -5023,7 +5023,9 @@ static const luaL_Reg lualibs[] = {
   {NULL, NULL}
 };
 
-static void luaL_openlibs2 (lua_State *L) {
+void LF_InitLuaState1 (lua_State *L, lua_CFunction aOpenLibs)
+{
+  // open Lua libraries
   const luaL_Reg *lib = lualibs;
   for (; lib->func; lib++) {
 #if LUA_VERSION_NUM == 501
@@ -5062,16 +5064,8 @@ static void luaL_openlibs2 (lua_State *L) {
     }
   }
 #endif
-}
 
-void LF_InitLuaState1 (lua_State *L, lua_CFunction aOpenLibs)
-{
-  // open Lua libraries
-  luaL_openlibs2(L);
   if (aOpenLibs) aOpenLibs(L);
-
-  lua_createtable(L, 0, 10);
-  lua_setglobal(L, "export");
 
   lua_pushcfunction(L, luaB_loadfileW);
   lua_setglobal(L, "loadfile");

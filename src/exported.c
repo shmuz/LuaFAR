@@ -982,19 +982,21 @@ void LF_FreeCustomData(lua_State* L, wchar_t *CustomData)
 
 int LF_GetGlobalInfo (lua_State* L, struct GlobalInfo *Info, const wchar_t *PluginDir)
 {
-  // For speed, prevent calling require() on non-embedded plugins.
-  int embedded, cpos;
+  int cpos = lua_gettop(L);
   const char *name = "<_globalinfo";
+
+  lua_getglobal(L, "export");
+  if (!lua_istable(L, -1)) {
+    lua_createtable(L, 0, 10);
+    lua_setglobal(L, "export");
+  }
   lua_getglobal(L, "package");
   lua_getfield(L, -1, "preload");
   lua_getfield(L, -1, name);
-  embedded = !lua_isnil(L, -1);
-  lua_pop(L, 3);
-  if (embedded) {
-    lua_getglobal(L, "require");
+  if (lua_isfunction(L, -1)) {
     lua_pushstring(L, name);
-    if (lua_pcall(L,1,1,0) != 0) {
-      lua_pop(L, 1);
+    if (lua_pcall(L, 1, 1, 0)) {
+      lua_settop(L, cpos);
       return FALSE;
     }
   }
@@ -1003,15 +1005,16 @@ int LF_GetGlobalInfo (lua_State* L, struct GlobalInfo *Info, const wchar_t *Plug
     wcscpy(buf, PluginDir);
     wcscat(buf, L"_globalinfo.lua");
     if (LF_LoadFile(L, buf)) {
-      lua_pop(L, 1);
+      lua_settop(L, cpos);
       return FALSE;
     }
   }
   //--------------------------------------------------------------------------
   if (lua_pcall(L, 0, 0, 0)) {
-    lua_pop(L, 1);
+    lua_settop(L, cpos);
     return FALSE;
   }
+  lua_settop(L, cpos);
   if (!GetExportFunction(L, "GetGlobalInfo"))
     return FALSE;
   if (lua_pcall(L, 0, 1, 0) || !lua_istable(L, -1)) { //+1
