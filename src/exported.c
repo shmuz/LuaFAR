@@ -50,14 +50,17 @@ int traceback (lua_State *L) {
 
 // taken from lua.c v5.1.2 (modified)
 int docall (lua_State *L, int narg, int nret) {
-  TPluginData *pdata = GetPluginData(L);
+//TODO(signal)    TPluginData *pdata = GetPluginData(L);
+
   int status;
   int base = lua_gettop(L) - narg;  /* function index */
   lua_pushcfunction(L, traceback);  /* push traceback function */
   lua_insert(L, base);  /* put it under chunk and args */
-  pdata->old_action = signal(SIGBREAK, pdata->new_action);
+
+//TODO(signal)    pdata->old_action = signal(SIGBREAK, pdata->new_action);
   status = lua_pcall(L, narg, nret, base);
-  signal(SIGBREAK, pdata->old_action);
+//TODO(signal)    signal(SIGBREAK, pdata->old_action);
+
   lua_remove(L, base);  /* remove traceback function */
   /* force a complete garbage collection in case of errors */
   if (status != 0) lua_gc(L, LUA_GCCOLLECT, 0);
