@@ -556,7 +556,7 @@ void LF_GetOpenPanelInfo(lua_State* L, struct OpenPanelInfo *aInfo)
 HANDLE LF_Open (lua_State* L, const struct OpenInfo *Info)
 {
   if (!CheckReloadDefaultScript(L) || !GetExportFunction(L, "Open"))
-    return INVALID_HANDLE_VALUE;
+    return NULL;
 
   lua_pushinteger(L, Info->OpenFrom);
   lua_pushlstring(L, (const char*)Info->Guid, sizeof(GUID));
