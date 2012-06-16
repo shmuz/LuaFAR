@@ -7009,7 +7009,7 @@ id=270
 lv=2
 dt=Text
 nm=regex.gsub, regex.gsubW
-mtime=3532684667
+mtime=3549007487
 <article>
 #_res, nmatch, nrep = regex.gsub (s, pattern, repl, [n], [cflags])
 #_
@@ -7030,6 +7030,7 @@ mtime=3532684667
 #_  following extensions:
 #_  -- *cflags* : optional 5-th parameter: compilation flags;
 #_  -- *nrep*   : 3-rd return value: number of replacements made;
+#_  -- *repl* can specify more captures than in *string.gsub*: %0-%9, %A-%Z (or %a-%z).
 #_
 #_**Note:**
 #_*regex.gsubW* receives its 1-st argument and returns captures in

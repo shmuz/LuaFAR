@@ -220,11 +220,12 @@ int rx_gsub (lua_State *L, int is_function, int is_wide)
     f = check_utf8_string(L, 3, &flen);
     for (p=f; *p; p++) {
       if (*p == L'%') {
-        if (*++p == 0) break;
-        if (*p >= L'0' && *p <= L'9') {
-          int num = *p - L'0';
-          if (max_rep_capture < num) max_rep_capture = num;
-        }
+        int n, ch;
+        if ((ch = *++p) == 0) break;
+        n = (ch >= L'0' && ch <= L'9') ? ch - L'0' :
+            (ch >= L'A' && ch <= L'Z') ? ch - L'A' + 10 :
+            (ch >= L'a' && ch <= L'z') ? ch - L'a' + 10 : -1;
+        if (max_rep_capture < n) max_rep_capture = n;
       }
     }
   }
@@ -273,8 +274,11 @@ int rx_gsub (lua_State *L, int is_function, int is_wide)
       for (i=0; i<flen; i++) {
         if (f[i] == L'%') {
           if (++i < flen) {
-            if (f[i] >= L'0' && f[i] <= L'9') {
-              int n = f[i] - L'0';
+            int ch = f[i];
+            int n = (ch >= L'0' && ch <= L'9') ? ch - L'0' :
+                    (ch >= L'A' && ch <= L'Z') ? ch - L'A' + 10 :
+                    (ch >= L'a' && ch <= L'z') ? ch - L'a' + 10 : -1;
+            if (n >= 0) {
               if (n==1 && data.Count==1) n = 0;
               luaL_addlstring(&out, (const char*)(f+start), (i-1-start)*sizeof(wchar_t));
               if (data.Match[n].start >= 0) {
