@@ -515,7 +515,7 @@ static int editor_GetInfo(lua_State *L)
   PutNumToTable(L, "CurTabPos", ei.CurTabPos);
   PutNumToTable(L, "TopScreenLine", ei.TopScreenLine);
   PutNumToTable(L, "LeftPos", ei.LeftPos);
-  PutBoolToTable(L, "Overtype", ei.Overtype);
+  PutNumToTable(L, "Overtype", ei.Overtype);
   PutNumToTable(L, "BlockType", ei.BlockType);
   PutNumToTable(L, "BlockStartLine", ei.BlockStartLine);
   PutNumToTable(L, "Options", ei.Options);

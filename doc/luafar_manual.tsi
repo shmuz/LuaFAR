@@ -3757,7 +3757,7 @@ id=29
 lv=2
 dt=Text
 nm=editor.GetInfo
-mtime=3507542754
+mtime=3549298811
 <article>
 #_Info = editor.GetInfo (EditorId)
 #_
@@ -3777,7 +3777,7 @@ mtime=3507542754
 #_      CurTabPos:      integer, 0-based
 #_      TopScreenLine:  integer, 0-based
 #_      LeftPos:        integer, 0-based
-#_      Overtype:       boolean
+#_      Overtype:       integer
 #_      BlockType:      integer
 #_      BlockStartLine: integer, 0-based
 #_      Options:        integer
