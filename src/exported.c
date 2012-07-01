@@ -555,7 +555,7 @@ void LF_GetOpenPanelInfo(lua_State* L, struct OpenPanelInfo *aInfo)
 
 HANDLE LF_Open (lua_State* L, const struct OpenInfo *Info)
 {
-  const unsigned OPEN_MACROINIT=100, OPEN_MACROSTEP=101, OPEN_MACROFINAL=102;
+  const unsigned OPEN_MACROINIT=100, OPEN_MACROSTEP=101, OPEN_MACROFINAL=102, OPEN_MACROPARSE=103;
 
   if (!CheckReloadDefaultScript(L) || !GetExportFunction(L, "Open"))
     return NULL;
@@ -563,7 +563,7 @@ HANDLE LF_Open (lua_State* L, const struct OpenInfo *Info)
   lua_pushinteger(L, Info->OpenFrom);
   lua_pushlstring(L, (const char*)Info->Guid, sizeof(GUID));
 
-  if (Info->OpenFrom == OPEN_FROMMACRO || Info->OpenFrom == OPEN_MACROINIT) {
+  if (Info->OpenFrom == OPEN_FROMMACRO || Info->OpenFrom == OPEN_MACROINIT || Info->OpenFrom == OPEN_MACROPARSE) {
     size_t i;
     struct OpenMacroInfo* om_info = (struct OpenMacroInfo*)Info->Data;
     lua_createtable(L, om_info->Count, 0);
@@ -609,7 +609,7 @@ HANDLE LF_Open (lua_State* L, const struct OpenInfo *Info)
         return CAST(HANDLE, ret);
       }
     }
-    else if (Info->OpenFrom == OPEN_MACROSTEP) {
+    else if (Info->OpenFrom == OPEN_MACROSTEP || Info->OpenFrom == OPEN_MACROPARSE) {
       if (lua_type(L,-1) == LUA_TSTRING) {
         const void* ret = lua_tostring(L, -1); // already in UTF-16
         lua_pop(L, 1);
