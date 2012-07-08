@@ -553,30 +553,70 @@ void LF_GetOpenPanelInfo(lua_State* L, struct OpenPanelInfo *aInfo)
 }
 //---------------------------------------------------------------------------
 
+const unsigned
+  LUAMACRO_BEGIN = 100,
+  OPEN_MACROINIT      = 100,
+  OPEN_MACROSTEP      = 101,
+  OPEN_MACROFINAL     = 102,
+  OPEN_MACROPARSE     = 103,
+  LUAMACRO_END   = 104;
+
+static void PushParamsTable (lua_State* L, const struct OpenMacroInfo* om_info)
+{
+  size_t i;
+  lua_createtable(L, om_info->Count, 0);
+  for (i=0; i < om_info->Count; i++) {
+    struct FarMacroValue* v = om_info->Values + i;
+    lua_createtable(L, 0, 2);
+    PutIntToTable(L, "Type", v->Type);
+    if (v->Type == FMVT_INTEGER)     PutFlagsToTable(L, "Value", v->Value.Integer);
+    else if (v->Type == FMVT_DOUBLE) PutNumToTable  (L, "Value", v->Value.Double);
+    else if (v->Type == FMVT_STRING) PutWStrToTable (L, "Value", v->Value.String, -1);
+    lua_rawseti(L, -2, i+1);
+  }
+}
+
+static HANDLE Open_Luamacro (lua_State* L, const struct OpenInfo *Info)
+{
+  if (Info->OpenFrom == OPEN_MACROINIT || Info->OpenFrom == OPEN_MACROPARSE)
+    PushParamsTable(L, (struct OpenMacroInfo*)Info->Data);
+  else
+    lua_pushinteger(L, Info->Data);
+
+  if (pcall_msg(L, 3, 1) == 0) {
+    if (Info->OpenFrom == OPEN_MACROINIT || Info->OpenFrom == OPEN_MACROFINAL) {
+      if (lua_type(L,-1) == LUA_TNUMBER) {
+        int ret = lua_tointeger(L, -1);
+        lua_pop(L, 1);
+        return CAST(HANDLE, ret);
+      }
+    }
+    else if (Info->OpenFrom == OPEN_MACROSTEP || Info->OpenFrom == OPEN_MACROPARSE) {
+      if (lua_type(L,-1) == LUA_TSTRING) {
+        const void* ret = lua_tostring(L, -1); // already in UTF-16
+        lua_pop(L, 1);
+        return CAST(HANDLE, ret);
+      }
+    }
+    lua_pop(L,1);
+  }
+  return NULL;
+}
+
+
 HANDLE LF_Open (lua_State* L, const struct OpenInfo *Info)
 {
-  const unsigned OPEN_MACROINIT=100, OPEN_MACROSTEP=101, OPEN_MACROFINAL=102, OPEN_MACROPARSE=103;
-
   if (!CheckReloadDefaultScript(L) || !GetExportFunction(L, "Open"))
     return NULL;
 
   lua_pushinteger(L, Info->OpenFrom);
   lua_pushlstring(L, (const char*)Info->Guid, sizeof(GUID));
 
-  if (Info->OpenFrom == OPEN_FROMMACRO || Info->OpenFrom == OPEN_MACROINIT || Info->OpenFrom == OPEN_MACROPARSE) {
-    size_t i;
-    struct OpenMacroInfo* om_info = (struct OpenMacroInfo*)Info->Data;
-    lua_createtable(L, om_info->Count, 0);
-    for (i=0; i < om_info->Count; i++) {
-      struct FarMacroValue* v = om_info->Values + i;
-      lua_createtable(L, 0, 2);
-      PutIntToTable(L, "Type", v->Type);
-      if (v->Type == FMVT_INTEGER)     PutFlagsToTable(L, "Value", v->Value.Integer);
-      else if (v->Type == FMVT_DOUBLE) PutNumToTable  (L, "Value", v->Value.Double);
-      else if (v->Type == FMVT_STRING) PutWStrToTable (L, "Value", v->Value.String, -1);
-      lua_rawseti(L, -2, i+1);
-    }
-  }
+  if (Info->OpenFrom >= LUAMACRO_BEGIN && Info->OpenFrom < LUAMACRO_END)
+    return Open_Luamacro(L, Info);
+
+  if (Info->OpenFrom == OPEN_FROMMACRO)
+    PushParamsTable(L, (struct OpenMacroInfo*)Info->Data);
   else if (Info->OpenFrom == OPEN_SHORTCUT) {
     struct OpenShortcutInfo *osi = CAST(struct OpenShortcutInfo*, Info->Data);
     lua_createtable(L, 0, 2);
@@ -602,21 +642,7 @@ HANDLE LF_Open (lua_State* L, const struct OpenInfo *Info)
     lua_pushinteger(L, Info->Data);
 
   if (pcall_msg(L, 3, 1) == 0) {
-    if (Info->OpenFrom == OPEN_MACROINIT || Info->OpenFrom == OPEN_MACROFINAL) {
-      if (lua_type(L,-1) == LUA_TNUMBER) {
-        int ret = lua_tointeger(L, -1);
-        lua_pop(L, 1);
-        return CAST(HANDLE, ret);
-      }
-    }
-    else if (Info->OpenFrom == OPEN_MACROSTEP || Info->OpenFrom == OPEN_MACROPARSE) {
-      if (lua_type(L,-1) == LUA_TSTRING) {
-        const void* ret = lua_tostring(L, -1); // already in UTF-16
-        lua_pop(L, 1);
-        return CAST(HANDLE, ret);
-      }
-    }
-    else if (lua_type(L,-1) == LUA_TNUMBER && lua_tonumber(L,-1) == -1) {
+    if (lua_type(L,-1) == LUA_TNUMBER && lua_tonumber(L,-1) == -1) {
       lua_pop(L,1);
       return PANEL_STOP;
     }
