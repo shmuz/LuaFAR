@@ -452,9 +452,15 @@ static BOOL PushFarUserSubkey (lua_State* L, BOOL addOneLevel, wchar_t* trg)
 
 static int far_PluginStartupInfo(lua_State *L)
 {
+  const wchar_t *p;
+  int len=0;
   TPluginData *pd = GetPluginData(L);
-  lua_createtable(L, 0, 3);
+  lua_createtable(L, 0, 4);
   PutWStrToTable(L, "ModuleName", pd->Info->ModuleName, -1);
+  for (p=pd->Info->ModuleName; *p; p++) {
+    if (*p==L'\\') len = p - pd->Info->ModuleName;
+  }
+  PutWStrToTable(L, "ModuleDir", pd->Info->ModuleName, len+1);
   PutLStrToTable(L, "PluginGuid", pd->PluginId, sizeof(GUID));
   if (PushFarUserSubkey(L, TRUE, NULL))
     lua_setfield(L, -2, "RootKey");
