@@ -586,7 +586,7 @@ static HANDLE Open_Luamacro (lua_State* L, const struct OpenInfo *Info)
   if (pcall_msg(L, 3, 1) == 0) {
     if (Info->OpenFrom == OPEN_MACROINIT || Info->OpenFrom == OPEN_MACROFINAL) {
       if (lua_type(L,-1) == LUA_TNUMBER) {
-        int ret = lua_tointeger(L, -1);
+        INT_PTR ret = lua_tointeger(L, -1);
         lua_pop(L, 1);
         return CAST(HANDLE, ret);
       }

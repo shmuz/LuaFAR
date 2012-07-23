@@ -3435,10 +3435,13 @@ static int far_MkLink (lua_State *L)
 static int far_GetPathRoot (lua_State *L)
 {
   const wchar_t* Path = check_utf8_string(L, 1, NULL);
-  wchar_t* Root = (wchar_t*)lua_newuserdata(L, 4096 * sizeof(wchar_t));
+  struct FarStandardFunctions *FSF = GetPluginData(L)->FSF;
+  int size = FSF->GetPathRoot(Path, NULL, 0);
+  wchar_t* Root = (wchar_t*)lua_newuserdata(L, (size+1) * sizeof(wchar_t));
   *Root = L'\0';
-  GetPluginData(L)->FSF->GetPathRoot(Path, Root, 4096);
-  return push_utf8_string(L, Root, -1), 1;
+  FSF->GetPathRoot(Path, Root, size);
+  push_utf8_string(L, Root, -1);
+  return 1;
 }
 
 static int truncstring (lua_State *L, int op)
@@ -5096,6 +5099,10 @@ void LF_InitLuaState2 (lua_State *L, TPluginData *aInfo)
   lua_pushliteral(L, "regex");
   lua_call(L, 1, 0);
 }
+
+// These 2 exported functions are needed for old builds of the plugins.
+lua_State* LF_LuaOpen() { return luaL_newstate(); }
+void LF_LuaClose (lua_State* L) { lua_close(L); }
 
 int LF_DoFile (lua_State *L, const wchar_t *fname, int argc, wchar_t* argv[])
 {
