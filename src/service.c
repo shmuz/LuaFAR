@@ -131,6 +131,14 @@ const char* VirtualKeyStrings[256] = {
   "NONAME", "PA1", "OEM_CLEAR", NULL,
 };
 
+#ifdef FAR_LUA
+static int IsFarSpring (lua_State *L)
+{
+  TPluginData *pd = GetPluginData(L);
+  return pd->Info->AdvControl(pd->PluginId, 2012, 0, 0) == 2012;
+}
+#endif
+
 HANDLE OptHandle (lua_State *L)
 {
   return lua_isnoneornil(L, 1) ?
@@ -2426,6 +2434,13 @@ static int far_SendDlgMessage (lua_State *L)
         PutNumToTable(L, "StructSize", dlg_info.StructSize);
         PutLStrToTable(L, "Id", (const char*)&dlg_info.Id, sizeof(dlg_info.Id));
         PutLStrToTable(L, "Owner", (const char*)&dlg_info.Owner, sizeof(dlg_info.Owner));
+#ifdef FAR_LUA
+        if (IsFarSpring(L)) {
+          PutNumToTable(L, "ItemsNumber",  dlg_info.ItemsNumber);
+          PutNumToTable(L, "FocusPos",     dlg_info.FocusPos);     // see also DM_GETFOCUS
+          PutNumToTable(L, "PrevFocusPos", dlg_info.PrevFocusPos);
+        }
+#endif
         return 1;
       }
       return lua_pushnil(L), 1;
