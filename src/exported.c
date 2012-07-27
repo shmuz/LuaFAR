@@ -553,14 +553,6 @@ void LF_GetOpenPanelInfo(lua_State* L, struct OpenPanelInfo *aInfo)
 }
 //---------------------------------------------------------------------------
 
-const unsigned
-  LUAMACRO_BEGIN = 100,
-  OPEN_MACROINIT      = 100,
-  OPEN_MACROSTEP      = 101,
-  OPEN_MACROFINAL     = 102,
-  OPEN_MACROPARSE     = 103,
-  LUAMACRO_END   = 104;
-
 static void PushParamsTable (lua_State* L, const struct OpenMacroInfo* om_info)
 {
   size_t i;
@@ -576,6 +568,7 @@ static void PushParamsTable (lua_State* L, const struct OpenMacroInfo* om_info)
   }
 }
 
+#ifdef FAR_LUA
 static HANDLE Open_Luamacro (lua_State* L, const struct OpenInfo *Info)
 {
   if (Info->OpenFrom == OPEN_MACROINIT || Info->OpenFrom == OPEN_MACROPARSE)
@@ -602,6 +595,7 @@ static HANDLE Open_Luamacro (lua_State* L, const struct OpenInfo *Info)
   }
   return NULL;
 }
+#endif
 
 
 HANDLE LF_Open (lua_State* L, const struct OpenInfo *Info)
@@ -612,8 +606,10 @@ HANDLE LF_Open (lua_State* L, const struct OpenInfo *Info)
   lua_pushinteger(L, Info->OpenFrom);
   lua_pushlstring(L, (const char*)Info->Guid, sizeof(GUID));
 
-  if (Info->OpenFrom >= LUAMACRO_BEGIN && Info->OpenFrom < LUAMACRO_END)
+#ifdef FAR_LUA
+  if (Info->OpenFrom >= OPEN_MACROINIT && Info->OpenFrom <= OPEN_MACROPARSE)
     return Open_Luamacro(L, Info);
+#endif
 
   if (Info->OpenFrom == OPEN_FROMMACRO)
     PushParamsTable(L, (struct OpenMacroInfo*)Info->Data);
