@@ -3867,18 +3867,29 @@ static int far_MacroDelete (lua_State* L)
 }
 
 #ifdef FAR_LUA
+static void _cdecl MacroCallFarCallback (void *Data, struct FarMacroValue *Val)
+{
+  lua_State *L = CAST(lua_State*, Data);
+  if (Val->Type == FMVT_STRING)
+    push_utf8_string(L, Val->Value.String, -1);
+  else if (Val->Type == FMVT_INTEGER)
+    lua_pushnumber(L, Val->Value.Integer);
+  else if (Val->Type == FMVT_DOUBLE)
+    lua_pushnumber(L, Val->Value.Double);
+}
+
 static int far_MacroCallFar (lua_State *L)
 {
-#define MAXARG 16
+  enum { MAXARG=16, MAXRET=16 };
   struct FarMacroValue args[MAXARG];
   struct FarMacroCall fmc;
-  int idx, ret;
+  int idx, ret, pushed;
   TPluginData *pd = GetPluginData(L);
   int opcode = luaL_checkinteger(L, 1);
   fmc.Args = args;
   fmc.ArgNum = lua_gettop(L) - 1;
-  fmc.RetString = NULL;
-  fmc.RetStringSize = 0;
+  fmc.Callback = MacroCallFarCallback;
+  fmc.CallbackData = L;
   luaL_argcheck(L, fmc.ArgNum<=MAXARG, MAXARG+2, "too many arguments");
 
   for (idx=0; idx<fmc.ArgNum; idx++) {
@@ -3900,17 +3911,10 @@ static int far_MacroCallFar (lua_State *L)
       luaL_argerror(L, stackpos, "invalid argument type");
   }
 
+  lua_checkstack(L, MAXRET);
   ret = pd->Info->MacroControl(pd->PluginId, MCTL_CALLFAR, opcode, &fmc);
-  if (ret && fmc.RetStringSize) {
-    fmc.RetString = (wchar_t*)lua_newuserdata(L, fmc.RetStringSize*sizeof(wchar_t));
-    ret = pd->Info->MacroControl(pd->PluginId, MCTL_CALLFAR, opcode, &fmc);
-    ret ? push_utf8_string(L, fmc.RetString, -1) : lua_pushinteger(L,0);
-  }
-  else {
-    lua_pushinteger(L, ret);
-  }
-  return 1;
-#undef MAXARG
+  pushed = lua_gettop(L) - (1+fmc.ArgNum);
+  return pushed ? pushed : (lua_pushinteger(L, ret), 1);
 }
 #endif
 
