@@ -5424,7 +5424,7 @@ lv=1
 dt=Text
 nm=File Filter Control
 ctime=3480243081
-mtime=3540924794
+mtime=3552796472
 <article>
 #_<markdown>
 #_File filter control is implemented as bindings of Far API
@@ -5440,27 +5440,29 @@ mtime=3540924794
 #_[`IsFileInFilter`](327.html).
 #_
 #_#### Example
-#_        -- create a filter for the "active panel" area
-#_        local AFilter = far.CreateFileFilter(1, "FFT_PANEL")
-#_        if AFilter then
-#_          -- update the "current time" parameter
-#_          AFilter:StartingToFilter()
 #_
-#_          -- manipulate panel elements
-#_          local pInfo = panel.GetPanelInfo(nil, 1)
-#_          for i=1, pInfo.ItemsNumber do
-#_            -- apply the filter...
-#_            local item = panel.GetPanelItem(nil, 1, i)
-#_            if AFilter:IsFileInFilter(item) then
-#_              -- the element matches filter conditions;
-#_              -- process the element...
-#_            end
-#_          end
+#_```
+#_  -- create a filter for the "active panel" area
+#_  local AFilter = far.CreateFileFilter(1, "FFT_PANEL")
+#_  if AFilter then
+#_    -- update the "current time" parameter
+#_    AFilter:StartingToFilter()
 #_
-#_          -- free memory
-#_          AFilter:FreeFileFilter()
-#_        end
+#_    -- manipulate panel elements
+#_    local pInfo = panel.GetPanelInfo(nil, 1)
+#_    for i=1, pInfo.ItemsNumber do
+#_      -- apply the filter...
+#_      local item = panel.GetPanelItem(nil, 1, i)
+#_      if AFilter:IsFileInFilter(item) then
+#_        -- the element matches filter conditions;
+#_        -- process the element...
+#_      end
+#_    end
 #_
+#_    -- free memory
+#_    AFilter:FreeFileFilter()
+#_  end
+#_```
 #_
 #_
 </article>
@@ -8034,12 +8036,12 @@ lv=1
 dt=Text
 nm=bit64
 ctime=3507278228
-mtime=3509708996
+mtime=3552796082
 <article>
 #_<markdown>
 #_As Far 3.0 started to use 64-bit integer values (flags) in its API, arose the need to represent and handle them from Lua. This is the role of **bit64** library.
 #_
-#_The library represents and accepts flags as either numbers or strings. Values that fit in 32 bits can be represented in both ways. Greater values are always represented as strings.
+#_The library represents and accepts flags as either numbers or strings. Values that fit in 53 bits can be represented in both ways. Greater values are always represented as strings.
 #_
 #_The string representation of an integer acceptable by the library must have the form
 #_        "0xhhh...hhh"
@@ -8055,7 +8057,7 @@ mtime=3509708996
 #_* **`rshift`**  - gets a flag and an integer, returns a flag
 #_* **`arshift`** - gets a flag and an integer, returns a flag
 #_
-#_These functions always return a number if the result fits into 32 bits.
+#_These functions always return a number if the result fits into 53 bits.
 #_
 </article>
 </node>

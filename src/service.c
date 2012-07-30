@@ -162,7 +162,7 @@ static UINT64 get_env_flag (lua_State *L, int pos, int *success)
   if (type == LUA_TNONE || type == LUA_TNIL) {
   }
   else if (type == LUA_TNUMBER)
-    ret = (unsigned int)lua_tointeger (L, pos);
+    ret = (__int64)lua_tonumber(L, pos); // IMPORTANT: cast to signed integer.
   else if (type == LUA_TSTRING) {
     int tmp;
     const char* s = lua_tostring(L, pos);
@@ -177,7 +177,7 @@ static UINT64 get_env_flag (lua_State *L, int pos, int *success)
       lua_getfield (L, -1, s);
       type = lua_type(L, -1);
       if (type == LUA_TNUMBER)
-        ret = (unsigned int)lua_tointeger (L, -1);
+        ret = (__int64)lua_tonumber(L, -1); // IMPORTANT: cast to signed integer.
       else if (type == LUA_TSTRING) {
         ret = check64(L, -1, &tmp);
         if (success) *success = tmp;
@@ -3893,7 +3893,7 @@ static int far_MacroCallFar (lua_State *L)
   luaL_argcheck(L, fmc.ArgNum<=MAXARG, MAXARG+2, "too many arguments");
 
   for (idx=0; idx<fmc.ArgNum; idx++) {
-    int stackpos = idx + 1;
+    int stackpos = idx + 2;
     int type = lua_type(L, stackpos);
     if (type == LUA_TNUMBER) {
       args[idx].Type = FMVT_DOUBLE;

@@ -3,13 +3,13 @@
 #include <lualib.h>
 #include "compat52.h"
 
-#define MAX32 0xFFFFFFFFULL
-#define MAX51 0x7FFFFFFFFFFFFULL
+#define MAX53 0x1FFFFFFFFFFFFFULL
+typedef __int64 INT64;
 typedef unsigned __int64 UINT64;
 
 int push64(lua_State *L, UINT64 v)
 {
-  if (v <= MAX32)
+  if (v <= MAX53)
     lua_pushnumber(L, (double)v);
   else {
     char buf[2+16] = "0x0";
@@ -30,8 +30,9 @@ UINT64 check64(lua_State *L, int pos, int* success)
   if (success) *success = 1;
   if (tp == LUA_TNUMBER) {
     double d = lua_tonumber(L, pos);
-    if ((d >= 0 && d <= MAX51) || (d < 0 && -d <= MAX51))
-      return (UINT64)d;
+    if ((d >= 0 && d <= MAX53) || (d < 0 && -d <= MAX53))
+      return (INT64)d; // IMPORTANT: cast to signed integer first!
+                       // Direct cast of negative doubles to UINT64 gives wrong results!
   }
   else if (tp == LUA_TSTRING) {
     size_t len;
