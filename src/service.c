@@ -3873,9 +3873,13 @@ static void _cdecl MacroCallFarCallback (void *Data, struct FarMacroValue *Val)
   if (Val->Type == FMVT_STRING)
     push_utf8_string(L, Val->Value.String, -1);
   else if (Val->Type == FMVT_INTEGER)
-    lua_pushnumber(L, Val->Value.Integer);
+    push64(L, Val->Value.Integer);
   else if (Val->Type == FMVT_DOUBLE)
     lua_pushnumber(L, Val->Value.Double);
+  else if (Val->Type == FMVT_BOOLEAN)
+    lua_pushboolean(L, Val->Value.Integer != 0);
+  else
+    luaL_error(L, "Unknown value type.");
 }
 
 static int far_MacroCallFar (lua_State *L)
@@ -3904,7 +3908,7 @@ static int far_MacroCallFar (lua_State *L)
       args[idx].Value.String = check_utf8_string (L, stackpos, NULL);
     }
     else if (type == LUA_TBOOLEAN || type == LUA_TNIL) {
-      args[idx].Type = FMVT_INTEGER;
+      args[idx].Type = FMVT_BOOLEAN;
       args[idx].Value.Integer = lua_toboolean(L, stackpos);
     }
     else
@@ -3914,7 +3918,7 @@ static int far_MacroCallFar (lua_State *L)
   lua_checkstack(L, MAXRET);
   ret = pd->Info->MacroControl(pd->PluginId, MCTL_CALLFAR, opcode, &fmc);
   pushed = lua_gettop(L) - (1+fmc.ArgNum);
-  return pushed ? pushed : (lua_pushinteger(L, ret), 1);
+  return pushed ? pushed : (push64(L, ret), 1);
 }
 #endif
 
