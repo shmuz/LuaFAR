@@ -3873,7 +3873,7 @@ static void _cdecl MacroCallFarCallback (void *Data, struct FarMacroValue *Val)
   if (Val->Type == FMVT_STRING)
     push_utf8_string(L, Val->Value.String, -1);
   else if (Val->Type == FMVT_INTEGER)
-    push64(L, Val->Value.Integer);
+    lua_pushnumber(L, Val->Value.Integer); // Hard problem: push64() won't do; no solution available at the moment.
   else if (Val->Type == FMVT_DOUBLE)
     lua_pushnumber(L, Val->Value.Double);
   else if (Val->Type == FMVT_BOOLEAN)
@@ -3887,7 +3887,7 @@ static int far_MacroCallFar (lua_State *L)
   enum { MAXARG=16, MAXRET=16 };
   struct FarMacroValue args[MAXARG];
   struct FarMacroCall fmc;
-  int idx, ret, pushed;
+  int idx, ret, pushed, stackpos=0, success=1;
   TPluginData *pd = GetPluginData(L);
   int opcode = luaL_checkinteger(L, 1);
   fmc.Args = args;
@@ -3897,7 +3897,7 @@ static int far_MacroCallFar (lua_State *L)
   luaL_argcheck(L, fmc.ArgNum<=MAXARG, MAXARG+2, "too many arguments");
 
   for (idx=0; idx<fmc.ArgNum; idx++) {
-    int stackpos = idx + 2;
+    stackpos = idx + 2;
     int type = lua_type(L, stackpos);
     if (type == LUA_TNUMBER) {
       args[idx].Type = FMVT_DOUBLE;
@@ -3911,14 +3911,33 @@ static int far_MacroCallFar (lua_State *L)
       args[idx].Type = FMVT_BOOLEAN;
       args[idx].Value.Integer = lua_toboolean(L, stackpos);
     }
-    else
-      luaL_argerror(L, stackpos, "invalid argument type");
+    else if (type == LUA_TTABLE) {
+      success = 0;
+      lua_rawgeti(L, stackpos, 1);
+      type = lua_type(L, -1);
+      if (type == LUA_TSTRING) {
+        if (!strcmp("int64", lua_tostring(L, -1))) {
+          lua_rawgeti(L, stackpos, 2);
+          args[idx].Type = FMVT_INTEGER;
+          args[idx].Value.Integer = check64(L, -1, &success);
+          lua_pop(L, 1);
+        }
+      }
+      lua_pop(L, 1);
+      if (!success) break;
+    }
+    else {
+      success = 0;
+      break;
+    }
   }
+  if (!success)
+    luaL_argerror(L, stackpos, "invalid argument");
 
   lua_checkstack(L, MAXRET);
   ret = pd->Info->MacroControl(pd->PluginId, MCTL_CALLFAR, opcode, &fmc);
   pushed = lua_gettop(L) - (1+fmc.ArgNum);
-  return pushed ? pushed : (push64(L, ret), 1);
+  return pushed ? pushed : (lua_pushnumber(L, ret), 1); // Hard problem: push64() won't do; no solution available at the moment.
 }
 #endif
 
