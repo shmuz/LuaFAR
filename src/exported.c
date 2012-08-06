@@ -10,8 +10,7 @@
 #define TRANSFORM_REF(h)        (h > 0 ? h : h - 2)
 #define UNTRANSFORM_REF(h)      ((INT_PTR)h > 0 ? (INT_PTR)h : (INT_PTR)h + 2)
 
-typedef unsigned __int64 UINT64;
-extern int push64(lua_State *L, UINT64 v);
+extern int bit64_push(lua_State *L, INT64 v);
 extern void PutFlagsToTable (lua_State *L, const char* key, UINT64 flags);
 extern UINT64 GetFlagCombination (lua_State *L, int pos, int *success);
 extern UINT64 GetFlagsFromTable (lua_State *L, int pos, const char* key);
@@ -244,7 +243,7 @@ int LF_GetFindData(lua_State* L, struct GetFindDataInfo *Info)
   if (GetExportFunction(L, "GetFindData")) {   //+1: Func
     Info->StructSize = sizeof(*Info);
     PushPluginPair(L, Info->hPanel);           //+3: Func,Pair
-    push64(L, Info->OpMode);                   //+4: Func,Pair,OpMode
+    bit64_push(L, Info->OpMode);               //+4: Func,Pair,OpMode
     if (!pcall_msg(L, 3, 1)) {                 //+1: FindData
       if (lua_istable(L, -1)) {
         PushPluginTable(L, Info->hPanel);      //+2: FindData,Tbl
@@ -325,7 +324,7 @@ int LF_GetFiles (lua_State* L, struct GetFilesInfo *Info)
     lua_pushvalue(L,-4);               //+5: Item,Func,Pair,Item
     lua_pushboolean(L, Info->Move);
     push_utf8_string(L, Info->DestPath, -1);
-    push64(L, Info->OpMode);           //+8: Item,Func,Pair,Item,Move,Dest,OpMode
+    bit64_push(L, Info->OpMode);       //+8: Item,Func,Pair,Item,Move,Dest,OpMode
     ret = pcall_msg(L, 6, 2);          //+3: Item,Res,Dest
     if (ret == 0) {
       if (lua_isstring(L,-1)) {
@@ -694,7 +693,7 @@ int LF_DeleteFiles(lua_State* L, const struct DeleteFilesInfo *Info)
   if (GetExportFunction(L, "DeleteFiles")) {   //+1: Func
     PushPluginPair(L, Info->hPanel);           //+3: Func,Pair
     PushPanelItems(L, Info->PanelItem, Info->ItemsNumber); //+4
-    push64(L, Info->OpMode);                   //+5
+    bit64_push(L, Info->OpMode);               //+5
     if(0 == pcall_msg(L, 4, 1))    {           //+1
       res = lua_toboolean(L,-1);
       lua_pop(L,1);
@@ -713,7 +712,7 @@ int LF_MakeDirectory (lua_State* L, struct MakeDirectoryInfo *Info)
     Info->StructSize = sizeof(*Info);
     PushPluginPair(L, Info->hPanel);           //+3: Func,Pair
     push_utf8_string(L, Info->Name, -1);       //+4
-    push64(L, Info->OpMode);                   //+5
+    bit64_push(L, Info->OpMode);               //+5
     if(0 == pcall_msg(L, 4, 2)) {              //+2
       res = lua_tointeger(L,-2);
       if (res == 1 && lua_isstring(L,-1)) {
@@ -752,7 +751,7 @@ int LF_ProcessHostFile(lua_State* L, const struct ProcessHostFileInfo *Info)
     lua_insert(L,-2);                  //+2: Item,Func
     PushPluginPair(L, Info->hPanel);   //+4: Item,Func,Pair
     lua_pushvalue(L,-4);               //+5: Item,Func,Pair,Item
-    push64(L, Info->OpMode);           //+6: Item,Func,Pair,Item,OpMode
+    bit64_push(L, Info->OpMode);       //+6: Item,Func,Pair,Item,OpMode
     ret = pcall_msg(L, 4, 1);          //+2: Item,Res
     if (ret == 0) {
       ret = lua_toboolean(L,-1);
@@ -788,7 +787,7 @@ int LF_PutFiles(lua_State* L, const struct PutFilesInfo *Info)
     lua_pushvalue(L,-4);                     //+5: Items,Func,Pair,Items
     lua_pushboolean(L, Info->Move);          //+6: Items,Func,Pair,Items,Move
     push_utf8_string(L, Info->SrcPath, -1);  //+7: Items,Func,Pair,Items,Move,SrcPath
-    push64(L, Info->OpMode);                 //+8: Items,Func,Pair,Items,Move,SrcPath,OpMode
+    bit64_push(L, Info->OpMode);             //+8: Items,Func,Pair,Items,Move,SrcPath,OpMode
     ret = pcall_msg(L, 6, 1);                //+2: Items,Res
     if (ret == 0) {
       ret = lua_tointeger(L,-1);
@@ -807,7 +806,7 @@ int LF_SetDirectory(lua_State* L, const struct SetDirectoryInfo *Info) //TODO: I
     int ret;
     PushPluginPair(L, Info->hPanel);     //+3: Func,Pair
     push_utf8_string(L, Info->Dir, -1);  //+4: Func,Pair,Dir
-    push64(L, Info->OpMode);             //+5: Func,Pair,Dir,OpMode
+    bit64_push(L, Info->OpMode);         //+5: Func,Pair,Dir,OpMode
     ret = pcall_msg(L, 4, 1);            //+1: Res
     if (ret == 0) {
       ret = lua_toboolean(L,-1);

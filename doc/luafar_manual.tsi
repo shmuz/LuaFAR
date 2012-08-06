@@ -8036,28 +8036,104 @@ lv=1
 dt=Text
 nm=bit64
 ctime=3507278228
-mtime=3552796082
+mtime=3553411835
 <article>
 #_<markdown>
-#_As Far 3.0 started to use 64-bit integer values (flags) in its API, arose the need to represent and handle them from Lua. This is the role of **bit64** library.
+#_As Far 3.0 started to use 64-bit integer values ("flags") in its API, arose the need to represent and handle them from Lua. This is the role of **bit64** library.
 #_
-#_The library represents and accepts flags as either numbers or strings. Values that fit in 53 bits can be represented in both ways. Greater values are always represented as strings.
+#_The library represents and accepts flags as either numbers or "64-bit type" userdata. Values that fit in 53 bits can be represented in both ways. Greater values are always represented as userdata.
 #_
-#_The string representation of an integer acceptable by the library must have the form
-#_        "0xhhh...hhh"
-#_that is, it begins with `0`, following by `x` or `X`, following by N hexadecimal digits, where N is in the range 1-16.
+#_Userdata values created by the library support the following operations:<br>
+#_`+`, `-`, `*`, `/`, `%`, `==`, `<`, `<=`, unary minus.
+#_
+#_`__tostring` metamethod of "64-bit type" userdata returns an acceptable string representation that when passed to [`new`][new] will produce a value equal to the original one.
 #_
 #_The library has the following functions:
 #_
-#_* **`bnot`**    - gets a flag, returns a flag
-#_* **`band`**    - gets multiple flags, returns a flag
-#_* **`bor`**     - gets multiple flags, returns a flag
-#_* **`bxor`**    - gets multiple flags, returns a flag
-#_* **`lshift`**  - gets a flag and an integer, returns a flag
-#_* **`rshift`**  - gets a flag and an integer, returns a flag
-#_* **`arshift`** - gets a flag and an integer, returns a flag
+#_* *`bnot`*    - gets a flag, returns a flag
+#_* *`band`*    - gets multiple flags, returns a flag
+#_* *`bor`*     - gets multiple flags, returns a flag
+#_* *`bxor`*    - gets multiple flags, returns a flag
+#_* *`lshift`*  - gets a flag and an integer, returns a flag
+#_* *`rshift`*  - gets a flag and an integer, returns a flag
+#_* *`arshift`* - gets a flag and an integer, returns a flag
+#_* *`add`*     - gets multiple flags, returns a flag
+#_* *`mul`*     - gets multiple flags, returns a flag
+#_* *`sub`*     - gets 2 flags, returns a flag
+#_* *`div`*     - gets 2 flags, returns a flag
+#_* *`mod`*     - gets 2 flags, returns a flag
 #_
-#_These functions always return a number if the result fits into 53 bits.
+#_The functions above always return a number if the result fits into 53 bits.
+#_
+#_* [*`new`*][new]     - gets a string representation, returns a flag
+#_* [*`isint64`*][isint64] - gets a value, returns a boolean
+#_
+#_[new]: 477.html
+#_[isint64]: 478.html
+#_
+</article>
+</node>
+<node>
+id=478
+lv=2
+dt=Text
+nm=bit64.isint64
+ctime=3553401501
+mtime=3553420795
+<article>
+#_result = bit64.isint64 (val)
+#_
+#_**Parameters:**
+#_  val:    any type
+#_
+#_**Returns:**
+#_  result: boolean
+#_
+#_**Description:**
+#_
+#_The function returns *true* only if argument *val* is a userdata
+#_of "64-bit type" created by this library.
+#_
+#_@@@
+#_
+</article>
+</node>
+<node>
+id=477
+lv=2
+dt=Text
+nm=bit64.new
+ctime=3553400683
+mtime=3553435732
+<article>
+#_result = bit64.new (arg)
+#_
+#_**Parameters:**
+#_  arg:     string, number or userdata
+#_
+#_**Returns:**
+#_  result:  userdata, or nil
+#_
+#_**Description:**
+#_
+#_This function creates a new "64-bit type" userdata from the input value.
+#_
+#_If *arg* is a string, it must be an acceptable string representation of
+#_a 64-bit integer. The function returns *nil* if the input string can not
+#_be converted.
+#_
+#_The string representation of an integer acceptable by the function
+#_must have the form *0xhhh...hhh*, that is, it begins with `0`, following
+#_by `x` or `X`, following by N hexadecimal digits, where N is in the range
+#_1-16.
+#_
+#_If *arg* is a number, it must fit in 53 bits, otherwise nil is returned.
+#_
+#_If *arg* is a "64-bit type" userdata then a new userdata with the same
+#_value is created and returned.
+#_
+#_
+#_@@@
 #_
 </article>
 </node>

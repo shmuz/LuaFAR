@@ -18,10 +18,9 @@
 #endif
 
 typedef struct PluginStartupInfo PSInfo;
-typedef unsigned __int64 UINT64;
 
-extern int push64(lua_State *L, UINT64 v);
-extern UINT64 check64(lua_State *L, int pos, int *success);
+extern int bit64_push(lua_State *L, INT64 v);
+extern int bit64_getvalue (lua_State *L, int pos, INT64 *target);
 
 extern int luaopen_bit64 (lua_State *L);
 extern int luaopen_regex (lua_State*);
@@ -154,7 +153,7 @@ HANDLE OptHandle2 (lua_State *L)
 
 static UINT64 get_env_flag (lua_State *L, int pos, int *success)
 {
-  UINT64 ret = 0;
+  INT64 ret = 0;
   int type = lua_type (L, pos);
   if (success)
     *success = TRUE;
@@ -164,29 +163,24 @@ static UINT64 get_env_flag (lua_State *L, int pos, int *success)
   else if (type == LUA_TNUMBER)
     ret = (__int64)lua_tonumber(L, pos); // IMPORTANT: cast to signed integer.
   else if (type == LUA_TSTRING) {
-    int tmp;
     const char* s = lua_tostring(L, pos);
-    //-------------------------------------------------------------------------
-    if (*s == '0') {
-      ret = check64(L, pos, &tmp);
-      if (success) *success = tmp;
-    }
-    //-------------------------------------------------------------------------
-    else {
-      lua_getfield(L, LUA_REGISTRYINDEX, FAR_FLAGSTABLE);
-      lua_getfield (L, -1, s);
-      type = lua_type(L, -1);
-      if (type == LUA_TNUMBER)
-        ret = (__int64)lua_tonumber(L, -1); // IMPORTANT: cast to signed integer.
-      else if (type == LUA_TSTRING) {
-        ret = check64(L, -1, &tmp);
-        if (success) *success = tmp;
-      }
-      else if (success)
+    lua_getfield(L, LUA_REGISTRYINDEX, FAR_FLAGSTABLE);
+    lua_getfield (L, -1, s);
+    type = lua_type(L, -1);
+    if (type == LUA_TNUMBER)
+      ret = (__int64)lua_tonumber(L, -1); // IMPORTANT: cast to signed integer.
+    else if (!bit64_getvalue(L, pos, &ret)) {
+      if (success)
         *success = FALSE;
-      lua_pop (L, 2);
     }
+    else if (success)
+      *success = FALSE;
+    lua_pop (L, 2);
     //-------------------------------------------------------------------------
+  }
+  else if (!bit64_getvalue(L, pos, &ret)) {
+    if (success)
+      *success = FALSE;
   }
   else if (success)
     *success = FALSE;
@@ -260,13 +254,13 @@ UINT64 GetFlagsFromTable (lua_State *L, int pos, const char* key)
 
 void PutFlagsToTable (lua_State *L, const char* key, UINT64 flags)
 {
-  push64(L, flags);
+  bit64_push(L, flags);
   lua_setfield(L, -2, key);
 }
 
 void PutFlagsToArray (lua_State *L, int index, UINT64 flags)
 {
-  push64(L, flags);
+  bit64_push(L, flags);
   lua_rawseti(L, -2, index);
 }
 
@@ -3814,7 +3808,7 @@ int LF_MacroCallback (lua_State* L, void* Id, FARADDKEYMACROFLAGS Flags)
   lua_rawgeti(L, LUA_REGISTRYINDEX, funcref);
   if (lua_type(L,-1) == LUA_TFUNCTION) {
     lua_pushinteger(L, funcref);
-    push64(L, Flags);
+    bit64_push(L, Flags);
     if (lua_pcall(L, 2, 1, 0) == 0)
       result = lua_toboolean(L, -1);
   }
@@ -3873,7 +3867,7 @@ static void _cdecl MacroCallFarCallback (void *Data, struct FarMacroValue *Val)
   if (Val->Type == FMVT_STRING)
     push_utf8_string(L, Val->Value.String, -1);
   else if (Val->Type == FMVT_INTEGER)
-    lua_pushnumber(L, Val->Value.Integer); // Hard problem: push64() won't do; no solution available at the moment.
+    bit64_push(L, Val->Value.Integer);
   else if (Val->Type == FMVT_DOUBLE)
     lua_pushnumber(L, Val->Value.Double);
   else if (Val->Type == FMVT_BOOLEAN)
@@ -3888,6 +3882,7 @@ static int far_MacroCallFar (lua_State *L)
   struct FarMacroValue args[MAXARG];
   struct FarMacroCall fmc;
   int idx, ret, pushed, stackpos=0, success=1;
+  INT64 val64;
   TPluginData *pd = GetPluginData(L);
   int opcode = luaL_checkinteger(L, 1);
   fmc.Args = args;
@@ -3911,20 +3906,9 @@ static int far_MacroCallFar (lua_State *L)
       args[idx].Type = FMVT_BOOLEAN;
       args[idx].Value.Integer = lua_toboolean(L, stackpos);
     }
-    else if (type == LUA_TTABLE) {
-      success = 0;
-      lua_rawgeti(L, stackpos, 1);
-      type = lua_type(L, -1);
-      if (type == LUA_TSTRING) {
-        if (!strcmp("int64", lua_tostring(L, -1))) {
-          lua_rawgeti(L, stackpos, 2);
-          args[idx].Type = FMVT_INTEGER;
-          args[idx].Value.Integer = check64(L, -1, &success);
-          lua_pop(L, 1);
-        }
-      }
-      lua_pop(L, 1);
-      if (!success) break;
+    else if (bit64_getvalue(L, stackpos, &val64)) {
+      args[idx].Type = FMVT_INTEGER;
+      args[idx].Value.Integer = val64;
     }
     else {
       success = 0;
@@ -3937,7 +3921,7 @@ static int far_MacroCallFar (lua_State *L)
   lua_checkstack(L, MAXRET);
   ret = pd->Info->MacroControl(pd->PluginId, MCTL_CALLFAR, opcode, &fmc);
   pushed = lua_gettop(L) - (1+fmc.ArgNum);
-  return pushed ? pushed : (lua_pushnumber(L, ret), 1); // Hard problem: push64() won't do; no solution available at the moment.
+  return pushed ? pushed : (bit64_push(L, ret), 1);
 }
 #endif
 
@@ -4539,7 +4523,7 @@ static int Settings_get (lua_State *L)
   fsi.Type = (enum FARSETTINGSTYPES) check_env_flag(L, 4);
   if (GetPluginData(L)->Info->SettingsControl(udata->Handle, SCTL_GET, 0, &fsi)) {
     if (fsi.Type == FST_QWORD)
-      push64(L, fsi.Value.Number);
+      bit64_push(L, fsi.Value.Number);
     else if (fsi.Type == FST_STRING)
       push_utf8_string(L, fsi.Value.String, -1);
     else if (fsi.Type == FST_DATA)

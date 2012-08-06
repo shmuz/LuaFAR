@@ -80,7 +80,7 @@ local file_top = [[
 #include "lua.h"
 #include "plugin.hpp"
 
-extern int push64(lua_State *L, unsigned __int64 v);
+extern int bit64_push(lua_State *L, __int64 v);
 ]]
 
 
@@ -92,7 +92,7 @@ void push_flags_table (lua_State *L)
   const int nelem = sizeof(Keys) / sizeof(Keys[0]);
   lua_createtable (L, 0, nelem);
   for (i=0; i<nelem; ++i) {
-    push64(L, Vals[i]);
+    bit64_push(L, Vals[i]);
     lua_setfield(L, -2, Keys[i]);
   }
 }
