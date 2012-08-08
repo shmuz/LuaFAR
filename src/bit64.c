@@ -100,28 +100,22 @@ static int bnot(lua_State *L)
 static int lshift(lua_State *L)
 {
   UINT64 v = check64(L, 1, NULL);
-  unsigned int n = luaL_checkinteger(L, 2);
-  if (n > 64) n = 64;
+  unsigned int n = luaL_checkinteger(L, 2) & 63;
   return bit64_push(L, v << n);
 }
 
 static int rshift(lua_State *L)
 {
   UINT64 v = check64(L, 1, NULL);
-  unsigned int n = luaL_checkinteger(L, 2);
-  if (n > 64) n = 64;
+  unsigned int n = luaL_checkinteger(L, 2) & 63;
   return bit64_push(L, v >> n);
 }
 
 static int arshift(lua_State *L)
 {
-  UINT64 v = check64(L, 1, NULL), res;
-  unsigned int n = luaL_checkinteger(L, 2);
-  if (n > 64) n = 64;
-  res = (v >> n);
-  if (v & 0x8000000000000000ULL)
-    res |= (0xffffffffffffffffULL << (64-n));
-  return bit64_push(L, res);
+  INT64 v = check64(L, 1, NULL);
+  unsigned int n = luaL_checkinteger(L, 2) & 63;
+  return bit64_push(L, v >> n);
 }
 
 static int f_new (lua_State *L)
@@ -275,6 +269,9 @@ static const luaL_Reg funcs[] = {
   { "mul",        f_mul   },
   { "div",        f_div   },
   { "mod",        f_mod   },
+  { "eq",         f_eq    },
+  { "lt",         f_lt    },
+  { "le",         f_le    },
   { "isint64",    f_isint64 },
 
   { NULL,         NULL    },

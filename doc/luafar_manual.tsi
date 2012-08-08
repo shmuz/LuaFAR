@@ -8036,7 +8036,7 @@ lv=1
 dt=Text
 nm=bit64
 ctime=3507278228
-mtime=3553411835
+mtime=3553536768
 <article>
 #_<markdown>
 #_As Far 3.0 started to use 64-bit integer values ("flags") in its API, arose the need to represent and handle them from Lua. This is the role of **bit64** library.
@@ -8064,6 +8064,14 @@ mtime=3553411835
 #_* *`mod`*     - gets 2 flags, returns a flag
 #_
 #_The functions above always return a number if the result fits into 53 bits.
+#_
+#_* *`eq`*      - gets 2 flags, returns a boolean
+#_* *`lt`*      - gets 2 flags, returns a boolean
+#_* *`le`*      - gets 2 flags, returns a boolean
+#_
+#_The functions above are useful for comparisons where each operand may be
+#_either a 64-bit type userdata or a number. They compare underlying 64-bit
+#_integers.
 #_
 #_* [*`new`*][new]     - gets a string representation, returns a flag
 #_* [*`isint64`*][isint64] - gets a value, returns a boolean
