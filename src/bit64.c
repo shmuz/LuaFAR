@@ -64,37 +64,36 @@ INT64 check64(lua_State *L, int pos, int* success)
 static int band(lua_State *L)
 {
   int i;
-  UINT64 v = 0xffffffffffffffffULL;
+  UINT64 v = check64(L,1,NULL);
   int n = lua_gettop(L);
-  for (i=0; i<n; i++)
-    v &= check64(L, i+1, NULL);
-  return bit64_push(L, v);
+  for (i=2; i<=n; i++)
+    v &= check64(L,i,NULL);
+  return bit64_push(L,v);
 }
 
 static int bor(lua_State *L)
 {
   int i;
-  UINT64 v = 0;
+  UINT64 v = check64(L,1,NULL);
   int n = lua_gettop(L);
-  for (i=0; i<n; i++)
-    v |= check64(L, i+1, NULL);
-  return bit64_push(L, v);
+  for (i=2; i<=n; i++)
+    v |= check64(L,i,NULL);
+  return bit64_push(L,v);
 }
 
 static int bxor(lua_State *L)
 {
   int i;
-  UINT64 v = 0;
+  UINT64 v = check64(L,1,NULL);
   int n = lua_gettop(L);
-  for (i=0; i<n; i++)
-    v ^= check64(L, i+1, NULL);
-  return bit64_push(L, v);
+  for (i=2; i<=n; i++)
+    v ^= check64(L,i,NULL);
+  return bit64_push(L,v);
 }
 
 static int bnot(lua_State *L)
 {
-  luaL_checkany(L, 1);
-  return bit64_push(L, ~check64(L, 1, NULL));
+  return bit64_push(L, ~check64(L,1,NULL));
 }
 
 static int lshift(lua_State *L)
@@ -178,11 +177,11 @@ static int f_isint64 (lua_State *L)
 static int f_add (lua_State *L)
 {
   int i;
-  INT64 v = 0;
+  INT64 v = check64(L,1,NULL);
   int n = lua_gettop(L);
-  for (i=0; i<n; i++)
-    v += check64(L, i+1, NULL);
-  return bit64_push(L, v);
+  for (i=2; i<=n; i++)
+    v += check64(L,i,NULL);
+  return bit64_push(L,v);
 }
 
 static int f_sub (lua_State *L)
@@ -195,11 +194,11 @@ static int f_sub (lua_State *L)
 static int f_mul (lua_State *L)
 {
   int i;
-  INT64 v = 1;
+  INT64 v = check64(L,1,NULL);
   int n = lua_gettop(L);
-  for (i=0; i<n; i++)
-    v *= check64(L, i+1, NULL);
-  return bit64_push(L, v);
+  for (i=2; i<=n; i++)
+    v *= check64(L,i,NULL);
+  return bit64_push(L,v);
 }
 
 static int f_div (lua_State *L)
