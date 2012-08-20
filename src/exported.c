@@ -11,6 +11,7 @@
 #define UNTRANSFORM_REF(h)      ((INT_PTR)h > 0 ? (INT_PTR)h : (INT_PTR)h + 2)
 
 extern int bit64_push(lua_State *L, INT64 v);
+extern int bit64_getvalue (lua_State *L, int pos, INT64 *target);
 extern void PutFlagsToTable (lua_State *L, const char* key, UINT64 flags);
 extern UINT64 GetFlagCombination (lua_State *L, int pos, int *success);
 extern UINT64 GetFlagsFromTable (lua_State *L, int pos, const char* key);
@@ -568,6 +569,20 @@ static void PushParamsTable (lua_State* L, const struct OpenMacroInfo* om_info)
 }
 
 #ifdef FAR_LUA
+static struct MacroPluginReturn* CreateMPR (lua_State* L, int nargs, int ReturnType)
+{
+  struct MacroPluginReturn* mpr;
+  size_t size = sizeof(struct MacroPluginReturn) + nargs*sizeof(struct FarMacroValue);
+  char* rawmem = (char*)lua_newuserdata(L, size);
+  lua_setfield(L, -2, "MacroPluginReturn");
+  memset(rawmem, 0, size);
+  mpr = (struct MacroPluginReturn*)rawmem;
+  mpr->Args = (struct FarMacroValue*)(rawmem + sizeof(struct MacroPluginReturn));
+  mpr->ArgNum = nargs;
+  mpr->ReturnType = ReturnType;
+  return mpr;
+}
+
 static HANDLE Open_Luamacro (lua_State* L, const struct OpenInfo *Info)
 {
   if (Info->OpenFrom == OPEN_MACROINIT || Info->OpenFrom == OPEN_MACROPARSE)
@@ -575,22 +590,93 @@ static HANDLE Open_Luamacro (lua_State* L, const struct OpenInfo *Info)
   else
     lua_pushinteger(L, Info->Data);
 
-  if (pcall_msg(L, 3, 1) == 0) {
+  if (pcall_msg(L, 3, 2) == 0) {
     if (Info->OpenFrom == OPEN_MACROINIT || Info->OpenFrom == OPEN_MACROFINAL) {
-      if (lua_type(L,-1) == LUA_TNUMBER) {
-        INT_PTR ret = lua_tointeger(L, -1);
-        lua_pop(L, 1);
+      if (lua_type(L,-2) == LUA_TNUMBER) {
+        INT_PTR ret = lua_tointeger(L,-2);
+        lua_pop(L,2);
         return CAST(HANDLE, ret);
       }
     }
     else if (Info->OpenFrom == OPEN_MACROSTEP || Info->OpenFrom == OPEN_MACROPARSE) {
-      if (lua_type(L,-1) == LUA_TSTRING) {
-        const void* ret = lua_tostring(L, -1); // already in UTF-16
-        lua_pop(L, 1);
-        return CAST(HANDLE, ret);
+      struct MacroPluginReturn* mpr;
+      int ReturnType;
+
+      if (lua_type(L,-2) != LUA_TNUMBER || lua_type(L,-1) != LUA_TTABLE) {
+        lua_pop(L,2); return NULL;
+      }
+      switch((ReturnType=lua_tointeger(L,-2)))
+      {
+        case MPRT_NORMALFINISH:
+        {
+          mpr = CreateMPR(L,0,ReturnType);
+          lua_pop(L,2);
+          return CAST(HANDLE, mpr);
+        }
+
+        case MPRT_ERRORFINISH:
+        case MPRT_KEYS:
+        case MPRT_PRINT:
+        {
+          lua_rawgeti(L,-1,1);
+          if (lua_type(L,-1) == LUA_TSTRING) {
+            wchar_t *s = check_utf8_string(L,-1,NULL);
+            lua_rawseti(L,-2,1);
+            mpr = CreateMPR(L,1,ReturnType);
+            mpr->Args[0].Type = FMVT_STRING;
+            mpr->Args[0].Value.String = s;
+            lua_pop(L,2);
+            return CAST(HANDLE, mpr);
+          }
+          else {
+            lua_pop(L,3); return NULL;
+          }
+        }
+
+        case MPRT_PLUGINCALL:
+        {
+          int nargs, type, idx;
+          INT64 val64;
+          lua_getfield(L,-1,"n");
+          nargs=lua_tointeger(L,-1);
+          if (nargs>64) nargs=64;
+          lua_pop(L,1);
+          mpr = CreateMPR(L,nargs,ReturnType);
+          for (idx=0; idx<nargs; idx++) {
+            lua_rawgeti(L,-1,idx+1);
+            type = lua_type(L, -1);
+            if (type == LUA_TNUMBER) {
+              mpr->Args[idx].Type = FMVT_DOUBLE;
+              mpr->Args[idx].Value.Double = lua_tonumber(L, -1);
+              lua_pop(L,1);
+            }
+            else if (type == LUA_TSTRING) {
+              mpr->Args[idx].Type = FMVT_STRING;
+              mpr->Args[idx].Value.String = check_utf8_string (L, -1, NULL);
+              lua_rawseti(L,-2,idx+1);
+            }
+            else if (type == LUA_TBOOLEAN || type == LUA_TNIL) {
+              mpr->Args[idx].Type = FMVT_BOOLEAN;
+              mpr->Args[idx].Value.Integer = lua_toboolean(L, -1);
+              lua_pop(L,1);
+            }
+            else if (bit64_getvalue(L, -1, &val64)) {
+              mpr->Args[idx].Type = FMVT_INTEGER;
+              mpr->Args[idx].Value.Integer = val64;
+              lua_pop(L,1);
+            }
+            else {
+              mpr->Args[idx].Type = FMVT_BOOLEAN;
+              mpr->Args[idx].Value.Integer = 0;
+              lua_pop(L,1);
+            }
+          }
+          lua_pop(L,2);
+          return CAST(HANDLE, mpr);
+        }
       }
     }
-    lua_pop(L,1);
+    lua_pop(L,2);
   }
   return NULL;
 }

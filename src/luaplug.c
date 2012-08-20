@@ -139,7 +139,7 @@ int LUAPLUG GetMinFarVersionW()
 HANDLE LUAPLUG OpenW(const struct OpenInfo *Info)
 {
   if(LS) return LF_Open(LS, Info);
-  return INVALID_HANDLE_VALUE;
+  return NULL;
 }
 #endif
 //---------------------------------------------------------------------------
