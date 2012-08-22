@@ -121,13 +121,16 @@ static int f_new (lua_State *L)
 {
   int type = lua_type(L, 1);
   if (type == LUA_TSTRING) {
+    INT64 v = 0;
+    size_t i = 0;
     size_t len;
     const char* s = lua_tolstring(L, 1, &len);
-    if (len >= 3 && len <= 18 && s[0]=='0' && (s[1]=='x' || s[1]=='X')) {
-      size_t i;
-      UINT64 v = 0;
-      len -= 2; s += 2;
-      for (i=0; i<len; i++) {
+
+    if (s[0]=='-')
+      i++;
+    if (len-i > 2 && len-i <= 18 && s[i]=='0' && (s[i+1]=='x' || s[i+1]=='X')) {
+      i += 2;
+      for (; i<len; i++) {
         int a;
         if (s[i] >= '0' && s[i] <= '9')      a = s[i] - '0';
         else if (s[i] >= 'A' && s[i] <= 'F') a = s[i] + 10 - 'A';
@@ -136,7 +139,16 @@ static int f_new (lua_State *L)
         v = (v << 4) | a;
       }
       if (i == len)
-        return push_new_userdata(L, v);
+        return push_new_userdata(L, s[0] == '-' ? -v : v);
+    }
+    else if (len-i > 0) {
+      for (; i<len; i++) {
+        if (s[i] >= '0' && s[i] <= '9')
+          v = (v * 10) + s[i] - '0';
+        else break;
+      }
+      if (i == len)
+        return push_new_userdata(L, s[0] == '-' ? -v : v);
     }
   }
   else if (type == LUA_TNUMBER) {
@@ -156,15 +168,9 @@ static int f_new (lua_State *L)
 
 static int f_tostring (lua_State *L)
 {
-  UINT64 v = check64(L,1,NULL);
-  char buf[2+16] = "0x0";
-  int i, j = 0;
-  for (i=60; i >= 0; i -= 4) {
-    int u = (v >> i) & 0xF;
-    if (j == 0 && u != 0) j = 2;
-    if (j) buf[j++] = (u<10) ? u+'0' : u-10+'A';
-  }
-  lua_pushlstring(L, buf, j == 0 ? 3 : j);
+  char buf[32];
+  sprintf(buf, "%I64d", check64(L,1,NULL));
+  lua_pushstring(L, buf);
   return 1;
 }
 

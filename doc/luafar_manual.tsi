@@ -8036,7 +8036,7 @@ lv=1
 dt=Text
 nm=bit64
 ctime=3507278228
-mtime=3553536768
+mtime=3554804248
 <article>
 #_<markdown>
 #_As Far 3.0 started to use 64-bit integer values ("flags") in its API, arose the need to represent and handle them from Lua. This is the role of **bit64** library.
@@ -8070,7 +8070,7 @@ mtime=3553536768
 #_* *`le`*      - gets 2 flags, returns a boolean
 #_
 #_The functions above are useful for comparisons where each operand may be
-#_either a 64-bit type userdata or a number. They compare underlying 64-bit
+#_either a "64-bit int" type userdata or a number. They compare underlying 64-bit
 #_integers.
 #_
 #_* [*`new`*][new]     - gets a string representation, returns a flag
@@ -8087,7 +8087,7 @@ lv=2
 dt=Text
 nm=bit64.isint64
 ctime=3553401501
-mtime=3553420795
+mtime=3554804280
 <article>
 #_result = bit64.isint64 (val)
 #_
@@ -8100,7 +8100,7 @@ mtime=3553420795
 #_**Description:**
 #_
 #_The function returns *true* only if argument *val* is a userdata
-#_of "64-bit type" created by this library.
+#_of "64-bit int" type created by this library.
 #_
 #_@@@
 #_
@@ -8112,7 +8112,7 @@ lv=2
 dt=Text
 nm=bit64.new
 ctime=3553400683
-mtime=3553435732
+mtime=3554816005
 <article>
 #_result = bit64.new (arg)
 #_
@@ -8124,20 +8124,21 @@ mtime=3553435732
 #_
 #_**Description:**
 #_
-#_This function creates a new "64-bit type" userdata from the input value.
+#_This function creates a new "64-bit int" type userdata from the input value.
 #_
 #_If *arg* is a string, it must be an acceptable string representation of
 #_a 64-bit integer. The function returns *nil* if the input string can not
 #_be converted.
 #_
-#_The string representation of an integer acceptable by the function
-#_must have the form *0xhhh...hhh*, that is, it begins with `0`, following
-#_by `x` or `X`, following by N hexadecimal digits, where N is in the range
-#_1-16.
+#_The string representation of an integer acceptable by the function must
+#_have either the hexadecimal form
+#_  **-?0[xX][0-9A-Fa-f]{1,16}**, e.g. "0x56DF5"
+#_or the decimal form
+#_  **-?[0-9]+**, e.g. "-234567".
 #_
 #_If *arg* is a number, it must fit in 53 bits, otherwise nil is returned.
 #_
-#_If *arg* is a "64-bit type" userdata then a new userdata with the same
+#_If *arg* is a "64-bit int" type userdata then a new userdata with the same
 #_value is created and returned.
 #_
 #_
