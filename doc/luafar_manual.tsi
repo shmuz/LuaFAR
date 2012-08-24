@@ -8036,12 +8036,12 @@ lv=1
 dt=Text
 nm=bit64
 ctime=3507278228
-mtime=3554804248
+mtime=3554959484
 <article>
 #_<markdown>
 #_As Far 3.0 started to use 64-bit integer values ("flags") in its API, arose the need to represent and handle them from Lua. This is the role of **bit64** library.
 #_
-#_The library represents and accepts flags as either numbers or "64-bit type" userdata. Values that fit in 53 bits can be represented in both ways. Greater values are always represented as userdata.
+#_The library represents and accepts flags as either numbers or "64 bit integer" userdata. Values that fit in 53 bits can be represented in both ways. Greater values are always represented as userdata.
 #_
 #_Userdata values created by the library support the following operations:<br>
 #_`+`, `-`, `*`, `/`, `%`, `==`, `<`, `<=`, unary minus.
@@ -8069,15 +8069,14 @@ mtime=3554804248
 #_* *`lt`*      - gets 2 flags, returns a boolean
 #_* *`le`*      - gets 2 flags, returns a boolean
 #_
-#_The functions above are useful for comparisons where each operand may be
-#_either a "64-bit int" type userdata or a number. They compare underlying 64-bit
-#_integers.
+#_The functions above are useful for comparisons where each operand may be either a "64 bit integer" type userdata or a number. They compare underlying 64-bit integers.
 #_
-#_* [*`new`*][new]     - gets a string representation, returns a flag
-#_* [*`isint64`*][isint64] - gets a value, returns a boolean
+#_* [*`new`*][new]   - gets a string representation, returns a flag
+#_* [*`type`*][type] - gets a value, returns a string (or nil)
 #_
 #_[new]: 477.html
-#_[isint64]: 478.html
+#_[type]: 478.html
+#_
 #_
 </article>
 </node>
@@ -8085,22 +8084,23 @@ mtime=3554804248
 id=478
 lv=2
 dt=Text
-nm=bit64.isint64
+nm=bit64.type
 ctime=3553401501
-mtime=3554804280
+mtime=3554959390
 <article>
-#_result = bit64.isint64 (val)
+#_result = bit64.type (val)
 #_
 #_**Parameters:**
 #_  val:    any type
 #_
 #_**Returns:**
-#_  result: boolean
+#_  result: string, or nil
 #_
 #_**Description:**
 #_
-#_The function returns *true* only if argument *val* is a userdata
-#_of "64-bit int" type created by this library.
+#_The function returns string *"64 bit integer"* if argument *val*
+#_is a userdata of the type created by this library, otherwise nil
+#_is returned.
 #_
 #_@@@
 #_

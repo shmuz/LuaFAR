@@ -9,7 +9,7 @@ typedef unsigned __int64 UINT64;
 
 const char metatable_name[] = "64 bit integer";
 
-static int push_new_userdata(lua_State *L, INT64 v)
+int bit64_pushuserdata(lua_State *L, INT64 v)
 {
   *(INT64*)lua_newuserdata(L, sizeof(INT64)) = v;
   luaL_getmetatable(L, metatable_name);
@@ -22,7 +22,7 @@ int bit64_push(lua_State *L, INT64 v)
   if ((v >= 0 && v <= MAX53) || (v < 0 && -v <= MAX53))
     lua_pushnumber(L, (double)v);
   else
-    push_new_userdata(L, v);
+    bit64_pushuserdata(L, v);
   return 1;
 }
 
@@ -42,7 +42,7 @@ int bit64_getvalue (lua_State *L, int pos, INT64 *target)
   return 0;
 }
 
-INT64 check64(lua_State *L, int pos, int* success)
+static INT64 check64(lua_State *L, int pos, int* success)
 {
   int tp = lua_type(L, pos);
   if (success) *success = 1;
@@ -139,7 +139,7 @@ static int f_new (lua_State *L)
         v = (v << 4) | a;
       }
       if (i == len)
-        return push_new_userdata(L, s[0] == '-' ? -v : v);
+        return bit64_pushuserdata(L, s[0] == '-' ? -v : v);
     }
     else if (len-i > 0) {
       for (; i<len; i++) {
@@ -148,19 +148,19 @@ static int f_new (lua_State *L)
         else break;
       }
       if (i == len)
-        return push_new_userdata(L, s[0] == '-' ? -v : v);
+        return bit64_pushuserdata(L, s[0] == '-' ? -v : v);
     }
   }
   else if (type == LUA_TNUMBER) {
     int success = 0;
     INT64 v = check64(L, 1, &success);
     if (success)
-      return push_new_userdata(L, v);
+      return bit64_pushuserdata(L, v);
   }
   else {
     INT64 v;
     if (bit64_getvalue (L, 1, &v))
-      return push_new_userdata(L, v);
+      return bit64_pushuserdata(L, v);
   }
   lua_pushnil(L);
   return 1;
@@ -174,9 +174,9 @@ static int f_tostring (lua_State *L)
   return 1;
 }
 
-static int f_isint64 (lua_State *L)
+static int f_type (lua_State *L)
 {
-  lua_pushboolean(L, bit64_getvalue(L,1,NULL));
+  bit64_getvalue(L,1,NULL) ? lua_pushstring(L,metatable_name):lua_pushnil(L);
   return 1;
 }
 
@@ -277,7 +277,7 @@ static const luaL_Reg funcs[] = {
   { "eq",         f_eq    },
   { "lt",         f_lt    },
   { "le",         f_le    },
-  { "isint64",    f_isint64 },
+  { "type",       f_type  },
 
   { NULL,         NULL    },
 };

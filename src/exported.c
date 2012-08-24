@@ -11,6 +11,7 @@
 #define UNTRANSFORM_REF(h)      ((INT_PTR)h > 0 ? (INT_PTR)h : (INT_PTR)h + 2)
 
 extern int bit64_push(lua_State *L, INT64 v);
+extern int bit64_pushuserdata(lua_State *L, INT64 v);
 extern int bit64_getvalue (lua_State *L, int pos, INT64 *target);
 extern void PutFlagsToTable (lua_State *L, const char* key, UINT64 flags);
 extern UINT64 GetFlagCombination (lua_State *L, int pos, int *success);
@@ -569,6 +570,21 @@ static void PushParamsTable (lua_State* L, const struct OpenMacroInfo* om_info)
 }
 
 #ifdef FAR_LUA
+static void FL_PushParamsTable (lua_State* L, const struct OpenMacroInfo* om_info)
+{
+  size_t i;
+  lua_createtable(L, om_info->Count, 0);
+  for (i=0; i < om_info->Count; i++) {
+    struct FarMacroValue* v = om_info->Values + i;
+    if (v->Type == FMVT_INTEGER)      bit64_pushuserdata(L, v->Value.Integer);
+    else if (v->Type == FMVT_DOUBLE)  lua_pushnumber(L, v->Value.Double);
+    else if (v->Type == FMVT_STRING)  push_utf8_string(L, v->Value.String, -1);
+    else if (v->Type == FMVT_BOOLEAN) lua_pushboolean(L, v->Value.Integer);
+    else                              lua_pushboolean(L, 0);
+    lua_rawseti(L, -2, i+1);
+  }
+}
+
 static struct MacroPluginReturn* CreateMPR (lua_State* L, int nargs, int ReturnType)
 {
   struct MacroPluginReturn* mpr;
@@ -586,7 +602,7 @@ static struct MacroPluginReturn* CreateMPR (lua_State* L, int nargs, int ReturnT
 static HANDLE Open_Luamacro (lua_State* L, const struct OpenInfo *Info)
 {
   if (Info->OpenFrom == OPEN_MACROINIT || Info->OpenFrom == OPEN_MACROPARSE)
-    PushParamsTable(L, (struct OpenMacroInfo*)Info->Data);
+    FL_PushParamsTable(L, (struct OpenMacroInfo*)Info->Data);
   else
     lua_pushinteger(L, Info->Data);
 
