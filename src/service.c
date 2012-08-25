@@ -20,6 +20,7 @@
 typedef struct PluginStartupInfo PSInfo;
 
 extern int bit64_push(lua_State *L, INT64 v);
+extern int bit64_pushuserdata(lua_State *L, INT64 v);
 extern int bit64_getvalue (lua_State *L, int pos, INT64 *target);
 
 extern int luaopen_bit64 (lua_State *L);
@@ -3861,34 +3862,46 @@ static int far_MacroDelete (lua_State* L)
 }
 
 #ifdef FAR_LUA
+typedef struct {
+  lua_State *L;
+  int ret_avail;
+} mcfc_data;
+
 static void _cdecl MacroCallFarCallback (void *Data, struct FarMacroValue *Val)
 {
-  lua_State *L = CAST(lua_State*, Data);
-  if (Val->Type == FMVT_STRING)
-    push_utf8_string(L, Val->Value.String, -1);
-  else if (Val->Type == FMVT_INTEGER)
-    bit64_push(L, Val->Value.Integer);
-  else if (Val->Type == FMVT_DOUBLE)
-    lua_pushnumber(L, Val->Value.Double);
-  else if (Val->Type == FMVT_BOOLEAN)
-    lua_pushboolean(L, Val->Value.Integer != 0);
-  else
-    luaL_error(L, "Unknown value type.");
+  lua_State *L;
+  mcfc_data *cbdata = CAST(mcfc_data*, Data);
+  if (cbdata->ret_avail > 0) {
+    --cbdata->ret_avail;
+    L = cbdata->L;
+    if (Val->Type == FMVT_STRING)
+      push_utf8_string(L, Val->Value.String, -1);
+    else if (Val->Type == FMVT_INTEGER)
+      bit64_pushuserdata(L, Val->Value.Integer);
+    else if (Val->Type == FMVT_DOUBLE)
+      lua_pushnumber(L, Val->Value.Double);
+    else if (Val->Type == FMVT_BOOLEAN)
+      lua_pushboolean(L, Val->Value.Integer != 0);
+    else
+      luaL_error(L, "Unknown value type.");
+  }
 }
 
 static int far_MacroCallFar (lua_State *L)
 {
-  enum { MAXARG=16, MAXRET=16 };
+  enum { MAXARG=32, MAXRET=32 };
   struct FarMacroValue args[MAXARG];
   struct FarMacroCall fmc;
   int idx, ret, pushed, stackpos=0, success=1;
   INT64 val64;
+  mcfc_data cbdata = { L, MAXRET };
+
   TPluginData *pd = GetPluginData(L);
   int opcode = luaL_checkinteger(L, 1);
   fmc.Args = args;
   fmc.ArgNum = lua_gettop(L) - 1;
   fmc.Callback = MacroCallFarCallback;
-  fmc.CallbackData = L;
+  fmc.CallbackData = &cbdata;
   luaL_argcheck(L, fmc.ArgNum<=MAXARG, MAXARG+2, "too many arguments");
 
   for (idx=0; idx<fmc.ArgNum; idx++) {
@@ -3920,8 +3933,8 @@ static int far_MacroCallFar (lua_State *L)
 
   lua_checkstack(L, MAXRET);
   ret = pd->Info->MacroControl(pd->PluginId, MCTL_CALLFAR, opcode, &fmc);
-  pushed = lua_gettop(L) - (1+fmc.ArgNum);
-  return pushed ? pushed : (bit64_push(L, ret), 1);
+  pushed = MAXRET - cbdata.ret_avail;
+  return pushed ? pushed : (lua_pushnumber(L, ret), 1);
 }
 #endif
 
