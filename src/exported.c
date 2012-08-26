@@ -601,11 +601,7 @@ static struct MacroPluginReturn* CreateMPR (lua_State* L, int nargs, int ReturnT
 
 static HANDLE Open_Luamacro (lua_State* L, const struct OpenInfo *Info)
 {
-  if (Info->OpenFrom == OPEN_MACROINIT || Info->OpenFrom == OPEN_MACROPARSE)
-    FL_PushParamsTable(L, (struct OpenMacroInfo*)Info->Data);
-  else
-    lua_pushinteger(L, Info->Data);
-
+  FL_PushParamsTable(L, (struct OpenMacroInfo*)Info->Data);
   if (pcall_msg(L, 3, 2) == 0) {
     if (Info->OpenFrom == OPEN_MACROINIT || Info->OpenFrom == OPEN_MACROFINAL) {
       if (lua_type(L,-2) == LUA_TNUMBER) {
