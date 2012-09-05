@@ -15,3 +15,4 @@ endif
 INC_FAR = $(PATH_LUAFAR)\..\..\system\include\far\unicode
 LUAFARDLL = luafar3.dll
 LUAEXE = c:\exe32\lua.exe
+MYLDFLAGS = -Lc:\exe32
