@@ -29,14 +29,14 @@ void   PutStrToTable      (lua_State *L, const char* key, const char* str);
 void   PutWStrToArray     (lua_State *L, int key, const wchar_t* str, int numchars);
 void   PutWStrToTable     (lua_State *L, const char* key, const wchar_t* str, int numchars);
 
-wchar_t* check_utf8_string (lua_State *L, int pos, int* pTrgSize);
-wchar_t* utf8_to_utf16 (lua_State *L, int pos, int* pTrgSize);
+wchar_t* check_utf8_string (lua_State *L, int pos, size_t* pTrgSize);
+wchar_t* utf8_to_utf16 (lua_State *L, int pos, size_t* pTrgSize);
 const wchar_t* opt_utf8_string (lua_State *L, int pos, const wchar_t* dflt);
-wchar_t* oem_to_utf16 (lua_State *L, int pos, int* pTrgSize);
+wchar_t* oem_to_utf16 (lua_State *L, int pos, size_t* pTrgSize);
 char* push_utf8_string (lua_State* L, const wchar_t* str, int numchars);
 char* push_oem_string (lua_State* L, const wchar_t* str, int numchars);
 void  push_utf16_string (lua_State* L, const wchar_t* str, int numchars);
-const wchar_t* check_utf16_string(lua_State *L, int pos, int *len);
+const wchar_t* check_utf16_string(lua_State *L, int pos, size_t *len);
 const wchar_t* opt_utf16_string(lua_State *L, int pos, const wchar_t *dflt);
 
 int  DecodeAttributes(const char* str);

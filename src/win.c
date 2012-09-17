@@ -296,7 +296,8 @@ static int win_FileTimeToLocalFileTime (lua_State *L)
 static int win_CompareString (lua_State *L)
 {
   DWORD dwFlags = 0;
-  int len1, len2, result;
+  size_t len1, len2;
+  int result;
   const wchar_t *ws1  = check_utf8_string(L, 1, &len1);
   const wchar_t *ws2  = check_utf8_string(L, 2, &len2);
   const char *sLocale = luaL_optstring(L, 3, "");

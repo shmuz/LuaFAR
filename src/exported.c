@@ -6,7 +6,7 @@
 #include "ustring.h"
 #include "compat52.h"
 
-#define CAST(tp,expr) (tp)(expr)
+#define CAST(tp,expr) ((tp)(expr))
 #define TRANSFORM_REF(h)        (h > 0 ? h : h - 2)
 #define UNTRANSFORM_REF(h)      ((INT_PTR)h > 0 ? (INT_PTR)h : (INT_PTR)h + 2)
 
@@ -717,7 +717,7 @@ HANDLE LF_Open (lua_State* L, const struct OpenInfo *Info)
     PutWStrToTable(L, "ShortcutData", osi->ShortcutData, -1);
   }
   else if (Info->OpenFrom == OPEN_COMMANDLINE)
-    push_utf8_string(L, CAST(const wchar_t*, Info->Data), -1);
+    push_utf8_string(L, CAST(struct OpenCommandLineInfo*, Info->Data)->CommandLine, -1);
   else if (Info->OpenFrom == OPEN_DIALOG) {
     struct OpenDlgPluginData *data = CAST(struct OpenDlgPluginData*, Info->Data);
     lua_createtable(L, 0, 1);

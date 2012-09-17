@@ -141,7 +141,7 @@ BOOL GetOptBoolFromTable(lua_State *L, const char* key, BOOL dflt)
 // and convert it in place to UTF-16.
 // Return a pointer to the converted string.
 wchar_t* convert_multibyte_string (lua_State *L, int pos, UINT codepage,
-  DWORD dwFlags, int* pTrgSize, int can_raise)
+  DWORD dwFlags, size_t* pTrgSize, int can_raise)
 {
   size_t sourceLen;
   const char *source;
@@ -179,12 +179,12 @@ wchar_t* convert_multibyte_string (lua_State *L, int pos, UINT codepage,
   return target;
 }
 
-wchar_t* check_utf8_string (lua_State *L, int pos, int* pTrgSize)
+wchar_t* check_utf8_string (lua_State *L, int pos, size_t* pTrgSize)
 {
   return convert_multibyte_string(L, pos, CP_UTF8, 0, pTrgSize, TRUE);
 }
 
-wchar_t* utf8_to_utf16 (lua_State *L, int pos, int* pTrgSize)
+wchar_t* utf8_to_utf16 (lua_State *L, int pos, size_t* pTrgSize)
 {
   return convert_multibyte_string(L, pos, CP_UTF8, 0, pTrgSize, FALSE);
 }
@@ -194,7 +194,7 @@ const wchar_t* opt_utf8_string (lua_State *L, int pos, const wchar_t* dflt)
   return lua_isnoneornil(L,pos) ? dflt : check_utf8_string(L, pos, NULL);
 }
 
-wchar_t* oem_to_utf16 (lua_State *L, int pos, int* pTrgSize)
+wchar_t* oem_to_utf16 (lua_State *L, int pos, size_t* pTrgSize)
 {
   return convert_multibyte_string (L, pos, CP_OEMCP, 0, pTrgSize, FALSE);
 }
@@ -263,7 +263,7 @@ int ustring_WideCharToMultiByte (lua_State *L)
 int ustring_MultiByteToWideChar (lua_State *L)
 {
   wchar_t* Trg;
-  int TrgSize;
+  size_t TrgSize;
   UINT codepage;
   DWORD dwFlags = 0;
   (void) luaL_checkstring(L, 1);
@@ -288,18 +288,16 @@ int ustring_MultiByteToWideChar (lua_State *L)
 int ustring_OemToUtf8 (lua_State *L)
 {
   size_t len;
-  int intlen;
   wchar_t* buf;
   (void) luaL_checklstring(L, 1, &len);
-  intlen = len;
-  buf = oem_to_utf16(L, 1, &intlen);
+  buf = oem_to_utf16(L, 1, &len);
   push_utf8_string(L, buf, len);
   return 1;
 }
 
 int ustring_Utf8ToOem (lua_State *L)
 {
-  int len;
+  size_t len;
   const wchar_t* buf = check_utf8_string(L, 1, &len);
   push_oem_string(L, buf, len);
   return 1;
@@ -315,7 +313,7 @@ int ustring_Utf16ToUtf8 (lua_State *L)
 
 int ustring_Utf8ToUtf16 (lua_State *L)
 {
-  int len;
+  size_t len;
   const wchar_t *ws = check_utf8_string(L, 1, &len);
   lua_pushlstring(L, (const char*) ws, len*sizeof(wchar_t));
   return 1;
@@ -607,7 +605,7 @@ int ustring_len(lua_State *L)
   return 1;
 }
 
-const wchar_t* check_utf16_string(lua_State *L, int pos, int *len)
+const wchar_t* check_utf16_string(lua_State *L, int pos, size_t *len)
 {
   size_t ln;
   const wchar_t* s = (const wchar_t*)luaL_checklstring(L, pos, &ln);

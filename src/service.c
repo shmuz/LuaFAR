@@ -508,6 +508,7 @@ static int editor_GetInfo(lua_State *L)
   int EditorId = luaL_optinteger(L, 1, CURRENT_EDITOR);
   PSInfo *Info = GetPluginData(L)->Info;
   struct EditorInfo ei;
+  ei.StructSize = sizeof(ei);
   if (!Info->EditorControl(EditorId, ECTL_GETINFO, 0, &ei))
     return lua_pushnil(L), 1;
   lua_createtable(L, 0, 18);
@@ -550,6 +551,7 @@ static BOOL FastGetString (int EditorId, int string_num,
   struct EditorGetString *egs, PSInfo *Info)
 {
   struct EditorSetPosition esp;
+  esp.StructSize = sizeof(esp);
   esp.CurLine   = string_num;
   esp.CurPos    = -1;
   esp.CurTabPos = -1;
@@ -577,6 +579,7 @@ static int _EditorGetString(lua_State *L, int is_wide)
   int mode     = luaL_optinteger(L, 3, 0);
   BOOL res;
   struct EditorGetString egs;
+  egs.StructSize = sizeof(egs);
 
   if (mode == 0) {
     egs.StringNumber = line_num;
@@ -627,9 +630,11 @@ static int _EditorSetString(lua_State *L, int is_wide)
   PSInfo *Info = GetPluginData(L)->Info;
   struct EditorSetString ess;
   int EditorId = luaL_optinteger(L, 1, CURRENT_EDITOR);
+  size_t len;
+  ess.StructSize = sizeof(ess);
   ess.StringNumber = luaL_optinteger(L, 2, -1);
   if (is_wide) {
-    ess.StringText = check_utf16_string(L, 3, &ess.StringLength);
+    ess.StringText = check_utf16_string(L, 3, &len);
     ess.StringEOL = opt_utf16_string(L, 4, NULL);
     if (ess.StringEOL) {
       lua_pushvalue(L, 4);
@@ -639,9 +644,10 @@ static int _EditorSetString(lua_State *L, int is_wide)
     }
   }
   else {
-    ess.StringText = check_utf8_string(L, 3, &ess.StringLength);
+    ess.StringText = check_utf8_string(L, 3, &len);
     ess.StringEOL = opt_utf8_string(L, 4, NULL);
   }
+  ess.StringLength = len;
   lua_pushboolean(L, Info->EditorControl(EditorId, ECTL_SETSTRING, 0, &ess));
   return 1;
 }
@@ -699,6 +705,7 @@ static int editor_UndoRedo(lua_State *L)
   int EditorId = luaL_optinteger(L, 1, CURRENT_EDITOR);
   struct EditorUndoRedo eur;
   memset(&eur, 0, sizeof(eur));
+  eur.StructSize = sizeof(eur);
   eur.Command = check_env_flag(L, 2);
   lua_pushboolean (L, GetPluginData(L)->Info->EditorControl(EditorId, ECTL_UNDOREDO, 0, &eur));
   return 1;
@@ -784,6 +791,7 @@ static int editor_SetParam(lua_State *L)
   PSInfo *Info = GetPluginData(L)->Info;
   struct EditorSetParameter esp;
   memset(&esp, 0, sizeof(esp));
+  esp.StructSize = sizeof(esp);
   esp.Type = check_env_flag(L,2);
   //-----------------------------------------------------
   tp = lua_type(L,3);
@@ -814,6 +822,7 @@ static int editor_SetPosition(lua_State *L)
   int EditorId = luaL_optinteger(L, 1, CURRENT_EDITOR);
   PSInfo *Info = GetPluginData(L)->Info;
   struct EditorSetPosition esp;
+  esp.StructSize = sizeof(esp);
   if (lua_istable(L, 2)) {
     lua_settop(L, 2);
     FillEditorSetPosition(L, &esp);
@@ -857,7 +866,8 @@ static int PushBookmarks(lua_State *L, int count, int command, int EditorId)
   if (count <= 0)
     return 0;
 
-  ebm.Line = (int*)lua_newuserdata(L, 4 * count * sizeof(int));
+  ebm.StructSize = sizeof(ebm);
+  ebm.Line = (intptr_t*)lua_newuserdata(L, 4 * count * sizeof(intptr_t));
   ebm.Cursor     = ebm.Line + count;
   ebm.ScreenLine = ebm.Cursor + count;
   ebm.LeftPos    = ebm.ScreenLine + count;
@@ -868,10 +878,10 @@ static int PushBookmarks(lua_State *L, int count, int command, int EditorId)
   for (i=0; i < count; i++) {
     lua_pushinteger(L, i+1);
     lua_createtable(L, 0, 4);
-    PutIntToTable (L, "Line", ebm.Line[i]);
-    PutIntToTable (L, "Cursor", ebm.Cursor[i]);
-    PutIntToTable (L, "ScreenLine", ebm.ScreenLine[i]);
-    PutIntToTable (L, "LeftPos", ebm.LeftPos[i]);
+    PutNumToTable (L, "Line", ebm.Line[i]);
+    PutNumToTable (L, "Cursor", ebm.Cursor[i]);
+    PutNumToTable (L, "ScreenLine", ebm.ScreenLine[i]);
+    PutNumToTable (L, "LeftPos", ebm.LeftPos[i]);
     lua_rawset(L, -3);
   }
   return 1;
@@ -882,6 +892,7 @@ static int editor_GetBookmarks(lua_State *L)
   struct EditorInfo ei;
   int EditorId = luaL_optinteger(L, 1, CURRENT_EDITOR);
   PSInfo *Info = GetPluginData(L)->Info;
+  ei.StructSize = sizeof(ei);
   if (!Info->EditorControl(EditorId, ECTL_GETINFO, 0, &ei))
     return 0;
   return PushBookmarks(L, ei.BookMarkCount, ECTL_GETBOOKMARKS, EditorId);
@@ -978,6 +989,7 @@ static int editor_Select(lua_State *L)
   int EditorId = luaL_optinteger(L, 1, CURRENT_EDITOR);
   PSInfo *Info = GetPluginData(L)->Info;
   struct EditorSelect es;
+  es.StructSize = sizeof(es);
   if (lua_istable(L, 2)) {
     if (!FillEditorSelect(L, 2, &es))
       return 0;
@@ -1007,6 +1019,10 @@ static int editor_GetSelection(lua_State *L)
   struct EditorInfo EI;
   struct EditorGetString egs;
   struct EditorSetPosition esp;
+
+  EI.StructSize = sizeof(EI);
+  egs.StructSize = sizeof(egs);
+  esp.StructSize = sizeof(esp);
 
   Info->EditorControl(EditorId, ECTL_GETINFO, 0, &EI);
   if (EI.BlockType == BTYPE_NONE || !FastGetString(EditorId, EI.BlockStartLine, &egs, Info))
@@ -1068,6 +1084,7 @@ static int _EditorTabConvert(lua_State *L, int Operation)
   int EditorId = luaL_optinteger(L, 1, CURRENT_EDITOR);
   PSInfo *Info = GetPluginData(L)->Info;
   struct EditorConvertPos ecp;
+  ecp.StructSize = sizeof(ecp);
   ecp.StringNumber = luaL_optinteger(L, 2, -1);
   ecp.SrcPos = luaL_checkinteger(L, 3);
   if (Info->EditorControl(EditorId, Operation, 0, &ecp))
@@ -1174,6 +1191,7 @@ static int editor_SaveFile(lua_State *L)
   PSInfo *Info = GetPluginData(L)->Info;
   struct EditorSaveFile esf;
   int EditorId = luaL_optinteger(L, 1, CURRENT_EDITOR);
+  esf.StructSize = sizeof(esf);
   esf.FileName = opt_utf8_string(L, 2, L"");
   esf.FileEOL = opt_utf8_string(L, 3, NULL);
   if (Info->EditorControl(EditorId, ECTL_SAVEFILE, 0, &esf))
@@ -1704,7 +1722,7 @@ static int panel_GetPanelInfo(lua_State *L)
 
 static int get_panel_item(lua_State *L, int command)
 {
-  struct FarGetPluginPanelItem fgppi = {0,0};
+  struct FarGetPluginPanelItem fgppi = { sizeof(struct FarGetPluginPanelItem),0,0 };
   PSInfo *Info = GetPluginData(L)->Info;
   HANDLE handle = OptHandle2(L);
   int index = luaL_optinteger(L,3,1) - 1;
@@ -1771,8 +1789,9 @@ static int panel_RedrawPanel(lua_State *L)
 {
   PSInfo *Info = GetPluginData(L)->Info;
   void *param2 = NULL;
-  struct PanelRedrawInfo pri;
   HANDLE handle = OptHandle2(L);
+  struct PanelRedrawInfo pri;
+  pri.StructSize = sizeof(pri);
   if (lua_istable(L, 3)) {
     param2 = &pri;
     lua_getfield(L, 3, "CurrentItem");
@@ -1923,9 +1942,10 @@ static int panel_InsertCmdLine(lua_State *L)
 
 static int panel_GetCmdLineSelection(lua_State *L)
 {
-  struct CmdLineSelect cms;
   PSInfo *Info = GetPluginData(L)->Info;
   HANDLE handle = OptHandle(L);
+  struct CmdLineSelect cms;
+  cms.StructSize = sizeof(cms);
   if (Info->PanelControl(handle, FCTL_GETCMDLINESELECTION, 0, &cms)) {
     if (cms.SelStart < 0) cms.SelStart = 0;
     if (cms.SelEnd < 0) cms.SelEnd = 0;
@@ -1938,9 +1958,10 @@ static int panel_GetCmdLineSelection(lua_State *L)
 
 static int panel_SetCmdLineSelection(lua_State *L)
 {
-  struct CmdLineSelect cms;
   PSInfo *Info = GetPluginData(L)->Info;
   HANDLE handle = OptHandle(L);
+  struct CmdLineSelect cms;
+  cms.StructSize = sizeof(cms);
   cms.SelStart = luaL_checkinteger(L, 2) - 1;
   cms.SelEnd = luaL_checkinteger(L, 3);
   if (cms.SelStart < -1) cms.SelStart = -1;
@@ -2383,7 +2404,6 @@ static int far_SendDlgMessage (lua_State *L)
     case DM_GETDROPDOWNOPENED:
     case DM_GETFOCUS:
     case DM_GETITEMDATA:
-    case DM_GETTEXTLENGTH:
     case DM_LISTGETDATASIZE:
     case DM_LISTSORT:
     case DM_REDRAW:               // alias: DM_SETREDRAW
@@ -2455,6 +2475,7 @@ static int far_SendDlgMessage (lua_State *L)
 
     case DM_GETEDITPOSITION: {
       struct EditorSetPosition esp;
+      esp.StructSize = sizeof(esp);
       if (Info->SendDlgMessage (hDlg, Msg, Param1, &esp))
         return PushEditorSetPosition(L, &esp), 1;
       return lua_pushnil(L), 1;
@@ -2462,6 +2483,7 @@ static int far_SendDlgMessage (lua_State *L)
 
     case DM_GETSELECTION: {
       struct EditorSelect es;
+      es.StructSize = sizeof(es);
       if (Info->SendDlgMessage (hDlg, Msg, Param1, &es)) {
         lua_createtable(L,0,5);
         PutNumToTable(L, "BlockType", es.BlockType);
@@ -2476,6 +2498,7 @@ static int far_SendDlgMessage (lua_State *L)
 
     case DM_SETSELECTION: {
       struct EditorSelect es;
+      es.StructSize = sizeof(es);
       luaL_checktype(L, 4, LUA_TTABLE);
       if (FillEditorSelect(L, 4, &es)) {
         Param2 = &es;
@@ -2725,15 +2748,14 @@ static int far_SendDlgMessage (lua_State *L)
       break;
 
     case DM_SETEDITPOSITION: {
-      struct EditorSetPosition   esp;
+      struct EditorSetPosition esp;
+      esp.StructSize = sizeof(esp);
       luaL_checktype(L, 4, LUA_TTABLE);
       lua_settop(L, 4);
       FillEditorSetPosition(L, &esp);
       Param2 = &esp;
       break;
     }
-
-    //~ case DM_GETTEXTPTR:
   }
   res = Info->SendDlgMessage (hDlg, Msg, Param1, Param2);
   lua_pushinteger (L, res + res_incr);
@@ -3115,10 +3137,11 @@ static int viewer_Redraw(lua_State *L)
 static int viewer_Select(lua_State *L)
 {
   PSInfo *Info = GetPluginData(L)->Info;
-  struct ViewerSelect vs;
   int ViewerId = luaL_optinteger(L, 1, -1);
-  vs.BlockStartPos = (long long int)luaL_checknumber(L,2);
-  vs.BlockLen = luaL_checkinteger(L,3);
+  struct ViewerSelect vs;
+  vs.StructSize = sizeof(vs);
+  vs.BlockStartPos = (INT64)luaL_checknumber(L,2);
+  vs.BlockLen = (INT64)luaL_checknumber(L,3);
   lua_pushboolean(L, Info->ViewerControl(ViewerId, VCTL_SELECT, 0, &vs));
   return 1;
 }
@@ -3128,6 +3151,7 @@ static int viewer_SetPosition(lua_State *L)
   int ViewerId = luaL_optinteger(L, 1, -1);
   PSInfo *Info = GetPluginData(L)->Info;
   struct ViewerSetPosition vsp;
+  vsp.StructSize = sizeof(vsp);
   if (lua_istable(L, 2)) {
     lua_settop(L, 2);
     vsp.StartPos = (__int64)GetOptNumFromTable(L, "StartPos", 0);
@@ -3150,7 +3174,8 @@ static int viewer_SetMode(lua_State *L)
 {
   int success, ViewerId;
   struct ViewerSetMode vsm;
-  memset(&vsm, 0, sizeof(struct ViewerSetMode));
+  memset(&vsm, 0, sizeof(vsm));
+  vsm.StructSize = sizeof(vsm);
   ViewerId = luaL_optinteger(L, 1, -1);
   luaL_checktype(L, 2, LUA_TTABLE);
 
@@ -3403,7 +3428,7 @@ static int far_LIsUpper (lua_State *L)
 static int convert_buf (lua_State *L, int command)
 {
   struct FarStandardFunctions *FSF = GetPluginData(L)->FSF;
-  int len;
+  size_t len;
   wchar_t* dest = check_utf8_string(L, 1, &len);
   if (command=='l')
     FSF->LLowerBuf(dest,len);
@@ -3582,6 +3607,7 @@ static int far_AdvControl (lua_State *L)
     case ACTL_SETPROGRESSVALUE: {
       struct ProgressValue pv;
       luaL_checktype(L, 3, LUA_TTABLE);
+      pv.StructSize = sizeof(pv);
       pv.Completed = (UINT64)GetOptNumFromTable(L, "Completed", 0.0);
       pv.Total = (UINT64)GetOptNumFromTable(L, "Total", 100.0);
       Param2 = &pv;
@@ -3592,6 +3618,7 @@ static int far_AdvControl (lua_State *L)
       struct ActlEjectMedia em;
       luaL_checktype(L, 3, LUA_TTABLE);
       lua_getfield(L, 3, "Letter");
+      em.StructSize = sizeof(em);
       em.Letter = lua_isstring(L,-1) ? lua_tostring(L,-1)[0] : '\0';
       em.Flags = CheckFlagsFromTable(L, 3, "Flags");
       Param2 = &em;
@@ -3667,6 +3694,7 @@ static int far_AdvControl (lua_State *L)
       struct FarSetColors fsc;
       size_t size, i;
       luaL_checktype(L, 3, LUA_TTABLE);
+      fsc.StructSize = sizeof(fsc);
       fsc.StartIndex = GetOptIntFromTable(L, "StartIndex", 0);
       lua_getfield(L, 3, "Flags");
       fsc.Flags = GetFlagCombination(L, -1, NULL);
@@ -3962,7 +3990,7 @@ static int far_MakeMenuItems (lua_State *L)
     wsprintfW(fmt1, L"%%%dd%ls ", maxno, delim);
     wsprintfW(fmt2, L"%%%dls%ls ", maxno, delim);
     for (i=1; i<=argn; i++) {
-      int len, j;
+      size_t len, j;
       wchar_t *str, *start;
       lua_getglobal(L, "tostring");
       if (i == 1 && lua_type(L,-1) != LUA_TFUNCTION)
@@ -3981,7 +4009,7 @@ static int far_MakeMenuItems (lua_State *L)
         start == str ? wsprintfW(wbuf, fmt1, i) : wsprintfW(wbuf, fmt2, L"");
         lua_newtable(L);
         push_utf8_string(L, wbuf, -1);
-        push_utf8_string(L, start, nl ? (nl++) - start : len - (start-str));
+        push_utf8_string(L, start, nl ? (nl++) - start : (intptr_t)len - (start-str));
         lua_concat(L, 2);
         lua_setfield(L, -2, "text");
         lua_rawseti(L, argn+1, item++);
@@ -4254,14 +4282,14 @@ static int far_GetPlugins (lua_State *L)
 
 static int far_XLat (lua_State *L)
 {
-  int size;
+  size_t size;
   wchar_t *Line = check_utf8_string(L, 1, &size), *str;
-  int StartPos = luaL_optinteger(L, 2, 1) - 1;
-  int EndPos = luaL_optinteger(L, 3, size);
+  intptr_t StartPos = luaL_optinteger(L, 2, 1) - 1;
+  intptr_t EndPos = luaL_optinteger(L, 3, size);
   UINT64 Flags = CheckFlags(L, 4);
 
-  StartPos < 0 ? StartPos = 0 : StartPos > size ? StartPos = size : 0;
-  EndPos < StartPos ? EndPos = StartPos : EndPos > size ? EndPos = size : 0;
+  StartPos < 0 ? StartPos = 0 : StartPos > (intptr_t)size ? StartPos = size : 0;
+  EndPos < StartPos ? EndPos = StartPos : EndPos > (intptr_t)size ? EndPos = size : 0;
 
   str = GetPluginData(L)->FSF->XLat(Line, StartPos, EndPos, Flags);
   str ? (void)push_utf8_string(L, str, -1) : lua_pushnil(L);

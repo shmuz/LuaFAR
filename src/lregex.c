@@ -101,7 +101,7 @@ int regex_gmatch_closureW (lua_State *L) { return _regex_gmatch_closure(L, 1); }
 
 int _Gmatch(lua_State *L, int is_wide)
 {
-  int len;
+  size_t len;
   const wchar_t* Text = is_wide ? check_utf16_string(L, 1, &len) : check_utf8_string(L, 1, &len);
   const wchar_t* pat = check_regex_pattern(L, 2, 3);
   FARAPIREGEXPCONTROL RegExpControl = GetRegExpControl(L);
@@ -125,6 +125,7 @@ int func_GmatchW (lua_State *L) { return _Gmatch(L, 1); }
 
 int rx_find_match(lua_State *L, int op_find, int is_function, int is_wide)
 {
+  size_t len;
   FARAPIREGEXPCONTROL RegExpControl = GetRegExpControl(L);
   TFarRegex* fr;
   struct RegExpSearch data;
@@ -132,20 +133,21 @@ int rx_find_match(lua_State *L, int op_find, int is_function, int is_wide)
 
   if (is_function) {
     if (is_wide)
-      data.Text = check_utf16_string(L, 1, &data.Length);
+      data.Text = check_utf16_string(L, 1, &len);
     else
-      data.Text = check_utf8_string(L, 1, &data.Length);
+      data.Text = check_utf8_string(L, 1, &len);
     fr = push_far_regex(L, RegExpControl, check_regex_pattern(L, 2, 4));
     lua_replace(L, 2);
   }
   else {
     fr = CheckFarRegex(L, 1);
     if (is_wide)
-      data.Text = check_utf16_string(L, 2, &data.Length);
+      data.Text = check_utf16_string(L, 2, &len);
     else
-      data.Text = check_utf8_string(L, 2, &data.Length);
+      data.Text = check_utf8_string(L, 2, &len);
   }
 
+  data.Length = len;
   data.Position = luaL_optinteger(L, 3, 1);
   if (data.Position > 0 && --data.Position > data.Length)
     data.Position = data.Length;
@@ -186,30 +188,32 @@ int method_bracketscount (lua_State *L)
 
 int rx_gsub (lua_State *L, int is_function, int is_wide)
 {
+  size_t len, flen;
   TFarRegex* fr;
   FARAPIREGEXPCONTROL RegExpControl = GetRegExpControl(L);
   const wchar_t *s, *f;
-  int flen, max_rep_capture, ftype, n, matches, reps;
+  int max_rep_capture, ftype, n, matches, reps;
   luaL_Buffer out;
   struct RegExpSearch data;
   memset(&data, 0, sizeof(data));
 
   if (is_function) {
     if (is_wide)
-      data.Text = check_utf16_string(L, 1, &data.Length);
+      data.Text = check_utf16_string(L, 1, &len);
     else
-      data.Text = check_utf8_string(L, 1, &data.Length);
+      data.Text = check_utf8_string(L, 1, &len);
     fr = push_far_regex(L, RegExpControl, check_regex_pattern(L, 2, 5));
     lua_replace(L, 2);
   }
   else {
     fr = CheckFarRegex(L, 1);
     if (is_wide)
-      data.Text = check_utf16_string(L, 2, &data.Length);
+      data.Text = check_utf16_string(L, 2, &len);
     else
-      data.Text = check_utf8_string(L, 2, &data.Length);
+      data.Text = check_utf8_string(L, 2, &len);
   }
 
+  data.Length = len;
   s = data.Text;
   f = NULL;
   flen = 0;
@@ -270,7 +274,7 @@ int rx_gsub (lua_State *L, int is_function, int is_wide)
     luaL_addlstring(&out, (const char*)(s + data.Position),
       (from - data.Position) * sizeof(wchar_t));
     if (ftype == LUA_TSTRING) {
-      int i, start = 0;
+      size_t i, start = 0;
       for (i=0; i<flen; i++) {
         if (f[i] == L'%') {
           if (++i < flen) {
@@ -312,7 +316,7 @@ int rx_gsub (lua_State *L, int is_function, int is_wide)
         lua_gettable(L, 3);
         if (lua_isstring(L, -1)) {
           if (!is_wide) {
-            int len;
+            size_t len;
             const wchar_t* ws = check_utf8_string(L, -1, &len);
             lua_pushlstring(L, (const char*)ws, len*sizeof(wchar_t));
             lua_remove(L, -2);
@@ -343,7 +347,7 @@ int rx_gsub (lua_State *L, int is_function, int is_wide)
       if (lua_pcall(L, data.Count-skip, 1, 0) == 0) {
         if (lua_isstring(L, -1)) {
           if (!is_wide) {
-            int len;
+            size_t len;
             const wchar_t* ws = check_utf8_string(L, -1, &len);
             lua_pushlstring(L, (const char*)ws, len*sizeof(wchar_t));
             lua_remove(L, -2);
