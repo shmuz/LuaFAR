@@ -416,10 +416,7 @@ void PushPanelItem(lua_State *L, const struct PluginPanelItem *PanelItem)
     lua_setfield(L, -2, "CustomColumnData");
   }
   //-----------------------------------------------------------------------
-  PutNumToTable(L, "UserData", PanelItem->UserData);
-  //-----------------------------------------------------------------------
-  /* skip PanelItem->Reserved for now */
-  //-----------------------------------------------------------------------
+  // PutNumToTable(L, "UserData", PanelItem->UserData); ==> FIXME
 }
 //---------------------------------------------------------------------------
 
@@ -2095,7 +2092,7 @@ static int far_GetPluginDirList (lua_State *L)
   int ret = pd->Info->GetPluginDirList (pd->PluginId, handle, Dir, &PanelItems, &ItemsNumber);
   if(ret) {
     PushPanelItems (L, PanelItems, ItemsNumber);
-    pd->Info->FreePluginDirList (PanelItems, ItemsNumber);
+    pd->Info->FreePluginDirList (handle, PanelItems, ItemsNumber);
     return 1;
   }
   return 0;

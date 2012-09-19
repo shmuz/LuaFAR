@@ -203,14 +203,11 @@ void FillPluginPanelItem (lua_State *L, struct PluginPanelItem *pi)
   pi->AllocationSize = GetFileSizeFromTable(L, "AllocationSize");
   pi->FileName = (wchar_t*)AddStringToCollectorField(L,-2,"FileName");
   pi->AlternateFileName = (wchar_t*)AddStringToCollectorField(L,-2,"AlternateFileName");
-
   pi->Flags = GetFlagsFromTable(L, -1, "Flags");
-  pi->Flags &= ~PPIF_USERDATA; // prevent far.exe from treating UserData as pointer,
-                               // and from copying the data being pointed to.
   pi->NumberOfLinks = GetOptIntFromTable(L, "NumberOfLinks", 0);
   pi->Description = (wchar_t*)AddStringToCollectorField(L, -2, "Description");
   pi->Owner = (wchar_t*)AddStringToCollectorField(L, -2, "Owner");
-  pi->UserData = GetOptIntFromTable(L, "UserData", -1);
+  //pi->UserData = GetOptIntFromTable(L, "UserData", -1); ==> FIXME
 }
 
 // Two known values on the stack top: Tbl (at -2) and FindData (at -1).

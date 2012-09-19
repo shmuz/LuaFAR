@@ -7958,7 +7958,7 @@ id=85
 lv=2
 dt=Text
 nm=PluginPanelItem
-mtime=3534051192
+mtime=3557202285
 <article>
 #_<markdown>
 #_**`PluginPanelItem`** is a table with the following predefined fields:
@@ -7976,9 +7976,11 @@ mtime=3534051192
 #_      Description:        string
 #_      Owner:              string
 #_      CustomColumnData:   table, or nil
-#_      UserData:           integer
 #_
 #_@@@
+#_FIXME:
+#_      UserData:           integer
+#_
 #_
 </article>
 </node>
