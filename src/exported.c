@@ -191,6 +191,15 @@ const wchar_t** CreateStringsArray(lua_State* L, int cpos, const char* field,
   return buf;
 }
 
+static void WINAPI FarPanelItemFreeCallback (void* UserData,HANDLE hPlugin,unsigned __int64 Flags)
+{
+  (void) hPlugin;
+  (void) Flags;
+  FarPaneItemUserData* ud = (FarPaneItemUserData*)UserData;
+  luaL_unref(ud->L, LUA_REGISTRYINDEX, ud->ref);
+  free(ud);
+}
+
 // input table is on stack top (-1)
 // collector table is one under the top (-2)
 void FillPluginPanelItem (lua_State *L, struct PluginPanelItem *pi)
@@ -207,7 +216,17 @@ void FillPluginPanelItem (lua_State *L, struct PluginPanelItem *pi)
   pi->NumberOfLinks = GetOptIntFromTable(L, "NumberOfLinks", 0);
   pi->Description = (wchar_t*)AddStringToCollectorField(L, -2, "Description");
   pi->Owner = (wchar_t*)AddStringToCollectorField(L, -2, "Owner");
-  //pi->UserData = GetOptIntFromTable(L, "UserData", -1); ==> FIXME
+
+  lua_getfield(L, -1, "UserData");
+  if (!lua_isnil(L, -1)) {
+    FarPaneItemUserData* ud = (FarPaneItemUserData*)malloc(sizeof(FarPaneItemUserData));
+    ud->L = L;
+    ud->ref = luaL_ref(L, LUA_REGISTRYINDEX);
+    pi->UserData.UserData = ud;
+    pi->UserData.Callback = FarPanelItemFreeCallback;
+  }
+  else
+    lua_pop(L, 1);
 }
 
 // Two known values on the stack top: Tbl (at -2) and FindData (at -1).
