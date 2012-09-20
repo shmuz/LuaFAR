@@ -26,7 +26,6 @@ extern int far_FreeSettings (lua_State *L);
 // Collector contains an array of lightuserdata which are pointers to malloc'ed
 // memory regions.
 const char COLLECTOR_FD[]  = "Collector_FindData";
-const char COLLECTOR_FVD[] = "Collector_FindVirtualData";
 const char COLLECTOR_OPI[] = "Collector_OpenPanelInfo";
 const char COLLECTOR_PI[]  = "Collector_PluginInfo";
 const char KEY_OBJECT[]    = "Object";
@@ -281,31 +280,6 @@ void LF_FreeFindData(lua_State* L, const struct FreeFindDataInfo *Info)
   free(Info->PanelItem);
 }
 //---------------------------------------------------------------------------
-
-int LF_GetVirtualFindData (lua_State* L, struct GetVirtualFindDataInfo *Info)
-{
-  if (GetExportFunction(L, "GetVirtualFindData")) {      //+1: Func
-    Info->StructSize = sizeof(*Info);
-    PushPluginPair(L, Info->hPanel);                     //+3: Func,Pair
-    push_utf8_string(L, Info->Path, -1);                 //+4: Func,Pair,Path
-    if (!pcall_msg(L, 3, 1)) {                           //+1: FindData
-      if (lua_istable(L, -1)) {
-        PushPluginTable(L, Info->hPanel);                //+2: FindData,Tbl
-        lua_insert(L, -2);                               //+2: Tbl,FindData
-        FillFindData(L, &Info->PanelItem, &Info->ItemsNumber, COLLECTOR_FVD);
-        return TRUE;
-      }
-      lua_pop(L,1);
-    }
-  }
-  return FALSE;
-}
-
-void LF_FreeVirtualFindData(lua_State* L, const struct FreeFindDataInfo *Info)
-{
-  DestroyCollector(L, Info->hPanel, COLLECTOR_FVD);
-  free(Info->PanelItem);
-}
 
 // PanelItem table should be on Lua stack top
 void UpdateFileSelection(lua_State* L, struct PluginPanelItem *PanelItem,

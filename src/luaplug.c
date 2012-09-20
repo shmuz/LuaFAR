@@ -225,23 +225,6 @@ int LUAPLUG DeleteFilesW(const struct DeleteFilesInfo *Info)
 #endif
 //---------------------------------------------------------------------------
 
-#ifdef EXPORT_FREEVIRTUALFINDDATA
-void LUAPLUG FreeVirtualFindDataW(const struct FreeFindDataInfo *Info)
-{
-  if(LS) LF_FreeVirtualFindData(LS, Info);
-}
-#endif
-//---------------------------------------------------------------------------
-
-#ifdef EXPORT_GETVIRTUALFINDDATA
-int LUAPLUG GetVirtualFindDataW(struct GetVirtualFindDataInfo *Info)
-{
-  if(LS) return LF_GetVirtualFindData(LS, Info);
-  return FALSE;
-}
-#endif
-//---------------------------------------------------------------------------
-
 #ifdef EXPORT_MAKEDIRECTORY
 int LUAPLUG MakeDirectoryW(struct MakeDirectoryInfo *Info)
 {

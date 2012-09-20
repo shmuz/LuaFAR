@@ -3757,6 +3757,11 @@ static int far_AdvControl (lua_State *L)
       else lua_pushnil(L);
       return 1;
     }
+
+    case ACTL_ENABLEREDRAW: {
+      Param1 = luaL_optinteger(L,2,-1);
+      break;
+    }
   }
   lua_pushinteger(L, Info->AdvControl(PluginId, Command, Param1, Param2));
   return 1;
