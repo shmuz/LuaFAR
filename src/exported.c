@@ -190,10 +190,9 @@ const wchar_t** CreateStringsArray(lua_State* L, int cpos, const char* field,
   return buf;
 }
 
-static void WINAPI FarPanelItemFreeCallback (void* UserData,HANDLE hPlugin,unsigned __int64 Flags)
+static void WINAPI FarPanelItemFreeCallback (void* UserData, const struct FarPanelItemFreeInfo* Info)
 {
-  (void) hPlugin;
-  (void) Flags;
+  (void) Info;
   FarPaneItemUserData* ud = (FarPaneItemUserData*)UserData;
   luaL_unref(ud->L, LUA_REGISTRYINDEX, ud->ref);
   free(ud);

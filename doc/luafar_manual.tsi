@@ -1970,7 +1970,7 @@ id=153
 lv=2
 dt=Text
 nm=far.AdvControl
-mtime=3557248405
+mtime=3557381451
 <article>
 #_Result = far.AdvControl (Command, Param1, Param2)
 #_
@@ -2063,10 +2063,6 @@ mtime=3557248405
 #_ACTL_GETWINDOWTYPE:
 #_    Result:  table (see its fields below), or nil
 #_        Type: integer
-#_
-#_ACTL_ENABLEREDRAW:
-#_    Param1:  integer (optional; defaults to -1)
-#_    Result:  integer    
 #_
 #_**Far API used:**
 #_  AdvControl
@@ -3725,7 +3721,7 @@ id=29
 lv=2
 dt=Text
 nm=editor.GetInfo
-mtime=3549298811
+mtime=3557381868
 <article>
 #_Info = editor.GetInfo (EditorId)
 #_
@@ -3735,24 +3731,25 @@ mtime=3549298811
 #_**Returns:**
 #_  Info:     table, or nil
 #_    Info fields:
-#_      EditorID:       integer
-#_      FileName:       string
-#_      WindowSizeX:    integer
-#_      WindowSizeY:    integer
-#_      TotalLines:     integer
-#_      CurLine:        integer, 0-based
-#_      CurPos:         integer, 0-based
-#_      CurTabPos:      integer, 0-based
-#_      TopScreenLine:  integer, 0-based
-#_      LeftPos:        integer, 0-based
-#_      Overtype:       integer
-#_      BlockType:      integer
-#_      BlockStartLine: integer, 0-based
-#_      Options:        integer
-#_      TabSize:        integer
-#_      BookMarkCount:  integer
-#_      CurState:       integer
-#_      CodePage:       integer
+#_      EditorID:              integer
+#_      FileName:              string
+#_      WindowSizeX:           integer
+#_      WindowSizeY:           integer
+#_      TotalLines:            integer
+#_      CurLine:               integer, 0-based
+#_      CurPos:                integer, 0-based
+#_      CurTabPos:             integer, 0-based
+#_      TopScreenLine:         integer, 0-based
+#_      LeftPos:               integer, 0-based
+#_      Overtype:              integer
+#_      BlockType:             integer
+#_      BlockStartLine:        integer, 0-based
+#_      Options:               integer
+#_      TabSize:               integer
+#_      BookmarkCount:         integer
+#_      SessionBookmarkCount:  integer
+#_      CurState:              integer
+#_      CodePage:              integer
 #_
 #_**Far API used:**
 #_  EditorControl, ECTL_GETINFO
@@ -6320,11 +6317,13 @@ id=3
 lv=2
 dt=Text
 nm=far.CopyToClipboard
+mtime=3557341346
 <article>
-#_result = far.CopyToClipboard (str)
+#_result = far.CopyToClipboard (str [,type])
 #_
 #_**Parameters:**
-#_  str: string
+#_  str:  string
+#_  type: integer (defaults to FCT_STREAM)
 #_
 #_**Returns:**
 #_  result: boolean
@@ -6749,18 +6748,18 @@ id=67
 lv=2
 dt=Text
 nm=far.PasteFromClipboard
+mtime=3557342235
 <article>
-#_result = far.PasteFromClipboard ()
+#_result = far.PasteFromClipboard ([type])
 #_
 #_**Parameters:**
-#_  none
+#_  type:   integer (defaults to FCT_ANY)
 #_
 #_**Returns:**
 #_  result: string, or nil
 #_
 #_**Far API used:**
-#_  FSF.PasteFromClipboard, FSF.DeleteBuffer
-#_
+#_  FSF.PasteFromClipboard
 #_
 #_@@@
 #_

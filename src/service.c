@@ -489,7 +489,7 @@ static int push_editor_filename(lua_State *L, int EditorId)
   if (!size) return 0;
 
   fname = (wchar_t*)lua_newuserdata(L, size * sizeof(wchar_t));
-  if (Info->EditorControl(EditorId, ECTL_GETFILENAME, 0, fname)) {
+  if (Info->EditorControl(EditorId, ECTL_GETFILENAME, size, fname)) {
     push_utf8_string(L, fname, -1);
     lua_remove(L, -2);
     return 1;
@@ -531,7 +531,8 @@ static int editor_GetInfo(lua_State *L)
   PutNumToTable(L, "BlockStartLine", ei.BlockStartLine);
   PutNumToTable(L, "Options", ei.Options);
   PutNumToTable(L, "TabSize", ei.TabSize);
-  PutNumToTable(L, "BookMarkCount", ei.BookMarkCount);
+  PutNumToTable(L, "BookmarkCount", ei.BookmarkCount);
+  PutNumToTable(L, "SessionBookmarkCount", ei.SessionBookmarkCount);
   PutNumToTable(L, "CurState", ei.CurState);
   PutNumToTable(L, "CodePage", ei.CodePage);
   return 1;
@@ -860,23 +861,27 @@ static int editor_ExpandTabs(lua_State *L)
   return 0;
 }
 
-static int PushBookmarks(lua_State *L, int count, int command, int EditorId)
+static int PushBookmarks(lua_State *L, int command)
 {
-  struct EditorBookMarks ebm;
-  int i;
-  if (count <= 0)
+  size_t i;
+  struct EditorBookmarks ebm;
+  int EditorId = luaL_optinteger(L, 1, CURRENT_EDITOR);
+
+  memset(&ebm, 0, sizeof(ebm));
+  ebm.StructSize = sizeof(ebm);
+  ebm.Size = GetPluginData(L)->Info->EditorControl(EditorId, command, 0, &ebm);
+  if (ebm.Size == 0)
     return 0;
 
-  ebm.StructSize = sizeof(ebm);
-  ebm.Line = (intptr_t*)lua_newuserdata(L, 4 * count * sizeof(intptr_t));
-  ebm.Cursor     = ebm.Line + count;
-  ebm.ScreenLine = ebm.Cursor + count;
-  ebm.LeftPos    = ebm.ScreenLine + count;
+  ebm.Line = (intptr_t*)lua_newuserdata(L, ebm.Size);
+  ebm.Cursor     = ebm.Line + ebm.Count;
+  ebm.ScreenLine = ebm.Cursor + ebm.Count;
+  ebm.LeftPos    = ebm.ScreenLine + ebm.Count;
   if (!GetPluginData(L)->Info->EditorControl(EditorId, command, 0, &ebm))
     return 0;
 
-  lua_createtable(L, count, 0);
-  for (i=0; i < count; i++) {
+  lua_createtable(L, ebm.Count, 0);
+  for (i=0; i < ebm.Count; i++) {
     lua_pushinteger(L, i+1);
     lua_createtable(L, 0, 4);
     PutNumToTable (L, "Line", ebm.Line[i]);
@@ -890,21 +895,12 @@ static int PushBookmarks(lua_State *L, int count, int command, int EditorId)
 
 static int editor_GetBookmarks(lua_State *L)
 {
-  struct EditorInfo ei;
-  int EditorId = luaL_optinteger(L, 1, CURRENT_EDITOR);
-  PSInfo *Info = GetPluginData(L)->Info;
-  ei.StructSize = sizeof(ei);
-  if (!Info->EditorControl(EditorId, ECTL_GETINFO, 0, &ei))
-    return 0;
-  return PushBookmarks(L, ei.BookMarkCount, ECTL_GETBOOKMARKS, EditorId);
+  return PushBookmarks(L, ECTL_GETBOOKMARKS);
 }
 
 static int editor_GetSessionBookmarks(lua_State *L)
 {
-  int EditorId = luaL_optinteger(L, 1, CURRENT_EDITOR);
-  PSInfo *Info = GetPluginData(L)->Info;
-  int count = Info->EditorControl(EditorId, ECTL_GETSESSIONBOOKMARKS, 0, 0);
-  return PushBookmarks(L, count, ECTL_GETSESSIONBOOKMARKS, EditorId);
+  return PushBookmarks(L, ECTL_GETSESSIONBOOKMARKS);
 }
 
 static int editor_AddSessionBookmark(lua_State *L)
@@ -3274,19 +3270,26 @@ static int far_Text(lua_State *L)
 static int far_CopyToClipboard (lua_State *L)
 {
   const wchar_t *str = check_utf8_string(L,1,NULL);
-  int r = GetPluginData(L)->FSF->CopyToClipboard(str);
+  enum FARCLIPBOARD_TYPE type = (enum FARCLIPBOARD_TYPE) OptFlags(L,2,FCT_STREAM);
+  int r = GetPluginData(L)->FSF->CopyToClipboard(type,str);
   return lua_pushboolean(L, r), 1;
 }
 
 static int far_PasteFromClipboard (lua_State *L)
 {
   struct FarStandardFunctions *FSF = GetPluginData(L)->FSF;
-  wchar_t* str = FSF->PasteFromClipboard();
-  if (str) {
-    push_utf8_string(L, str, -1);
-    FSF->DeleteBuffer(str);
+  enum FARCLIPBOARD_TYPE type = (enum FARCLIPBOARD_TYPE) OptFlags(L,1,FCT_ANY);
+  size_t len = FSF->PasteFromClipboard(type,NULL,0);
+  if (len) {
+    wchar_t *buf = (wchar_t*) malloc(len * sizeof(wchar_t));
+    if (buf) {
+      FSF->PasteFromClipboard(type,buf,len);
+      push_utf8_string(L,buf,-1);
+      free(buf);
+      return 1;
+    }
   }
-  else lua_pushnil(L);
+  lua_pushnil(L);
   return 1;
 }
 
@@ -3756,11 +3759,6 @@ static int far_AdvControl (lua_State *L)
       }
       else lua_pushnil(L);
       return 1;
-    }
-
-    case ACTL_ENABLEREDRAW: {
-      Param1 = luaL_optinteger(L,2,-1);
-      break;
     }
   }
   lua_pushinteger(L, Info->AdvControl(PluginId, Command, Param1, Param2));
