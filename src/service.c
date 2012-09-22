@@ -481,15 +481,21 @@ static int far_GetCurrentDirectory (lua_State *L)
   return 1;
 }
 
-static int push_editor_filename(lua_State *L, int EditorId)
+static int push_ev_filename(lua_State *L, int isEditor, int Id)
 {
   wchar_t* fname;
+  int size;
   PSInfo *Info = GetPluginData(L)->Info;
-  int size = Info->EditorControl(EditorId, ECTL_GETFILENAME, 0, 0);
+  size = isEditor ?
+    Info->EditorControl(Id, ECTL_GETFILENAME, 0, 0) :
+    Info->ViewerControl(Id, VCTL_GETFILENAME, 0, 0);
   if (!size) return 0;
 
   fname = (wchar_t*)lua_newuserdata(L, size * sizeof(wchar_t));
-  if (Info->EditorControl(EditorId, ECTL_GETFILENAME, size, fname)) {
+  size = isEditor ?
+    Info->EditorControl(Id, ECTL_GETFILENAME, size, fname) :
+    Info->ViewerControl(Id, VCTL_GETFILENAME, size, fname);
+  if (size) {
     push_utf8_string(L, fname, -1);
     lua_remove(L, -2);
     return 1;
@@ -500,7 +506,7 @@ static int push_editor_filename(lua_State *L, int EditorId)
 
 static int editor_GetFileName(lua_State *L) {
   int EditorId = luaL_optinteger(L, 1, CURRENT_EDITOR);
-  if (!push_editor_filename(L, EditorId)) lua_pushnil(L);
+  if (!push_ev_filename(L, 1, EditorId)) lua_pushnil(L);
   return 1;
 }
 
@@ -515,7 +521,7 @@ static int editor_GetInfo(lua_State *L)
   lua_createtable(L, 0, 18);
   PutNumToTable(L, "EditorID", ei.EditorID);
 
-  if (push_editor_filename(L, EditorId))
+  if (push_ev_filename(L, 1, EditorId))
     lua_setfield(L, -2, "FileName");
 
   PutNumToTable(L, "WindowSizeX", ei.WindowSizeX);
@@ -3088,6 +3094,12 @@ static int viewer_Viewer(lua_State *L)
   return 1;
 }
 
+static int viewer_GetFileName(lua_State *L) {
+  int ViewerId = luaL_optinteger(L, 1, -1);
+  if (!push_ev_filename(L, 0, ViewerId)) lua_pushnil(L);
+  return 1;
+}
+
 static int viewer_GetInfo(lua_State *L)
 {
   int ViewerId = luaL_optinteger(L, 1, -1);
@@ -3096,9 +3108,13 @@ static int viewer_GetInfo(lua_State *L)
   vi.StructSize = sizeof(vi);
   if (!Info->ViewerControl(ViewerId, VCTL_GETINFO, 0, &vi))
     return 0;
+
   lua_createtable(L, 0, 10);
-  PutNumToTable(L,  "ViewerID",    vi.ViewerID);
-  PutWStrToTable(L, "FileName",    vi.FileName, -1);
+  PutNumToTable(L, "ViewerID", vi.ViewerID);
+
+  if (push_ev_filename(L, 0, ViewerId))
+    lua_setfield(L, -2, "FileName");
+
   PutNumToTable(L,  "FileSize",    CAST(double, vi.FileSize));
   PutNumToTable(L,  "FilePos",     CAST(double, vi.FilePos));
   PutNumToTable(L,  "WindowSizeX", vi.WindowSizeX);
@@ -4242,24 +4258,24 @@ static int far_GetPluginInformation (lua_State *L)
     PutFlagsToTable(L, "Flags", pi->Flags);
     lua_createtable(L, 0, 6); // PInfo
     {
-      PutIntToTable(L, "StructSize", pi->PInfo.StructSize);
-      PutFlagsToTable(L, "Flags", pi->PInfo.Flags);
-      PutPluginMenuItemToTable(L, "DiskMenu", &pi->PInfo.DiskMenu);
-      PutPluginMenuItemToTable(L, "PluginMenu", &pi->PInfo.PluginMenu);
-      PutPluginMenuItemToTable(L, "PluginConfig", &pi->PInfo.PluginConfig);
-      if (pi->PInfo.CommandPrefix)
-        PutWStrToTable(L, "CommandPrefix", pi->PInfo.CommandPrefix, -1);
+      PutIntToTable(L, "StructSize", pi->PInfo->StructSize);
+      PutFlagsToTable(L, "Flags", pi->PInfo->Flags);
+      PutPluginMenuItemToTable(L, "DiskMenu", &pi->PInfo->DiskMenu);
+      PutPluginMenuItemToTable(L, "PluginMenu", &pi->PInfo->PluginMenu);
+      PutPluginMenuItemToTable(L, "PluginConfig", &pi->PInfo->PluginConfig);
+      if (pi->PInfo->CommandPrefix)
+        PutWStrToTable(L, "CommandPrefix", pi->PInfo->CommandPrefix, -1);
       lua_setfield(L, -2, "PInfo");
     }
     lua_createtable(L, 0, 7); // GInfo
     {
-      PutIntToTable(L, "StructSize", pi->GInfo.StructSize);
-      PutVersionInfoToTable(L, "MinFarVersion", &pi->GInfo.MinFarVersion);
-      PutVersionInfoToTable(L, "Version", &pi->GInfo.Version);
-      PutLStrToTable(L, "Guid", (const char*)&pi->GInfo.Guid, sizeof(GUID));
-      PutWStrToTable(L, "Title", pi->GInfo.Title, -1);
-      PutWStrToTable(L, "Description", pi->GInfo.Description, -1);
-      PutWStrToTable(L, "Author", pi->GInfo.Author, -1);
+      PutIntToTable(L, "StructSize", pi->GInfo->StructSize);
+      PutVersionInfoToTable(L, "MinFarVersion", &pi->GInfo->MinFarVersion);
+      PutVersionInfoToTable(L, "Version", &pi->GInfo->Version);
+      PutLStrToTable(L, "Guid", (const char*)&pi->GInfo->Guid, sizeof(GUID));
+      PutWStrToTable(L, "Title", pi->GInfo->Title, -1);
+      PutWStrToTable(L, "Description", pi->GInfo->Description, -1);
+      PutWStrToTable(L, "Author", pi->GInfo->Author, -1);
       lua_setfield(L, -2, "GInfo");
     }
   }
@@ -4542,6 +4558,7 @@ static int Settings_set (lua_State *L)
 {
   struct FarSettingsItem fsi;
   FarSettingsUdata* udata = CheckSettings(L, 1);
+  fsi.StructSize = sizeof(fsi);
   fsi.Root = luaL_checkinteger(L, 2);
   fsi.Name = opt_utf8_string(L, 3, NULL);
   fsi.Type = (enum FARSETTINGSTYPES) check_env_flag(L, 4);
@@ -4563,6 +4580,7 @@ static int Settings_get (lua_State *L)
 {
   struct FarSettingsItem fsi;
   FarSettingsUdata* udata = CheckSettings(L, 1);
+  fsi.StructSize = sizeof(fsi);
   fsi.Root = luaL_checkinteger(L, 2);
   fsi.Name = check_utf8_string(L, 3, NULL);
   fsi.Type = (enum FARSETTINGSTYPES) check_env_flag(L, 4);
@@ -4585,6 +4603,7 @@ static int Settings_delete (lua_State *L)
 {
   struct FarSettingsValue fsv;
   FarSettingsUdata* udata = CheckSettings(L, 1);
+  fsv.StructSize = sizeof(fsv);
   fsv.Root = luaL_checkinteger(L, 2);
   fsv.Value = opt_utf8_string(L, 3, NULL);
   lua_pushboolean(L, GetPluginData(L)->Info->SettingsControl(udata->Handle, SCTL_DELETE, 0, &fsv));
@@ -4598,6 +4617,7 @@ static int Settings_createsubkey (lua_State *L)
   struct FarSettingsValue fsv;
   int subkey;
   FarSettingsUdata* udata = CheckSettings(L, 1);
+  fsv.StructSize = sizeof(fsv);
   fsv.Root = luaL_checkinteger(L, 2);
   fsv.Value = check_utf8_string(L, 3, NULL);
   description = opt_utf8_string(L, 4, NULL);
@@ -4606,6 +4626,7 @@ static int Settings_createsubkey (lua_State *L)
   if (subkey != 0) {
     if (description != NULL) {
       struct FarSettingsItem fsi;
+      fsi.StructSize = sizeof(fsi);
       fsi.Root = subkey;
       fsi.Name = NULL;
       fsi.Type = FST_STRING;
@@ -4624,6 +4645,7 @@ static int Settings_opensubkey (lua_State *L)
   int subkey;
   struct FarSettingsValue fsv;
   FarSettingsUdata* udata = CheckSettings(L, 1);
+  fsv.StructSize = sizeof(fsv);
   fsv.Root = luaL_checkinteger(L, 2);
   fsv.Value = check_utf8_string(L, 3, NULL);
 
@@ -4640,6 +4662,7 @@ static int Settings_enum (lua_State *L)
   struct FarSettingsEnum fse;
   int i, from = 1, to = -1;
   FarSettingsUdata* udata = CheckSettings(L, 1);
+  fse.StructSize = sizeof(fse);
   fse.Root = luaL_checkinteger(L, 2);
   if (!lua_isnoneornil(L, 3))  from = luaL_checkinteger(L, 3);
   if (!lua_isnoneornil(L, 4))  to = luaL_checkinteger(L, 4);
@@ -4821,6 +4844,7 @@ const luaL_Reg editor_funcs[] = {
 };
 
 const luaL_Reg viewer_funcs[] = {
+  {"GetFileName",         viewer_GetFileName},
   {"GetInfo",             viewer_GetInfo},
   {"Quit",                viewer_Quit},
   {"Redraw",              viewer_Redraw},

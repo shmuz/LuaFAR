@@ -5166,6 +5166,30 @@ nm=Viewer functions
 </article>
 </node>
 <node>
+id=479
+lv=2
+dt=Text
+nm=viewer.GetFileName
+ctime=3557413971
+mtime=3557414017
+<article>
+#_FileName = viewer.GetFileName (ViewerId)
+#_
+#_**Parameters:**
+#_  ViewerId: integer, or nil
+#_
+#_**Returns:**
+#_  FileName: string
+#_
+#_**Far API used:**
+#_  ViewerControl, VCTL_GETFILENAME
+#_
+#_@@@
+#_
+#_
+</article>
+</node>
+<node>
 id=132
 lv=2
 dt=Text
