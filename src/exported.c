@@ -465,7 +465,7 @@ void LF_GetOpenPanelInfo(lua_State* L, struct OpenPanelInfo *aInfo)
         if(lua_istable(L, -1)) {          //+6: Info,Tbl,Coll,Info,Lines,Line
           pl->Text = AddStringToCollectorField(L, cpos, "Text");
           pl->Data = AddStringToCollectorField(L, cpos, "Data");
-          pl->Separator = GetOptIntFromTable(L, "Separator", 0);
+          pl->Flags = GetFlagsFromTable(L, -1, "Flags");
         }
       }
     }
@@ -491,7 +491,6 @@ void LF_GetOpenPanelInfo(lua_State* L, struct OpenPanelInfo *aInfo)
         lua_pushinteger(L, i+1);
         lua_gettable(L, -2);
         if(lua_istable(L, -1)) {                //+6: Info,Tbl,Coll,Info,Modes,Mode
-          pm->StructSize = sizeof(*pm);
           pm->ColumnTypes  = (wchar_t*)AddStringToCollectorField(L, cpos, "ColumnTypes");
           pm->ColumnWidths = (wchar_t*)AddStringToCollectorField(L, cpos, "ColumnWidths");
           pm->StatusColumnTypes  = (wchar_t*)AddStringToCollectorField(L, cpos, "StatusColumnTypes");

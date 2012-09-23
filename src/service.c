@@ -755,6 +755,7 @@ static int SetKeyBar(lua_State *L, BOOL editor)
   int result;
   void* param;
   struct KeyBarTitles kbt;
+  struct FarSetKeyBarTitles skbt;
   int Id = luaL_optinteger(L, 1, -1);
   PSInfo *Info = GetPluginData(L)->Info;
 
@@ -767,8 +768,10 @@ static int SetKeyBar(lua_State *L, BOOL editor)
     else argfail = TRUE;
   }
   else if (lua_istable(L,2)) {
-    param = &kbt;
+    param = &skbt;
     FillKeyBarTitles(L, 2, &kbt);
+    skbt.StructSize = sizeof(skbt);
+    skbt.Titles = &kbt;
   }
   else
     argfail = TRUE;
@@ -2172,6 +2175,7 @@ struct FarList* CreateList (lua_State *L, int historyindex)
   size_t len = lua_objlen(L, historyindex);
   lua_rawseti (L, historyindex, ++len); // +1; put into "histories" table to avoid being gc'ed
   list = (struct FarList*) ptr;
+  list->StructSize = sizeof(struct FarList);
   list->ItemsNumber = n;
   list->Items = (struct FarListItem*)(ptr + sizeof(struct FarList));
   for (i=0; i<n; i++) {
@@ -3115,11 +3119,10 @@ static int viewer_GetInfo(lua_State *L)
   PutNumToTable(L,  "Options",     CAST(double, vi.Options));
   PutNumToTable(L,  "TabSize",     vi.TabSize);
   PutNumToTable(L,  "LeftPos",     CAST(double, vi.LeftPos));
-  lua_createtable(L, 0, 4);
-  PutNumToTable (L, "CodePage",    vi.CurMode.CodePage);
-  PutBoolToTable(L, "Wrap",        vi.CurMode.Wrap);
-  PutNumToTable (L, "WordWrap",    vi.CurMode.WordWrap);
-  PutBoolToTable(L, "Hex",         vi.CurMode.Hex);
+  lua_createtable(L, 0, 3);
+  PutNumToTable   (L, "CodePage", vi.CurMode.CodePage);
+  PutFlagsToTable (L, "Flags",    vi.CurMode.Flags);
+  PutNumToTable   (L, "Type",     vi.CurMode.Type);
   lua_setfield(L, -2, "CurMode");
   return 1;
 }

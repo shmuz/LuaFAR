@@ -7818,12 +7818,15 @@ id=120
 lv=2
 dt=Text
 nm=InfoLine
+mtime=3557517877
 <article>
 #_<markdown>
 #_**`InfoLine`** is a table with the following predefined fields:
 #_
-#_      Text: string
-#_      Data: string
+#_      Text:   string
+#_      Data:   string
+#_      Flags:  flags
+#_
 </article>
 </node>
 <node>
@@ -7999,14 +8002,14 @@ id=133
 lv=2
 dt=Text
 nm=ViewerInfo.CurMode
+mtime=3557544876
 <article>
 #_<markdown>
 #_**`ViewerInfo.CurMode`** is a table with the following predefined fields:
 #_
 #_      CodePage:       integer
-#_      Wrap:           boolean
-#_      WordWrap:       integer
-#_      Hex:            boolean
+#_      Flags:          flags
+#_      Type:           flag
 #_
 #_
 </article>
