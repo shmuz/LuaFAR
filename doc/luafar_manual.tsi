@@ -1970,7 +1970,7 @@ id=153
 lv=2
 dt=Text
 nm=far.AdvControl
-mtime=3557381451
+mtime=3557601368
 <article>
 #_Result = far.AdvControl (Command, Param1, Param2)
 #_
@@ -2006,12 +2006,6 @@ mtime=3557381451
 #_ACTL_GETCOLOR:
 #_    Param1:  integer
 #_    Result:  table FarColor, or nil
-#_
-#_ACTL_EJECTMEDIA:
-#_    Param2:  table (see its fields below)
-#_        Letter:  string (only the first character matters)
-#_        Flags:   flags
-#_    Result:  integer    
 #_
 #_ACTL_GETARRAYCOLOR:
 #_    Result:  table (array of FarColor tables)

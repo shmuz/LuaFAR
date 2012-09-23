@@ -220,8 +220,8 @@ void FillPluginPanelItem (lua_State *L, struct PluginPanelItem *pi)
     FarPaneItemUserData* ud = (FarPaneItemUserData*)malloc(sizeof(FarPaneItemUserData));
     ud->L = L;
     ud->ref = luaL_ref(L, LUA_REGISTRYINDEX);
-    pi->UserData.UserData = ud;
-    pi->UserData.Callback = FarPanelItemFreeCallback;
+    pi->UserData.Data = ud;
+    pi->UserData.FreeData = FarPanelItemFreeCallback;
   }
   else
     lua_pop(L, 1);

@@ -416,8 +416,8 @@ void PushPanelItem(lua_State *L, const struct PluginPanelItem *PanelItem)
     lua_setfield(L, -2, "CustomColumnData");
   }
   //-----------------------------------------------------------------------
-  if (PanelItem->UserData.UserData) {
-    FarPaneItemUserData* ud = (FarPaneItemUserData*)PanelItem->UserData.UserData;
+  if (PanelItem->UserData.Data) {
+    FarPaneItemUserData* ud = (FarPaneItemUserData*)PanelItem->UserData.Data;
     lua_rawgeti(L, LUA_REGISTRYINDEX, ud->ref);
     lua_setfield(L, -2, "UserData");
   }
@@ -1341,7 +1341,7 @@ static int far_Menu(lua_State *L)
   UINT64 Flags = FMENU_WRAPMODE | FMENU_AUTOHIGHLIGHT;
   const wchar_t *Title = L"Menu", *Bottom = NULL, *HelpTopic = NULL;
   int SelectIndex = 0, store = 0, i, ItemsNumber;
-  int BreakCode, *pBreakCode, NumBreakCodes;
+  intptr_t BreakCode, *pBreakCode, NumBreakCodes;
   const GUID* MenuGuid = NULL;
   struct FarMenuItem *Items, *pItem;
   struct FarKey *pBreakKeys;
@@ -3520,7 +3520,7 @@ static int far_TruncStr (lua_State *L)
   return truncstring(L, 's');
 }
 
-static int WINAPI FrsUserFunc (const struct PluginPanelItem *FData, const wchar_t *FullName,
+static intptr_t WINAPI FrsUserFunc (const struct PluginPanelItem *FData, const wchar_t *FullName,
   void *Param)
 {
   int err, proceed;
@@ -3627,17 +3627,6 @@ static int far_AdvControl (lua_State *L)
       pv.Completed = (UINT64)GetOptNumFromTable(L, "Completed", 0.0);
       pv.Total = (UINT64)GetOptNumFromTable(L, "Total", 100.0);
       Param2 = &pv;
-      break;
-    }
-
-    case ACTL_EJECTMEDIA: {
-      struct ActlEjectMedia em;
-      luaL_checktype(L, 3, LUA_TTABLE);
-      lua_getfield(L, 3, "Letter");
-      em.StructSize = sizeof(em);
-      em.Letter = lua_isstring(L,-1) ? lua_tostring(L,-1)[0] : '\0';
-      em.Flags = CheckFlagsFromTable(L, 3, "Flags");
-      Param2 = &em;
       break;
     }
 
