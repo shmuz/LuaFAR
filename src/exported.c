@@ -567,7 +567,7 @@ static void FL_PushParamsTable (lua_State* L, const struct OpenMacroInfo* om_inf
     if (v->Type == FMVT_INTEGER)      bit64_pushuserdata(L, v->Value.Integer);
     else if (v->Type == FMVT_DOUBLE)  lua_pushnumber(L, v->Value.Double);
     else if (v->Type == FMVT_STRING)  push_utf8_string(L, v->Value.String, -1);
-    else if (v->Type == FMVT_BOOLEAN) lua_pushboolean(L, v->Value.Integer);
+    else if (v->Type == FMVT_BOOLEAN) lua_pushboolean(L, v->Value.Integer != 0);
     else                              lua_pushboolean(L, 0);
     lua_rawseti(L, -2, i+1);
   }
@@ -1177,3 +1177,16 @@ int LF_GetGlobalInfo (lua_State* L, struct GlobalInfo *Info, const wchar_t *Plug
   return TRUE;
 }
 
+DLLFUNC	intptr_t LF_ProcessConsoleInput (lua_State* L, struct ProcessConsoleInputInfo *Info)
+{
+  if (GetExportFunction(L, "ProcessConsoleInput")) { //+1: Func
+    PushPluginPair(L, Info->hPanel);                 //+3: Func,Pair
+    pushInputRecord(L, &Info->Rec);                  //+4
+    bit64_push(L, Info->Flags);                      //+5
+    if (pcall_msg(L, 4, 1) == 0)    {                //+1: Res
+      int ret = lua_tointeger(L,-1);
+      return lua_pop(L,1), ret;
+    }
+  }
+  return 0;
+}

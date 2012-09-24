@@ -354,3 +354,12 @@ void LUAPLUG CloseAnalyseW(const struct CloseAnalyseInfo *Info)
 }
 #endif
 //---------------------------------------------------------------------------
+
+#ifdef EXPORT_PROCESSCONSOLEINPUT
+intptr_t LUAPLUG ProcessConsoleInputW(struct ProcessConsoleInputInfo *Info)
+{
+  if(LS) return LF_ProcessConsoleInput(LS, Info);
+  return 0;
+}
+#endif
+//---------------------------------------------------------------------------

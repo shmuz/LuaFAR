@@ -1306,6 +1306,31 @@ mtime=3509018866
 </article>
 </node>
 <node>
+id=481
+lv=2
+dt=Text
+nm=export.ProcessConsoleInput
+ctime=3557661223
+mtime=3557666447
+<article>
+#_result = export.ProcessConsoleInput (object, handle, rec, flags)
+#_
+#_**Parameters:**
+#_  object: plugin object
+#_  handle: panel handle
+#_  rec:    table InputRecord
+#_  flags:  flags
+#_
+#_**Returns:**
+#_  result: integer
+#_
+#_@@@
+#_<lua> Links = { InputRecord="187.html", } </lua>
+#_
+#_
+</article>
+</node>
+<node>
 id=319
 lv=2
 dt=Text
@@ -1651,46 +1676,22 @@ mtime=3509018931
 </article>
 </node>
 <node>
-id=114
-lv=2
-dt=Text
-nm=export.ProcessKey
-mtime=3509018935
-<article>
-#_result = export.ProcessKey (object, handle, inputRecord)
-#_
-#_**Parameters:**
-#_  object:       plugin object
-#_  handle:       panel handle
-#_  inputRecord:  table InputRecord
-#_
-#_**Returns:**
-#_  result:       boolean
-#_
-#_@@@
-#_<lua> Links = {
-#_  ['InputRecord']="187.html",
-#_} </lua>
-#_
-</article>
-</node>
-<node>
 id=112
 lv=2
 dt=Text
 nm=export.ProcessPanelEvent
-mtime=3518458893
+mtime=3557617922
 <article>
 #_result = export.ProcessPanelEvent (object, handle, Event, Param)
 #_
 #_**Parameters:**
-#_  object: plugin object
-#_  handle: panel handle
-#_  Event:  integer
-#_  Param:  nil
+#_  object:  plugin object
+#_  handle:  panel handle
+#_  Event:   integer
+#_  Param:   nil
 #_
 #_**Returns:**
-#_  result: boolean
+#_  result:  boolean
 #_
 #_@@@
 #_
@@ -9405,10 +9406,10 @@ lv=2
 dt=Text
 nm=LF_Analyse
 ctime=3507872169
-mtime=3509019382
+mtime=3557616851
 <article>
 #_<markdown>
-#_    int LF_Analyse(lua_State* L, const struct AnalyseInfo *Info)
+#_    intptr_t LF_Analyse(lua_State* L, const struct AnalyseInfo *Info)
 #_
 #_#### Parameters:
 #_      L:       Lua state
@@ -9482,10 +9483,10 @@ id=159
 lv=2
 dt=Text
 nm=LF_Compare
-mtime=3509019398
+mtime=3557616869
 <article>
 #_<markdown>
-#_    int LF_Compare(lua_State* L, const struct CompareInfo *Info)
+#_    intptr_t LF_Compare(lua_State* L, const struct CompareInfo *Info)
 #_
 #_#### Parameters:
 #_      L:       Lua state
@@ -9509,10 +9510,10 @@ id=160
 lv=2
 dt=Text
 nm=LF_Configure
-mtime=3509019404
+mtime=3557616875
 <article>
 #_<markdown>
-#_    int LF_Configure(lua_State* L, const GUID* Guid)
+#_    intptr_t LF_Configure(lua_State* L, const GUID* Guid)
 #_
 #_#### Parameters:
 #_      L:       Lua state
@@ -9536,10 +9537,10 @@ id=161
 lv=2
 dt=Text
 nm=LF_DeleteFiles
-mtime=3509019409
+mtime=3557616884
 <article>
 #_<markdown>
-#_    int LF_DeleteFiles(lua_State* L, const struct DeleteFilesInfo *Info)
+#_    intptr_t LF_DeleteFiles(lua_State* L, const struct DeleteFilesInfo *Info)
 #_
 #_#### Parameters:
 #_      L:       Lua state
@@ -9563,10 +9564,10 @@ lv=2
 dt=Text
 nm=LF_DlgProc
 ctime=3511601410
-mtime=3511604740
+mtime=3557617183
 <article>
 #_<markdown>
-#_    INT_PTR LF_DlgProc (lua_State *L, HANDLE hDlg, int Msg, int Param1, INT_PTR Param2)
+#_    intptr_t LF_DlgProc (lua_State *L, HANDLE hDlg, intptr_t Msg, intptr_t Param1, void* Param2)
 #_
 #_#### Parameters:
 #_      L:       Lua state
@@ -9668,10 +9669,10 @@ lv=2
 dt=Text
 nm=LF_GetCustomData
 ctime=3485766195
-mtime=3509019443
+mtime=3557616936
 <article>
 #_<markdown>
-#_    int LF_GetCustomData(
+#_    intptr_t LF_GetCustomData(
 #_        lua_State* L, const wchar_t *FilePath, wchar_t **CustomData)
 #_
 #_#### Parameters:
@@ -9695,10 +9696,10 @@ id=165
 lv=2
 dt=Text
 nm=LF_GetFiles
-mtime=3509019448
+mtime=3557616943
 <article>
 #_<markdown>
-#_    int LF_GetFiles (lua_State* L, struct GetFilesInfo *Info)
+#_    intptr_t LF_GetFiles (lua_State* L, struct GetFilesInfo *Info)
 #_
 #_#### Parameters:
 #_      L:       Lua state
@@ -9720,10 +9721,10 @@ id=166
 lv=2
 dt=Text
 nm=LF_GetFindData
-mtime=3509019455
+mtime=3557616949
 <article>
 #_<markdown>
-#_    int LF_GetFindData(lua_State* L, struct GetFindDataInfo *Info)
+#_    intptr_t LF_GetFindData(lua_State* L, struct GetFindDataInfo *Info)
 #_
 #_#### Parameters:
 #_      L:       Lua state
@@ -9826,10 +9827,10 @@ id=171
 lv=2
 dt=Text
 nm=LF_MakeDirectory
-mtime=3509019491
+mtime=3557616959
 <article>
 #_<markdown>
-#_    int LF_MakeDirectory (lua_State* L, struct MakeDirectoryInfo *Info)
+#_    intptr_t LF_MakeDirectory (lua_State* L, struct MakeDirectoryInfo *Info)
 #_
 #_#### Parameters:
 #_      L:       Lua state
@@ -9871,17 +9872,40 @@ mtime=3509019501
 </article>
 </node>
 <node>
+id=480
+lv=2
+dt=Text
+nm=LF_ProcessConsoleInput
+ctime=3557661157
+mtime=3557666577
+<article>
+#_<markdown>
+#_    intptr_t LF_ProcessConsoleInput(lua_State* L, struct ProcessConsoleInputInfo *Info)
+#_
+#_#### Parameters:
+#_      L:       Lua state
+#_      ....
+#_
+#_#### Returns:
+#_      Value, according to FAR Plugins API.
+#_
+#_#### Description:
+#_If Lua function [`export.ProcessConsoleInput`](481.html) exists, it is called.
+#_Else, `0` is returned.
+#_
+#_@@@
+#_
+</article>
+</node>
+<node>
 id=222
 lv=2
 dt=Text
 nm=LF_ProcessDialogEvent
-mtime=3509019514
+mtime=3557617287
 <article>
 #_<markdown>
-#_    int LF_ProcessDialogEvent (
-#_        lua_State* L,
-#_        int Event,
-#_        void* Param)
+#_    intptr_t LF_ProcessDialogEvent (lua_State* L, const struct ProcessDialogEventInfo *Info)
 #_
 #_#### Parameters:
 #_      L:       Lua state
@@ -9903,13 +9927,10 @@ id=174
 lv=2
 dt=Text
 nm=LF_ProcessEditorEvent
-mtime=3509019521
+mtime=3557617358
 <article>
 #_<markdown>
-#_    int LF_ProcessEditorEvent (
-#_        lua_State* L,
-#_        int Event,
-#_        void* Param)
+#_    intptr_t LF_ProcessEditorEvent (lua_State* L, const struct ProcessEditorEventInfo *Info)
 #_
 #_#### Parameters:
 #_      L:       Lua state
@@ -9931,12 +9952,10 @@ id=175
 lv=2
 dt=Text
 nm=LF_ProcessEditorInput
-mtime=3509019527
+mtime=3557617389
 <article>
 #_<markdown>
-#_    int LF_ProcessEditorInput (
-#_        lua_State* L,
-#_        const INPUT_RECORD *Rec)
+#_    intptr_t LF_ProcessEditorInput (lua_State* L, const struct ProcessEditorInputInfo *Info)
 #_
 #_#### Parameters:
 #_      L:       Lua state
@@ -9957,14 +9976,10 @@ id=176
 lv=2
 dt=Text
 nm=LF_ProcessPanelEvent
-mtime=3518458935
+mtime=3557617418
 <article>
 #_<markdown>
-#_    int LF_ProcessPanelEvent(
-#_        lua_State* L,
-#_        HANDLE hPanel,
-#_        int Event,
-#_        void *Param)
+#_    intptr_t LF_ProcessPanelEvent(lua_State* L, const struct ProcessPanelEventInfo *Info)
 #_
 #_#### Parameters:
 #_      L:       Lua state
@@ -9987,10 +10002,10 @@ id=177
 lv=2
 dt=Text
 nm=LF_ProcessHostFile
-mtime=3509019544
+mtime=3557617043
 <article>
 #_<markdown>
-#_    int LF_ProcessHostFile(lua_State* L, const struct ProcessHostFileInfo *Info)
+#_    intptr_t LF_ProcessHostFile(lua_State* L, const struct ProcessHostFileInfo *Info)
 #_
 #_#### Parameters:
 #_      L:       Lua state
@@ -10011,25 +10026,21 @@ mtime=3509019544
 id=178
 lv=2
 dt=Text
-nm=LF_ProcessKey
-mtime=3509019550
+nm=LF_ProcessPanelInput
+mtime=3557617857
 <article>
 #_<markdown>
-#_    int LF_ProcessKey(
-#_        lua_State* L,
-#_        HANDLE hPanel,
-#_        const INPUT_RECORD *Rec)
+#_    intptr_t LF_ProcessPanelInput(lua_State* L, const struct ProcessPanelInputInfo *Info)
 #_
 #_#### Parameters:
 #_      L:       Lua state
-#_      hPanel:  Panel handle
 #_      ....
 #_
 #_#### Returns:
 #_      Value, according to FAR Plugins API.
 #_
 #_#### Description:
-#_If Lua function [`export.ProcessKey`](114.html) exists, it is called.
+#_If Lua function [`export.ProcessPanelInput`](457.html) exists, it is called.
 #_Else, `FALSE` is returned.
 #_
 #_@@@
@@ -10042,13 +10053,10 @@ lv=2
 dt=Text
 nm=LF_ProcessSynchroEvent
 ctime=3480185179
-mtime=3509019557
+mtime=3557617972
 <article>
 #_<markdown>
-#_    int LF_ProcessSynchroEvent (
-#_        lua_State* L,
-#_        int Event,
-#_        void* Param)
+#_    intptr_t LF_ProcessSynchroEvent (lua_State* L, const struct ProcessSynchroEventInfo *Info)
 #_
 #_#### Parameters:
 #_      L:       Lua state
@@ -10070,13 +10078,10 @@ id=179
 lv=2
 dt=Text
 nm=LF_ProcessViewerEvent
-mtime=3509019563
+mtime=3557618010
 <article>
 #_<markdown>
-#_    int LF_ProcessViewerEvent (
-#_        lua_State* L,
-#_        int Event,
-#_        void* Param)
+#_    intptr_t LF_ProcessViewerEvent (lua_State* L, const struct ProcessViewerEventInfo *Info)
 #_
 #_#### Parameters:
 #_      L:       Lua state
@@ -10098,10 +10103,10 @@ id=180
 lv=2
 dt=Text
 nm=LF_PutFiles
-mtime=3509019570
+mtime=3557617093
 <article>
 #_<markdown>
-#_    int LF_PutFiles(lua_State* L, const struct PutFilesInfo *Info)
+#_    intptr_t LF_PutFiles(lua_State* L, const struct PutFilesInfo *Info)
 #_
 #_#### Parameters:
 #_      L:       Lua state
@@ -10123,10 +10128,10 @@ id=181
 lv=2
 dt=Text
 nm=LF_SetDirectory
-mtime=3509019576
+mtime=3557617099
 <article>
 #_<markdown>
-#_    int LF_SetDirectory(lua_State* L, const struct SetDirectoryInfo *Info)
+#_    intptr_t LF_SetDirectory(lua_State* L, const struct SetDirectoryInfo *Info)
 #_
 #_#### Parameters:
 #_      L:       Lua state
@@ -10148,10 +10153,10 @@ id=182
 lv=2
 dt=Text
 nm=LF_SetFindList
-mtime=3509019591
+mtime=3557617104
 <article>
 #_<markdown>
-#_    int LF_SetFindList(lua_State* L, const struct SetFindListInfo *Info)
+#_    intptr_t LF_SetFindList(lua_State* L, const struct SetFindListInfo *Info)
 #_
 #_#### Parameters:
 #_      L:       Lua state

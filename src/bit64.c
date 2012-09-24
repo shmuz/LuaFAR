@@ -49,7 +49,7 @@ static INT64 check64(lua_State *L, int pos, int* success)
   if (tp == LUA_TNUMBER) {
     double d = lua_tonumber(L, pos);
     if ((d >= 0 && d <= MAX53) || (d < 0 && -d <= MAX53))
-      return d;
+      return (INT64) d;
   }
   else {
     INT64 ret;

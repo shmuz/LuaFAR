@@ -3938,8 +3938,9 @@ static int far_MacroCallFar (lua_State *L)
   luaL_argcheck(L, fmc.ArgNum<=MAXARG, MAXARG+2, "too many arguments");
 
   for (idx=0; idx<fmc.ArgNum; idx++) {
+    int type;
     stackpos = idx + 2;
-    int type = lua_type(L, stackpos);
+    type = lua_type(L, stackpos);
     if (type == LUA_TNUMBER) {
       args[idx].Type = FMVT_DOUBLE;
       args[idx].Value.Double = lua_tonumber(L, stackpos);
