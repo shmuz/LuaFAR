@@ -20,6 +20,7 @@ extern UINT64 GetFlagsFromTable (lua_State *L, int pos, const char* key);
 extern const char* VirtualKeyStrings[256];
 extern void LF_Error(lua_State *L, const wchar_t* aMsg);
 extern int pushInputRecord(lua_State *L, const INPUT_RECORD* ir);
+extern void FillInputRecord(lua_State *L, int pos, INPUT_RECORD *ir);
 extern int far_FreeSettings (lua_State *L);
 
 // "Collector" is a Lua table referenced from the Plugin Object table by name.
@@ -1179,14 +1180,21 @@ int LF_GetGlobalInfo (lua_State* L, struct GlobalInfo *Info, const wchar_t *Plug
 
 DLLFUNC	intptr_t LF_ProcessConsoleInput (lua_State* L, struct ProcessConsoleInputInfo *Info)
 {
+  int ret = 0;
   if (GetExportFunction(L, "ProcessConsoleInput")) { //+1: Func
     PushPluginPair(L, Info->hPanel);                 //+3: Func,Pair
     pushInputRecord(L, &Info->Rec);                  //+4
     bit64_push(L, Info->Flags);                      //+5
     if (pcall_msg(L, 4, 1) == 0)    {                //+1: Res
-      int ret = lua_tointeger(L,-1);
-      return lua_pop(L,1), ret;
+      if (lua_istable(L,-1)) {
+        FillInputRecord(L, -1, &Info->Rec);
+        ret = 2;
+      }
+      else {
+        ret = lua_tointeger(L,-1);
+      }
+      lua_pop(L,1);
     }
   }
-  return 0;
+  return ret;
 }

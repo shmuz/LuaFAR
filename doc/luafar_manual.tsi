@@ -1311,7 +1311,7 @@ lv=2
 dt=Text
 nm=export.ProcessConsoleInput
 ctime=3557661223
-mtime=3557666447
+mtime=3557676017
 <article>
 #_result = export.ProcessConsoleInput (object, handle, rec, flags)
 #_
@@ -1322,7 +1322,7 @@ mtime=3557666447
 #_  flags:  flags
 #_
 #_**Returns:**
-#_  result: integer
+#_  result: 0, 1, or table InputRecord
 #_
 #_@@@
 #_<lua> Links = { InputRecord="187.html", } </lua>

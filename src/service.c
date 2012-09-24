@@ -1253,7 +1253,7 @@ static int editor_ReadInput(lua_State *L)
   return pushInputRecord(L, &ir);
 }
 
-static void FillInputRecord(lua_State *L, int pos, INPUT_RECORD *ir)
+void FillInputRecord(lua_State *L, int pos, INPUT_RECORD *ir)
 {
   pos = abs_index(L, pos);
   luaL_checktype(L, pos, LUA_TTABLE);
