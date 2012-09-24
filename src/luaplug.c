@@ -21,12 +21,12 @@ extern int FUNC_OPENLIBS (lua_State*);
 #endif
 
 lua_State* LS;
-INT_PTR WINAPI DlgProc(HANDLE hDlg, int Msg, int Param1, void *Param2)
+intptr_t WINAPI DlgProc(HANDLE hDlg, intptr_t Msg, intptr_t Param1, void *Param2)
 {
   return LF_DlgProc(LS, hDlg, Msg, Param1, Param2);
 }
 
-int WINAPI MacroCallback (void* Id, FARADDKEYMACROFLAGS Flags)
+intptr_t WINAPI MacroCallback (void* Id, FARADDKEYMACROFLAGS Flags)
 {
   return LF_MacroCallback(LS, Id, Flags);
 }
@@ -120,7 +120,7 @@ void LUAPLUG GetPluginInfoW(struct PluginInfo *Info)
 }
 //---------------------------------------------------------------------------
 
-int LUAPLUG ProcessSynchroEventW(const struct ProcessSynchroEventInfo *Info)
+intptr_t LUAPLUG ProcessSynchroEventW(const struct ProcessSynchroEventInfo *Info)
 {
   if(LS) return LF_ProcessSynchroEvent(LS, Info);
   return 0;
@@ -145,7 +145,7 @@ HANDLE LUAPLUG OpenW(const struct OpenInfo *Info)
 //---------------------------------------------------------------------------
 
 #ifdef EXPORT_GETFINDDATA
-int LUAPLUG GetFindDataW(struct GetFindDataInfo *Info)
+intptr_t LUAPLUG GetFindDataW(struct GetFindDataInfo *Info)
 {
   if(LS) return LF_GetFindData(LS, Info);
   return FALSE;
@@ -170,7 +170,7 @@ void LUAPLUG ClosePanelW(const struct ClosePanelInfo *Info)
 //---------------------------------------------------------------------------
 
 #ifdef EXPORT_GETFILES
-int LUAPLUG GetFilesW(struct GetFilesInfo *Info)
+intptr_t LUAPLUG GetFilesW(struct GetFilesInfo *Info)
 {
   if(LS)
     return LF_GetFiles(LS, Info);
@@ -199,7 +199,7 @@ void LUAPLUG ExitFARW(const struct ExitInfo *Info)
 //---------------------------------------------------------------------------
 
 #ifdef EXPORT_COMPARE
-int LUAPLUG CompareW(const struct CompareInfo *Info)
+intptr_t LUAPLUG CompareW(const struct CompareInfo *Info)
 {
   if(LS) return LF_Compare(LS, Info);
   return 0;
@@ -208,7 +208,7 @@ int LUAPLUG CompareW(const struct CompareInfo *Info)
 //---------------------------------------------------------------------------
 
 #ifdef EXPORT_CONFIGURE
-int LUAPLUG ConfigureW(const struct ConfigureInfo *Info)
+intptr_t LUAPLUG ConfigureW(const struct ConfigureInfo *Info)
 {
   if(LS) return LF_Configure(LS, Info);
   return FALSE;
@@ -217,7 +217,7 @@ int LUAPLUG ConfigureW(const struct ConfigureInfo *Info)
 //---------------------------------------------------------------------------
 
 #ifdef EXPORT_DELETEFILES
-int LUAPLUG DeleteFilesW(const struct DeleteFilesInfo *Info)
+intptr_t LUAPLUG DeleteFilesW(const struct DeleteFilesInfo *Info)
 {
   if(LS) return LF_DeleteFiles(LS, Info);
   return FALSE;
@@ -226,7 +226,7 @@ int LUAPLUG DeleteFilesW(const struct DeleteFilesInfo *Info)
 //---------------------------------------------------------------------------
 
 #ifdef EXPORT_MAKEDIRECTORY
-int LUAPLUG MakeDirectoryW(struct MakeDirectoryInfo *Info)
+intptr_t LUAPLUG MakeDirectoryW(struct MakeDirectoryInfo *Info)
 {
   if(LS) return LF_MakeDirectory(LS, Info);
   return 0;
@@ -235,7 +235,7 @@ int LUAPLUG MakeDirectoryW(struct MakeDirectoryInfo *Info)
 //---------------------------------------------------------------------------
 
 #ifdef EXPORT_PROCESSPANELEVENT
-int LUAPLUG ProcessPanelEventW(const struct ProcessPanelEventInfo *Info)
+intptr_t LUAPLUG ProcessPanelEventW(const struct ProcessPanelEventInfo *Info)
 {
   if(LS) return LF_ProcessPanelEvent(LS, Info);
   return FALSE;
@@ -244,7 +244,7 @@ int LUAPLUG ProcessPanelEventW(const struct ProcessPanelEventInfo *Info)
 //---------------------------------------------------------------------------
 
 #ifdef EXPORT_PROCESSHOSTFILE
-int LUAPLUG ProcessHostFileW(const struct ProcessHostFileInfo *Info)
+intptr_t LUAPLUG ProcessHostFileW(const struct ProcessHostFileInfo *Info)
 {
   if(LS) return LF_ProcessHostFile(LS, Info);
   return FALSE;
@@ -253,7 +253,7 @@ int LUAPLUG ProcessHostFileW(const struct ProcessHostFileInfo *Info)
 //---------------------------------------------------------------------------
 
 #ifdef EXPORT_PROCESSPANELINPUT
-int LUAPLUG ProcessPanelInputW(const struct ProcessPanelInputInfo *Info)
+intptr_t LUAPLUG ProcessPanelInputW(const struct ProcessPanelInputInfo *Info)
 {
   if(LS) return LF_ProcessPanelInput(LS, Info);
   return FALSE;
@@ -262,7 +262,7 @@ int LUAPLUG ProcessPanelInputW(const struct ProcessPanelInputInfo *Info)
 //---------------------------------------------------------------------------
 
 #ifdef EXPORT_PUTFILES
-int LUAPLUG PutFilesW(const struct PutFilesInfo *Info)
+intptr_t LUAPLUG PutFilesW(const struct PutFilesInfo *Info)
 {
   if(LS) return LF_PutFiles(LS, Info);
   return 0;
@@ -271,7 +271,7 @@ int LUAPLUG PutFilesW(const struct PutFilesInfo *Info)
 //---------------------------------------------------------------------------
 
 #ifdef EXPORT_SETDIRECTORY
-int LUAPLUG SetDirectoryW(const struct SetDirectoryInfo *Info)
+intptr_t LUAPLUG SetDirectoryW(const struct SetDirectoryInfo *Info)
 {
   if(LS) return LF_SetDirectory(LS, Info);
   return FALSE;
@@ -280,7 +280,7 @@ int LUAPLUG SetDirectoryW(const struct SetDirectoryInfo *Info)
 //---------------------------------------------------------------------------
 
 #ifdef EXPORT_SETFINDLIST
-int LUAPLUG SetFindListW(const struct SetFindListInfo *Info)
+intptr_t LUAPLUG SetFindListW(const struct SetFindListInfo *Info)
 {
   if(LS) return LF_SetFindList(LS, Info);
   return FALSE;
@@ -289,7 +289,7 @@ int LUAPLUG SetFindListW(const struct SetFindListInfo *Info)
 //---------------------------------------------------------------------------
 
 #ifdef EXPORT_PROCESSEDITORINPUT
-int LUAPLUG ProcessEditorInputW(const struct ProcessEditorInputInfo *Info)
+intptr_t LUAPLUG ProcessEditorInputW(const struct ProcessEditorInputInfo *Info)
 {
   if(LS) return LF_ProcessEditorInput(LS, Info);
   return 0;
@@ -298,7 +298,7 @@ int LUAPLUG ProcessEditorInputW(const struct ProcessEditorInputInfo *Info)
 //---------------------------------------------------------------------------
 
 #ifdef EXPORT_PROCESSEDITOREVENT
-int LUAPLUG ProcessEditorEventW(const struct ProcessEditorEventInfo *Info)
+intptr_t LUAPLUG ProcessEditorEventW(const struct ProcessEditorEventInfo *Info)
 {
   if(LS) return LF_ProcessEditorEvent(LS, Info);
   return 0;
@@ -307,7 +307,7 @@ int LUAPLUG ProcessEditorEventW(const struct ProcessEditorEventInfo *Info)
 //---------------------------------------------------------------------------
 
 #ifdef EXPORT_PROCESSVIEWEREVENT
-int LUAPLUG ProcessViewerEventW(const struct ProcessViewerEventInfo *Info)
+intptr_t LUAPLUG ProcessViewerEventW(const struct ProcessViewerEventInfo *Info)
 {
   if(LS) return LF_ProcessViewerEvent(LS, Info);
   return 0;
@@ -316,7 +316,7 @@ int LUAPLUG ProcessViewerEventW(const struct ProcessViewerEventInfo *Info)
 //---------------------------------------------------------------------------
 
 #ifdef EXPORT_PROCESSDIALOGEVENT
-int LUAPLUG ProcessDialogEventW(const struct ProcessDialogEventInfo *Info)
+intptr_t LUAPLUG ProcessDialogEventW(const struct ProcessDialogEventInfo *Info)
 {
   if(LS) return LF_ProcessDialogEvent(LS, Info);
   return 0;
@@ -325,7 +325,7 @@ int LUAPLUG ProcessDialogEventW(const struct ProcessDialogEventInfo *Info)
 //---------------------------------------------------------------------------
 
 #ifdef EXPORT_GETCUSTOMDATA
-int LUAPLUG GetCustomDataW(const wchar_t *FilePath, wchar_t **CustomData)
+intptr_t LUAPLUG GetCustomDataW(const wchar_t *FilePath, wchar_t **CustomData)
 {
   if(LS) return LF_GetCustomData(LS, FilePath, CustomData);
   return 0;

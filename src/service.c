@@ -931,7 +931,7 @@ static int editor_ClearSessionBookmarks(lua_State *L)
 static int editor_DeleteSessionBookmark(lua_State *L)
 {
   int EditorId = luaL_optinteger(L, 1, CURRENT_EDITOR);
-  INT_PTR num = luaL_optinteger(L, 2, -1);
+  intptr_t num = luaL_optinteger(L, 2, -1);
   PSInfo *Info = GetPluginData(L)->Info;
   lua_pushboolean(L, Info->EditorControl(EditorId, ECTL_DELETESESSIONBOOKMARK, 0, (void*)num));
   return 1;
@@ -1986,7 +1986,7 @@ static int ChangePanelSelection(lua_State *L, BOOL op_set)
 {
   PSInfo *Info = GetPluginData(L)->Info;
   int itemindex = -1, numItems, command;
-  INT_PTR state;
+  intptr_t state;
   struct PanelInfo pi;
   HANDLE handle = OptHandle2(L);
   if (lua_isnumber(L,3)) {
@@ -2382,7 +2382,7 @@ int DialogHandleEqual (lua_State* L)
 static int far_SendDlgMessage (lua_State *L)
 {
   PSInfo *Info = GetPluginData(L)->Info;
-  INT_PTR res;
+  intptr_t res;
   int Msg, Param1, res_incr=0;
   void* Param2 = NULL;
   wchar_t buf[512];
@@ -2436,7 +2436,7 @@ static int far_SendDlgMessage (lua_State *L)
       break;
 
     case DM_SETCHECK:
-      Param2 = (void*)(INT_PTR)get_env_flag (L, 4, NULL);
+      Param2 = (void*)(intptr_t)get_env_flag (L, 4, NULL);
       break;
 
     case DM_GETCURSORPOS:
@@ -2744,7 +2744,7 @@ static int far_SendDlgMessage (lua_State *L)
       break;
 
     case DM_SETCOMBOBOXEVENT:
-      Param2 = (void*)(INT_PTR)CheckFlags(L, 4);
+      Param2 = (void*)(intptr_t)CheckFlags(L, 4);
       break;
 
     case DM_SETEDITPOSITION: {
@@ -2762,9 +2762,9 @@ static int far_SendDlgMessage (lua_State *L)
   return 1;
 }
 
-INT_PTR LF_DlgProc (lua_State *L, HANDLE hDlg, int Msg, int Param1, void *Param2)
+intptr_t LF_DlgProc (lua_State *L, HANDLE hDlg, intptr_t Msg, intptr_t Param1, void *Param2)
 {
-  INT_PTR ret;
+  intptr_t ret;
   TPluginData *pd = GetPluginData(L);
   PSInfo *Info = pd->Info;
   TDialogData *dd = (TDialogData*) Info->SendDlgMessage(hDlg,DM_GETDLGDATA,0,0);
@@ -2811,7 +2811,7 @@ INT_PTR LF_DlgProc (lua_State *L, HANDLE hDlg, int Msg, int Param1, void *Param2
     pushInputRecord(L, (const INPUT_RECORD*)Param2);
 
   else if (Msg == DN_LISTCHANGE || Msg == DN_LISTHOTKEY)
-    lua_pushinteger (L, (INT_PTR)Param2+1); // make list positions 1-based
+    lua_pushinteger (L, (intptr_t)Param2+1); // make list positions 1-based
 
   else if (Msg == DN_RESIZECONSOLE) {
     COORD* coord = (COORD*)Param2;
@@ -2834,7 +2834,7 @@ INT_PTR LF_DlgProc (lua_State *L, HANDLE hDlg, int Msg, int Param1, void *Param2
   }
 
   else
-    lua_pushinteger (L, (INT_PTR)Param2); //+6
+    lua_pushinteger (L, (intptr_t)Param2); //+6
 
   //---------------------------------------------------------------------------
   ret = pcall_msg (L, 4, 1); //+2
@@ -2870,7 +2870,7 @@ INT_PTR LF_DlgProc (lua_State *L, HANDLE hDlg, int Msg, int Param1, void *Param2
   }
 
   else if (Msg == DN_HELP) {
-    if ((ret = (INT_PTR)utf8_to_utf16(L, -1, NULL)) != 0) {
+    if ((ret = (intptr_t)utf8_to_utf16(L, -1, NULL)) != 0) {
       lua_pushvalue(L, -1);                // keep stack balanced
       lua_setfield(L, -3, "helpstring");   // protect from garbage collector
     }
@@ -3026,7 +3026,7 @@ static int dialog_tostring (lua_State *L)
 static int far_DefDlgProc(lua_State *L)
 {
   int Msg, Param1;
-  INT_PTR Param2;
+  intptr_t Param2;
   HANDLE hDlg;
 
   luaL_checktype(L, 1, LUA_TLIGHTUSERDATA);
@@ -3617,7 +3617,7 @@ static int far_AdvControl (lua_State *L)
     }
 
     case ACTL_SETPROGRESSSTATE:
-      Param1 = (INT_PTR) check_env_flag(L, 2);
+      Param1 = (intptr_t) check_env_flag(L, 2);
       break;
 
     case ACTL_SETPROGRESSVALUE: {
@@ -3835,10 +3835,10 @@ static int far_MacroGetLastError (lua_State* L)
   return 1;
 }
 
-int LF_MacroCallback (lua_State* L, void* Id, FARADDKEYMACROFLAGS Flags)
+intptr_t LF_MacroCallback (lua_State* L, void* Id, FARADDKEYMACROFLAGS Flags)
 {
   int result = FALSE;
-  int funcref = (INT_PTR) Id;
+  int funcref = (intptr_t) Id;
   lua_rawgeti(L, LUA_REGISTRYINDEX, funcref);
   if (lua_type(L,-1) == LUA_TFUNCTION) {
     lua_pushinteger(L, funcref);
@@ -3854,7 +3854,7 @@ static int far_MacroAdd (lua_State* L)
 {
   TPluginData *pd = GetPluginData(L);
 
-  INT_PTR ref;
+  intptr_t ref;
   struct MacroAddMacro data;
   memset(&data, 0, sizeof(data));
   data.StructSize = sizeof(data);
@@ -3886,7 +3886,7 @@ static int far_MacroAdd (lua_State* L)
 static int far_MacroDelete (lua_State* L)
 {
   TPluginData *pd = GetPluginData(L);
-  INT_PTR ref = luaL_checkinteger(L, 1);
+  intptr_t ref = luaL_checkinteger(L, 1);
   int result = pd->Info->MacroControl(pd->PluginId, MCTL_DELMACRO, 0, (void*)ref);
   if (result)
     luaL_unref(L, LUA_REGISTRYINDEX, ref);
@@ -4153,7 +4153,7 @@ static int plugin_load (lua_State *L, enum FAR_PLUGINS_CONTROL_COMMANDS command)
   PSInfo *Info = GetPluginData(L)->Info;
   int param1 = CAST(int, check_env_flag(L, 1));
   void *param2 = check_utf8_string(L, 2, NULL);
-  INT_PTR result = Info->PluginsControl(INVALID_HANDLE_VALUE, command, param1, param2);
+  intptr_t result = Info->PluginsControl(INVALID_HANDLE_VALUE, command, param1, param2);
   if (result) PushPluginHandle(L, CAST(HANDLE, result));
   else lua_pushnil(L);
   return 1;
@@ -4183,7 +4183,7 @@ static int far_FindPlugin (lua_State *L)
     if (len < sizeof(GUID)) param2 = NULL;
   }
   if (param2) {
-    INT_PTR handle = Info->PluginsControl(NULL, PCTL_FINDPLUGIN, param1, param2);
+    intptr_t handle = Info->PluginsControl(NULL, PCTL_FINDPLUGIN, param1, param2);
     if (handle) {
       PushPluginHandle(L, CAST(HANDLE, handle));
       return 1;

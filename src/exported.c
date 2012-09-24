@@ -254,7 +254,7 @@ void FillFindData(lua_State* L, struct PluginPanelItem **pPanelItems,
   *pPanelItems = ppi;
 }
 
-int LF_GetFindData(lua_State* L, struct GetFindDataInfo *Info)
+intptr_t LF_GetFindData(lua_State* L, struct GetFindDataInfo *Info)
 {
   if (GetExportFunction(L, "GetFindData")) {   //+1: Func
     Info->StructSize = sizeof(*Info);
@@ -304,7 +304,7 @@ void UpdateFileSelection(lua_State* L, struct PluginPanelItem *PanelItem,
 }
 //---------------------------------------------------------------------------
 
-int LF_GetFiles (lua_State* L, struct GetFilesInfo *Info)
+intptr_t LF_GetFiles (lua_State* L, struct GetFilesInfo *Info)
 {
   if (GetExportFunction(L, "GetFiles")) {      //+1: Func
     int ret;
@@ -744,7 +744,7 @@ void LF_ClosePanel(lua_State* L, const struct ClosePanelInfo *Info)
   luaL_unref(L, LUA_REGISTRYINDEX, UNTRANSFORM_REF(Info->hPanel));
 }
 
-int LF_Compare(lua_State* L, const struct CompareInfo *Info)
+intptr_t LF_Compare(lua_State* L, const struct CompareInfo *Info)
 {
   int res = -2; // default FAR compare function should be used
   if (GetExportFunction(L, "Compare")) { //+1: Func
@@ -760,7 +760,7 @@ int LF_Compare(lua_State* L, const struct CompareInfo *Info)
   return res;
 }
 
-int LF_Configure(lua_State* L, const struct ConfigureInfo *Info)
+intptr_t LF_Configure(lua_State* L, const struct ConfigureInfo *Info)
 {
   int res = FALSE;
   if (GetExportFunction(L, "Configure")) { //+1: Func
@@ -773,7 +773,7 @@ int LF_Configure(lua_State* L, const struct ConfigureInfo *Info)
   return res;
 }
 
-int LF_DeleteFiles(lua_State* L, const struct DeleteFilesInfo *Info)
+intptr_t LF_DeleteFiles(lua_State* L, const struct DeleteFilesInfo *Info)
 {
   int res = FALSE;
   if (GetExportFunction(L, "DeleteFiles")) {   //+1: Func
@@ -791,7 +791,7 @@ int LF_DeleteFiles(lua_State* L, const struct DeleteFilesInfo *Info)
 // far.MakeDirectory returns 2 values:
 //    a) status (an integer; in accordance to FAR API), and
 //    b) new directory name (a string; optional)
-int LF_MakeDirectory (lua_State* L, struct MakeDirectoryInfo *Info)
+intptr_t LF_MakeDirectory (lua_State* L, struct MakeDirectoryInfo *Info)
 {
   int res = 0;
   if (GetExportFunction(L, "MakeDirectory")) { //+1: Func
@@ -814,7 +814,7 @@ int LF_MakeDirectory (lua_State* L, struct MakeDirectoryInfo *Info)
   return res;
 }
 
-int LF_ProcessPanelEvent(lua_State* L, const struct ProcessPanelEventInfo *Info)
+intptr_t LF_ProcessPanelEvent(lua_State* L, const struct ProcessPanelEventInfo *Info)
 {
   int res = FALSE;
   if (GetExportFunction(L, "ProcessPanelEvent")) { //+1: Func
@@ -829,7 +829,7 @@ int LF_ProcessPanelEvent(lua_State* L, const struct ProcessPanelEventInfo *Info)
   return res;
 }
 
-int LF_ProcessHostFile(lua_State* L, const struct ProcessHostFileInfo *Info)
+intptr_t LF_ProcessHostFile(lua_State* L, const struct ProcessHostFileInfo *Info)
 {
   if (GetExportFunction(L, "ProcessHostFile")) {   //+1: Func
     int ret;
@@ -850,7 +850,7 @@ int LF_ProcessHostFile(lua_State* L, const struct ProcessHostFileInfo *Info)
   return FALSE;
 }
 
-int LF_ProcessPanelInput(lua_State* L, const struct ProcessPanelInputInfo *Info)
+intptr_t LF_ProcessPanelInput(lua_State* L, const struct ProcessPanelInputInfo *Info)
 {
   if (GetExportFunction(L, "ProcessPanelInput")) {   //+1: Func
     PushPluginPair(L, Info->hPanel);                 //+3: Func,Pair
@@ -863,7 +863,7 @@ int LF_ProcessPanelInput(lua_State* L, const struct ProcessPanelInputInfo *Info)
   return FALSE;
 }
 
-int LF_PutFiles(lua_State* L, const struct PutFilesInfo *Info)
+intptr_t LF_PutFiles(lua_State* L, const struct PutFilesInfo *Info)
 {
   if (GetExportFunction(L, "PutFiles")) {    //+1: Func
     int ret;
@@ -886,7 +886,7 @@ int LF_PutFiles(lua_State* L, const struct PutFilesInfo *Info)
   return 0;
 }
 
-int LF_SetDirectory(lua_State* L, const struct SetDirectoryInfo *Info) //TODO: Info->UserData
+intptr_t LF_SetDirectory(lua_State* L, const struct SetDirectoryInfo *Info) //TODO: Info->UserData
 {
   if (GetExportFunction(L, "SetDirectory")) {   //+1: Func
     int ret;
@@ -902,7 +902,7 @@ int LF_SetDirectory(lua_State* L, const struct SetDirectoryInfo *Info) //TODO: I
   return FALSE;
 }
 
-int LF_SetFindList(lua_State* L, const struct SetFindListInfo *Info)
+intptr_t LF_SetFindList(lua_State* L, const struct SetFindListInfo *Info)
 {
   if (GetExportFunction(L, "SetFindList")) {               //+1: Func
     int ret;
@@ -968,7 +968,7 @@ void LF_GetPluginInfo(lua_State* L, struct PluginInfo *PI)
   lua_pop(L, 3);
 }
 
-int LF_ProcessEditorInput (lua_State* L, const struct ProcessEditorInputInfo *Info)
+intptr_t LF_ProcessEditorInput (lua_State* L, const struct ProcessEditorInputInfo *Info)
 {
   if (!GetExportFunction(L, "ProcessEditorInput"))   //+1: Func
     return 0;
@@ -980,7 +980,7 @@ int LF_ProcessEditorInput (lua_State* L, const struct ProcessEditorInputInfo *In
   return 0;
 }
 
-int LF_ProcessEditorEvent (lua_State* L, const struct ProcessEditorEventInfo *Info)
+intptr_t LF_ProcessEditorEvent (lua_State* L, const struct ProcessEditorEventInfo *Info)
 {
   int ret = 0;
   if (GetExportFunction(L, "ProcessEditorEvent"))  { //+1: Func
@@ -1007,7 +1007,7 @@ int LF_ProcessEditorEvent (lua_State* L, const struct ProcessEditorEventInfo *In
   return ret;
 }
 
-int LF_ProcessViewerEvent (lua_State* L, const struct ProcessViewerEventInfo *Info)
+intptr_t LF_ProcessViewerEvent (lua_State* L, const struct ProcessViewerEventInfo *Info)
 {
   int ret = 0;
   if (GetExportFunction(L, "ProcessViewerEvent"))  { //+1: Func
@@ -1022,7 +1022,7 @@ int LF_ProcessViewerEvent (lua_State* L, const struct ProcessViewerEventInfo *In
   return ret;
 }
 
-int LF_ProcessDialogEvent (lua_State* L, const struct ProcessDialogEventInfo *Info)
+intptr_t LF_ProcessDialogEvent (lua_State* L, const struct ProcessDialogEventInfo *Info)
 {
   int ret = 0;
   if (GetExportFunction(L, "ProcessDialogEvent"))  { //+1: Func
@@ -1045,7 +1045,7 @@ int LF_ProcessDialogEvent (lua_State* L, const struct ProcessDialogEventInfo *In
   return ret;
 }
 
-int LF_ProcessSynchroEvent (lua_State* L, const struct ProcessSynchroEventInfo *Info)
+intptr_t LF_ProcessSynchroEvent (lua_State* L, const struct ProcessSynchroEventInfo *Info)
 {
   int ret = 0;
   if (Info->Event == SE_COMMONSYNCHRO) {
@@ -1081,7 +1081,7 @@ int LF_ProcessSynchroEvent (lua_State* L, const struct ProcessSynchroEventInfo *
   return ret;
 }
 
-int LF_GetCustomData(lua_State* L, const wchar_t *FilePath, wchar_t **CustomData)
+intptr_t LF_GetCustomData(lua_State* L, const wchar_t *FilePath, wchar_t **CustomData)
 {
   if (GetExportFunction(L, "GetCustomData"))  { //+1: Func
     push_utf8_string(L, FilePath, -1);  //+2
