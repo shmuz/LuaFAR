@@ -135,7 +135,7 @@ const char* VirtualKeyStrings[256] = {
 static int IsFarSpring (lua_State *L)
 {
   TPluginData *pd = GetPluginData(L);
-  return pd->Info->MacroControl(pd->PluginId, MCTL_ISFARSPRING, 0, 0);
+  return pd->Info->Private != NULL; // FIXME
 }
 #endif
 
@@ -3930,7 +3930,9 @@ static int far_MacroCallFar (lua_State *L)
   mcfc_data cbdata = { L, MAXRET };
 
   TPluginData *pd = GetPluginData(L);
+  struct MacroPrivateInfo *privateInfo = (struct MacroPrivateInfo*)pd->Info->Private;
   int opcode = luaL_checkinteger(L, 1);
+
   fmc.Args = args;
   fmc.ArgNum = lua_gettop(L) - 1;
   fmc.Callback = MacroCallFarCallback;
@@ -3966,7 +3968,7 @@ static int far_MacroCallFar (lua_State *L)
     luaL_argerror(L, stackpos, "invalid argument");
 
   lua_checkstack(L, MAXRET);
-  ret = pd->Info->MacroControl(pd->PluginId, MCTL_CALLFAR, opcode, &fmc);
+  ret = privateInfo->CallFar(opcode, &fmc);
   pushed = MAXRET - cbdata.ret_avail;
   return pushed ? pushed : (lua_pushnumber(L, ret), 1);
 }

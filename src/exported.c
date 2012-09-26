@@ -23,6 +23,8 @@ extern int pushInputRecord(lua_State *L, const INPUT_RECORD* ir);
 extern void FillInputRecord(lua_State *L, int pos, INPUT_RECORD *ir);
 extern int far_FreeSettings (lua_State *L);
 
+char LuamacroGuid[16]={200,239,187,78,132,32,127,75,148,192,105,44,225,54,137,77};
+
 // "Collector" is a Lua table referenced from the Plugin Object table by name.
 // Collector contains an array of lightuserdata which are pointers to malloc'ed
 // memory regions.
@@ -559,12 +561,13 @@ static void PushParamsTable (lua_State* L, const struct OpenMacroInfo* om_info)
 }
 
 #ifdef FAR_LUA
-static void FL_PushParamsTable (lua_State* L, const struct OpenMacroInfo* om_info)
+static void FL_PushParamsTable (lua_State* L, const struct OpenMacroInfo* om_info, int Offset)
 {
   size_t i;
-  lua_createtable(L, om_info->Count, 0);
-  for (i=0; i < om_info->Count; i++) {
-    struct FarMacroValue* v = om_info->Values + i;
+  size_t Count = om_info->Count - Offset;
+  lua_createtable(L, Count, 0);
+  for (i=0; i < Count; i++) {
+    struct FarMacroValue* v = om_info->Values + Offset + i;
     if (v->Type == FMVT_INTEGER)      bit64_pushuserdata(L, v->Value.Integer);
     else if (v->Type == FMVT_DOUBLE)  lua_pushnumber(L, v->Value.Double);
     else if (v->Type == FMVT_STRING)  push_utf8_string(L, v->Value.String, -1);
@@ -590,16 +593,22 @@ static struct MacroPluginReturn* CreateMPR (lua_State* L, int nargs, int ReturnT
 
 static HANDLE Open_Luamacro (lua_State* L, const struct OpenInfo *Info)
 {
-  FL_PushParamsTable(L, (struct OpenMacroInfo*)Info->Data);
+  const struct OpenMacroInfo* om_info = (const struct OpenMacroInfo*)Info->Data;
+  int calltype = (int) om_info->Values[0].Value.Integer;
+
+  lua_pushinteger(L, calltype);
+  lua_pushlstring(L, (const char*)Info->Guid, sizeof(GUID));
+  FL_PushParamsTable(L, om_info, 1);
+
   if (pcall_msg(L, 3, 2) == 0) {
-    if (Info->OpenFrom == OPEN_MACROINIT || Info->OpenFrom == OPEN_MACROFINAL) {
+    if (calltype == MCT_MACROINIT || calltype == MCT_MACROFINAL) {
       if (lua_type(L,-2) == LUA_TNUMBER) {
         INT_PTR ret = lua_tointeger(L,-2);
         lua_pop(L,2);
         return CAST(HANDLE, ret);
       }
     }
-    else if (Info->OpenFrom == OPEN_MACROSTEP || Info->OpenFrom == OPEN_MACROPARSE) {
+    else if (calltype == MCT_MACROSTEP || calltype == MCT_MACROPARSE) {
       struct MacroPluginReturn* mpr;
       int ReturnType;
 
@@ -689,13 +698,13 @@ HANDLE LF_Open (lua_State* L, const struct OpenInfo *Info)
   if (!CheckReloadDefaultScript(L) || !GetExportFunction(L, "Open"))
     return NULL;
 
-  lua_pushinteger(L, Info->OpenFrom);
-  lua_pushlstring(L, (const char*)Info->Guid, sizeof(GUID));
-
 #ifdef FAR_LUA
-  if (Info->OpenFrom >= OPEN_MACROINIT && Info->OpenFrom <= OPEN_MACROPARSE)
+  if (Info->OpenFrom==OPEN_LUAMACRO && IsEqualGUID(GetPluginData(L)->PluginId, LuamacroGuid))
     return Open_Luamacro(L, Info);
 #endif
+
+  lua_pushinteger(L, Info->OpenFrom);
+  lua_pushlstring(L, (const char*)Info->Guid, sizeof(GUID));
 
   if (Info->OpenFrom == OPEN_FROMMACRO)
     PushParamsTable(L, (struct OpenMacroInfo*)Info->Data);
