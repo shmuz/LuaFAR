@@ -195,8 +195,9 @@ const wchar_t** CreateStringsArray(lua_State* L, int cpos, const char* field,
 
 static void WINAPI FarPanelItemFreeCallback (void* UserData, const struct FarPanelItemFreeInfo* Info)
 {
+  FarPanelItemUserData* ud;
   (void) Info;
-  FarPaneItemUserData* ud = (FarPaneItemUserData*)UserData;
+  ud = (FarPanelItemUserData*)UserData;
   luaL_unref(ud->L, LUA_REGISTRYINDEX, ud->ref);
   free(ud);
 }
@@ -220,7 +221,7 @@ void FillPluginPanelItem (lua_State *L, struct PluginPanelItem *pi)
 
   lua_getfield(L, -1, "UserData");
   if (!lua_isnil(L, -1)) {
-    FarPaneItemUserData* ud = (FarPaneItemUserData*)malloc(sizeof(FarPaneItemUserData));
+    FarPanelItemUserData* ud = (FarPanelItemUserData*)malloc(sizeof(FarPanelItemUserData));
     ud->L = L;
     ud->ref = luaL_ref(L, LUA_REGISTRYINDEX);
     pi->UserData.Data = ud;

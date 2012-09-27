@@ -35,7 +35,7 @@ TPluginData* GetPluginData(lua_State* L);
 typedef struct {
   lua_State *L;
   int ref;
-} FarPaneItemUserData;
+} FarPanelItemUserData;
 
 DLLFUNC intptr_t LF_DlgProc(lua_State *L, HANDLE hDlg, intptr_t  Msg, intptr_t  Param1, void *Param2);
 DLLFUNC intptr_t LF_MacroCallback (lua_State* L, void* Id, FARADDKEYMACROFLAGS Flags);
