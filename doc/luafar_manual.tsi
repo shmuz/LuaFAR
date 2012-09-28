@@ -1311,13 +1311,11 @@ lv=2
 dt=Text
 nm=export.ProcessConsoleInput
 ctime=3557661223
-mtime=3557676017
+mtime=3557937753
 <article>
-#_result = export.ProcessConsoleInput (object, handle, rec, flags)
+#_result = export.ProcessConsoleInput (rec, flags)
 #_
 #_**Parameters:**
-#_  object: plugin object
-#_  handle: panel handle
 #_  rec:    table InputRecord
 #_  flags:  flags
 #_

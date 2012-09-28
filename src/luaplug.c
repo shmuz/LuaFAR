@@ -4,7 +4,11 @@
 #include "lua.h"
 #include "luafar.h"
 
+#ifdef _MSC_VER
+#define LUAPLUG WINAPI
+#else
 #define LUAPLUG WINAPI __declspec(dllexport)
+#endif
 
 #ifdef FUNC_OPENLIBS
 extern int FUNC_OPENLIBS (lua_State*);

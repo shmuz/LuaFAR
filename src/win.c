@@ -70,22 +70,22 @@ static int win_SetRegKey(lua_State *L)
               (wchar_t*)check_utf8_string(L, 5, NULL));
   }
   else if (!strcmp ("dword", DataType)) {
-    SetRegKeyDword(hRoot, Key, ValueName, luaL_checkinteger(L, 5));
+    SetRegKeyDword(hRoot, Key, ValueName, (DWORD)luaL_checkinteger(L, 5));
   }
   else if (!strcmp ("binary", DataType)) {
     BYTE *data = (BYTE*)luaL_checklstring(L, 5, &len);
-    SetRegKeyArr(hRoot, Key, ValueName, data, len);
+    SetRegKeyArr(hRoot, Key, ValueName, data, (DWORD)len);
   }
   else if (!strcmp ("expandstring", DataType)) {
     const wchar_t* data = check_utf8_string(L, 5, NULL);
     HKEY hKey = CreateRegKey(hRoot, Key);
-    RegSetValueExW(hKey, ValueName, 0, REG_EXPAND_SZ, (BYTE*)data, 1+wcslen(data));
+    RegSetValueExW(hKey, ValueName, 0, REG_EXPAND_SZ, (BYTE*)data, 1+(DWORD)wcslen(data));
     RegCloseKey(hKey);
   }
   else if (!strcmp ("multistring", DataType)) {
     const char* data = luaL_checklstring(L, 5, &len);
     HKEY hKey = CreateRegKey(hRoot, Key);
-    RegSetValueExW(hKey, ValueName, 0, REG_MULTI_SZ, (BYTE*)data, len);
+    RegSetValueExW(hKey, ValueName, 0, REG_MULTI_SZ, (BYTE*)data, (DWORD)len);
     RegCloseKey(hKey);
   }
   else
@@ -314,7 +314,7 @@ static int win_CompareString (lua_State *L)
   if (strchr(sFlags, 'w')) dwFlags |= NORM_IGNOREWIDTH;
   if (strchr(sFlags, 'S')) dwFlags |= SORT_STRINGSORT;
 
-  result = CompareStringW(Locale, dwFlags, ws1, len1, ws2, len2) - 2;
+  result = CompareStringW(Locale, dwFlags, ws1, (int)len1, ws2, (int)len2) - 2;
   (result == -2) ? lua_pushnil(L) : lua_pushinteger(L, result);
   return 1;
 }
@@ -445,7 +445,7 @@ static int win_ShellExecute (lua_State *L)
   const wchar_t* lpFile = check_utf8_string(L, 3, NULL);
   const wchar_t* lpParameters = opt_utf8_string(L, 4, NULL);
   const wchar_t* lpDirectory = opt_utf8_string(L, 5, NULL);
-  INT nShowCmd = luaL_optinteger(L, 6, SW_SHOWNORMAL);
+  INT nShowCmd = (INT)luaL_optinteger(L, 6, SW_SHOWNORMAL);
 
   HINSTANCE hinst = ShellExecuteW(
     hwnd,           // handle to parent window

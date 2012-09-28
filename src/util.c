@@ -28,7 +28,7 @@ int GetIntFromArray(lua_State *L, int index)
   lua_gettable(L, -2);
   if (!lua_isnumber (L,-1))
     return luaLF_SlotError (L, index, "number");
-  ret = lua_tointeger(L, -1);
+  ret = (int)lua_tointeger(L, -1);
   lua_pop(L, 1);
   return ret;
 }

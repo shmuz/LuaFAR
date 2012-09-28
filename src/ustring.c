@@ -30,16 +30,16 @@ int SysErrorReturn(lua_State *L)
   return 2;
 }
 
-void PutIntToArray(lua_State *L, int key, int val)
+void PutIntToArray(lua_State *L, int key, intptr_t val)
 {
   lua_pushinteger(L, key);
-  lua_pushinteger(L, val);
+  lua_pushnumber(L, (double)val);
   lua_settable(L, -3);
 }
 
-void PutIntToTable(lua_State *L, const char *key, int val)
+void PutIntToTable(lua_State *L, const char *key, intptr_t val)
 {
-  lua_pushinteger(L, val);
+  lua_pushnumber(L, (double)val);
   lua_setfield(L, -2, key);
 }
 
@@ -68,13 +68,13 @@ void PutStrToArray(lua_State *L, int key, const char* str)
   lua_settable(L, -3);
 }
 
-void PutWStrToTable(lua_State *L, const char* key, const wchar_t* str, int numchars)
+void PutWStrToTable(lua_State *L, const char* key, const wchar_t* str, intptr_t numchars)
 {
   push_utf8_string(L, str, numchars);
   lua_setfield(L, -2, key);
 }
 
-void PutWStrToArray(lua_State *L, int key, const wchar_t* str, int numchars)
+void PutWStrToArray(lua_State *L, int key, const wchar_t* str, intptr_t numchars)
 {
   lua_pushinteger(L, key);
   push_utf8_string(L, str, numchars);
@@ -102,7 +102,7 @@ int GetOptIntFromTable(lua_State *L, const char* key, int dflt)
   int ret = dflt;
   lua_getfield(L, -1, key);
   if(lua_isnumber(L,-1))
-    ret = lua_tointeger(L, -1);
+    ret = (int)lua_tointeger(L, -1);
   lua_pop(L, 1);
   return ret;
 }
@@ -113,7 +113,7 @@ int GetOptIntFromArray(lua_State *L, int key, int dflt)
   lua_pushinteger(L, key);
   lua_gettable(L, -2);
   if(lua_isnumber(L,-1))
-    ret = lua_tointeger(L, -1);
+    ret = (int)lua_tointeger(L, -1);
   lua_pop(L, 1);
   return ret;
 }
@@ -161,7 +161,7 @@ wchar_t* convert_multibyte_string (lua_State *L, int pos, UINT codepage,
     codepage,     // code page
     dwFlags,      // character-type options
     source,       // lpMultiByteStr, pointer to the character string to be converted
-    sourceLen,    // size, in bytes, of the string pointed to by the lpMultiByteStr
+    (int)sourceLen, // size, in bytes, of the string pointed to by the lpMultiByteStr
     NULL,         // lpWideCharStr, address of wide-character buffer
     0             // size of buffer (in wide characters)
   );
@@ -172,7 +172,7 @@ wchar_t* convert_multibyte_string (lua_State *L, int pos, UINT codepage,
   }
 
   target = (wchar_t*)lua_newuserdata(L, (size+1) * sizeof(wchar_t));
-  MultiByteToWideChar(codepage, dwFlags, source, sourceLen, target, size);
+  MultiByteToWideChar(codepage, dwFlags, source, (int)sourceLen, target, size);
   target[size] = L'\0';
   lua_replace(L, pos);
   if (pTrgSize) *pTrgSize = size;
@@ -200,7 +200,7 @@ wchar_t* oem_to_utf16 (lua_State *L, int pos, size_t* pTrgSize)
 }
 
 char* push_multibyte_string (lua_State* L, UINT CodePage, const wchar_t* str,
-  int numchars, DWORD dwFlags)
+  intptr_t numchars, DWORD dwFlags)
 {
   int targetSize;
   char *target;
@@ -211,7 +211,7 @@ char* push_multibyte_string (lua_State* L, UINT CodePage, const wchar_t* str,
     CodePage, // UINT CodePage,
     dwFlags,  // DWORD dwFlags,
     str,      // LPCWSTR lpWideCharStr,
-    numchars, // int cchWideChar,
+    (int)numchars, // int cchWideChar,
     NULL,     // LPSTR lpMultiByteStr,
     0,        // int cbMultiByte,
     NULL,     // LPCSTR lpDefaultChar,
@@ -221,7 +221,7 @@ char* push_multibyte_string (lua_State* L, UINT CodePage, const wchar_t* str,
     luaL_error(L, "invalid UTF-16 string");
   }
   target = (char*)lua_newuserdata(L, targetSize+1);
-  WideCharToMultiByte(CodePage, dwFlags, str, numchars, target, targetSize, NULL, NULL);
+  WideCharToMultiByte(CodePage, dwFlags, str, (int)numchars, target, targetSize, NULL, NULL);
   if (numchars == -1)
     --targetSize;
   lua_pushlstring(L, target, targetSize);
@@ -229,12 +229,12 @@ char* push_multibyte_string (lua_State* L, UINT CodePage, const wchar_t* str,
   return target;
 }
 
-char* push_utf8_string (lua_State* L, const wchar_t* str, int numchars)
+char* push_utf8_string (lua_State* L, const wchar_t* str, intptr_t numchars)
 {
   return push_multibyte_string(L, CP_UTF8, str, numchars, 0);
 }
 
-char* push_oem_string (lua_State* L, const wchar_t* str, int numchars)
+char* push_oem_string (lua_State* L, const wchar_t* str, intptr_t numchars)
 {
   return push_multibyte_string(L, CP_OEMCP, str, numchars, 0);
 }
@@ -246,7 +246,7 @@ int ustring_WideCharToMultiByte (lua_State *L)
   UINT codepage;
   DWORD dwFlags = 0;
   numchars /= sizeof(wchar_t);
-  codepage = luaL_checkinteger(L, 2);
+  codepage = (UINT)luaL_checkinteger(L, 2);
   if (lua_isstring(L, 3)) {
     const char *s = lua_tostring(L, 3);
     for (; *s; s++) {
@@ -267,7 +267,7 @@ int ustring_MultiByteToWideChar (lua_State *L)
   UINT codepage;
   DWORD dwFlags = 0;
   (void) luaL_checkstring(L, 1);
-  codepage = luaL_checkinteger(L, 2);
+  codepage = (UINT)luaL_checkinteger(L, 2);
   if (lua_isstring(L, 3)) {
     const char *s = lua_tostring(L, 3);
     for (; *s; s++) {
@@ -354,7 +354,7 @@ int ustring_GetCPInfo(lua_State *L)
   UINT codepage;
   CPINFOEXW info;
   memset(&info, 0, sizeof(info));
-  codepage = luaL_checkinteger(L, 1);
+  codepage = (UINT)luaL_checkinteger(L, 1);
   if (!GetCPInfoExW(codepage, 0, &info))
     return SysErrorReturn(L);
   lua_createtable(L, 0, 6);
@@ -554,7 +554,7 @@ int ustring_GetFileAttr(lua_State *L)
 int ustring_SHGetFolderPath(lua_State *L)
 {
   wchar_t pszPath[MAX_PATH];
-  int nFolder = luaL_checkinteger(L, 1);
+  int nFolder = (int)luaL_checkinteger(L, 1);
   DWORD dwFlags = (DWORD)luaL_optnumber(L, 2, 0);
   HRESULT result = SHGetFolderPathW(
     NULL,         // __in   HWND hwndOwner,
@@ -569,7 +569,7 @@ int ustring_SHGetFolderPath(lua_State *L)
   return 1;
 }
 
-void push_utf16_string (lua_State* L, const wchar_t* str, int numchars)
+void push_utf16_string (lua_State* L, const wchar_t* str, intptr_t numchars)
 {
   if (numchars < 0)
     numchars = wcslen(str);
@@ -579,7 +579,7 @@ void push_utf16_string (lua_State* L, const wchar_t* str, int numchars)
 int ustring_sub(lua_State *L)
 {
   size_t len;
-  int from, to;
+  intptr_t from, to;
   const char* s = luaL_checklstring(L, 1, &len);
   len /= sizeof(wchar_t);
 

@@ -7,7 +7,7 @@ void SetRegKeyStr(HKEY hRoot, wchar_t *Key, wchar_t *ValueName, wchar_t *ValueDa
 {
   HKEY hKey=CreateRegKey(hRoot, Key);
   RegSetValueExW(hKey, ValueName, 0, REG_SZ, (BYTE*)ValueData,
-                 sizeof(wchar_t) * (wcslen(ValueData) + 1));
+                 sizeof(wchar_t) * ((DWORD)wcslen(ValueData) + 1));
   RegCloseKey(hKey);
 }
 

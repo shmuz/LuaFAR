@@ -8,7 +8,7 @@
 
 #define CAST(tp,expr) ((tp)(expr))
 #define TRANSFORM_REF(h)        (h > 0 ? h : h - 2)
-#define UNTRANSFORM_REF(h)      ((INT_PTR)h > 0 ? (INT_PTR)h : (INT_PTR)h + 2)
+#define UNTRANSFORM_REF(h)      (int)((intptr_t)h > 0 ? (intptr_t)h : (intptr_t)h + 2)
 
 extern int bit64_push(lua_State *L, INT64 v);
 extern int bit64_pushuserdata(lua_State *L, INT64 v);
@@ -111,7 +111,7 @@ void PushPluginPair (lua_State* L, HANDLE hPlugin)
   lua_rawgeti(L, LUA_REGISTRYINDEX, UNTRANSFORM_REF(hPlugin));
   lua_getfield(L, -1, KEY_OBJECT);
   lua_remove(L, -2);
-  lua_pushinteger(L, (INT_PTR)hPlugin);
+  lua_pushinteger(L, (intptr_t)hPlugin);
 }
 
 void ReplacePluginInfoCollector (lua_State* L)
@@ -135,7 +135,7 @@ const wchar_t* _AddStringToCollector(lua_State *L, int pos)
 {
   if (lua_isstring(L,-1)) {
     const wchar_t* s = check_utf8_string (L, -1, NULL);
-    lua_rawseti(L, pos, lua_objlen(L, pos) + 1);
+    lua_rawseti(L, pos, (int)lua_objlen(L, pos) + 1);
     return s;
   }
   lua_pop(L,1);
@@ -166,7 +166,7 @@ void* AddBufToCollector(lua_State *L, int pos, size_t size)
   if (pos < 0) --pos;
   t = lua_newuserdata(L, size);
   memset (t, 0, size);
-  lua_rawseti(L, pos, lua_objlen(L, pos) + 1);
+  lua_rawseti(L, pos, (int)lua_objlen(L, pos) + 1);
   return t;
 }
 
@@ -174,18 +174,18 @@ void* AddBufToCollector(lua_State *L, int pos, size_t size)
 // -- its field 'field' is an array of strings
 // -- 'cpos' - collector stack position
 const wchar_t** CreateStringsArray(lua_State* L, int cpos, const char* field,
-                                   int *numstrings)
+                                   size_t *numstrings)
 {
   const wchar_t **buf = NULL;
   lua_getfield(L, -1, field);
   if(lua_istable(L, -1)) {
-    int n = lua_objlen(L, -1);
+    size_t n = lua_objlen(L, -1);
     if (numstrings) *numstrings = n;
     if (n > 0) {
-      int i;
+      size_t i;
       buf = (const wchar_t**)AddBufToCollector(L, cpos, (n+1) * sizeof(wchar_t*));
       for (i=0; i < n; i++)
-        buf[i] = AddStringToCollectorSlot(L, cpos, i+1);
+        buf[i] = AddStringToCollectorSlot(L, cpos, (int)i+1);
       buf[n] = NULL;
     }
   }
@@ -237,8 +237,8 @@ void FillFindData(lua_State* L, struct PluginPanelItem **pPanelItems,
   size_t *pItemsNumber, const char* Collector)
 {
   struct PluginPanelItem *ppi;
-  int i, num = 0;
-  int numLines = lua_objlen(L,-1);
+  size_t i, num = 0;
+  size_t numLines = lua_objlen(L,-1);
   lua_newtable(L);                           //+3  Tbl,FindData,Coll
   lua_pushvalue(L,-1);                       //+4: Tbl,FindData,Coll,Coll
   lua_setfield(L, -4, Collector);            //+3: Tbl,FindData,Coll
@@ -286,10 +286,10 @@ void LF_FreeFindData(lua_State* L, const struct FreeFindDataInfo *Info)
 
 // PanelItem table should be on Lua stack top
 void UpdateFileSelection(lua_State* L, struct PluginPanelItem *PanelItem,
-  int ItemsNumber)
+  size_t ItemsNumber)
 {
   int i;
-  for (i=0; i<ItemsNumber; i++) {
+  for (i=0; i<(int)ItemsNumber; i++) {
     lua_rawgeti(L, -1, i+1);           //+1
     if(lua_istable(L,-1)) {
       lua_getfield(L,-1,"Flags");      //+2
@@ -311,7 +311,7 @@ void UpdateFileSelection(lua_State* L, struct PluginPanelItem *PanelItem,
 intptr_t LF_GetFiles (lua_State* L, struct GetFilesInfo *Info)
 {
   if (GetExportFunction(L, "GetFiles")) {      //+1: Func
-    int ret;
+    intptr_t ret;
     Info->StructSize = sizeof(*Info);
     PushPanelItems(L, Info->PanelItem, Info->ItemsNumber); //+2: Func,Item
     lua_insert(L,-2);                  //+2: Item,Func
@@ -355,7 +355,7 @@ BOOL CheckReloadDefaultScript (lua_State *L)
 // -- a new table is created, the object is put into it under the key KEY_OBJECT;
 // -- the table is put into the registry, and reference to it is obtained;
 // -- the function pops the object and returns the reference;
-INT_PTR RegisterObject (lua_State* L)
+intptr_t RegisterObject (lua_State* L)
 {
   int ref;
   lua_newtable(L);               //+2: Obj,Tbl
@@ -369,7 +369,7 @@ INT_PTR RegisterObject (lua_State* L)
 static void PushAnalyseInfo(lua_State* L, const struct AnalyseInfo *Info)
 {
   lua_createtable(L, 0, 4);
-  PutIntToTable(L, "StructSize", Info->StructSize);
+  PutIntToTable(L, "StructSize", (int)Info->StructSize);
   PutWStrToTable(L, "FileName", Info->FileName, -1);
   PutLStrToTable(L, "Buffer", Info->Buffer, Info->BufferSize);
   PutFlagsToTable(L, "OpMode", Info->OpMode);
@@ -382,7 +382,7 @@ HANDLE LF_Analyse(lua_State* L, const struct AnalyseInfo *Info)
     PushAnalyseInfo(L, Info);            //+2
     if (!pcall_msg(L, 1, 1)) {           //+1
       if (lua_toboolean(L, -1)) {
-        INT_PTR ref = luaL_ref(L, LUA_REGISTRYINDEX); //+0
+        intptr_t ref = luaL_ref(L, LUA_REGISTRYINDEX); //+0
         if (ref == 0) { /* Lua 5.1 manual doesn't guarantee ref != 0 */
           lua_rawgeti(L, LUA_REGISTRYINDEX, 0); //+1
           ref = luaL_ref(L, LUA_REGISTRYINDEX); //+0
@@ -399,13 +399,14 @@ HANDLE LF_Analyse(lua_State* L, const struct AnalyseInfo *Info)
 
 void LF_CloseAnalyse (lua_State* L, const struct CloseAnalyseInfo *Info)
 {
-  luaL_unref(L, LUA_REGISTRYINDEX, CAST(INT_PTR, Info->Handle));
+  luaL_unref(L, LUA_REGISTRYINDEX, (int)(intptr_t)Info->Handle);
 }
 //---------------------------------------------------------------------------
 
 void LF_GetOpenPanelInfo(lua_State* L, struct OpenPanelInfo *aInfo)
 {
-  int cpos, dfn;
+  int cpos;
+  size_t dfn;
   struct OpenPanelInfo *Info;
   aInfo->StructSize = sizeof (struct OpenPanelInfo);
   if (!GetExportFunction(L, "GetOpenPanelInfo"))    //+1
@@ -455,7 +456,7 @@ void LF_GetOpenPanelInfo(lua_State* L, struct OpenPanelInfo *aInfo)
   lua_getfield(L, -1, "InfoLines");
   lua_getfield(L, -2, "InfoLinesNumber");
   if (lua_istable(L,-2) && lua_isnumber(L,-1)) {
-    int InfoLinesNumber = lua_tointeger(L, -1);
+    intptr_t InfoLinesNumber = lua_tointeger(L, -1);
     lua_pop(L,1);                         //+5: Info,Tbl,Coll,Info,Lines
     if (InfoLinesNumber > 0 && InfoLinesNumber <= 100) {
       int i;
@@ -483,7 +484,7 @@ void LF_GetOpenPanelInfo(lua_State* L, struct OpenPanelInfo *aInfo)
   lua_getfield(L, -1, "PanelModesArray");
   lua_getfield(L, -2, "PanelModesNumber");
   if (lua_istable(L,-2) && lua_isnumber(L,-1)) {
-    int PanelModesNumber = lua_tointeger(L, -1);
+    intptr_t PanelModesNumber = lua_tointeger(L, -1);
     lua_pop(L,1);                               //+5: Info,Tbl,Coll,Info,Modes
     if (PanelModesNumber > 0 && PanelModesNumber <= 100) {
       int i;
@@ -514,7 +515,8 @@ void LF_GetOpenPanelInfo(lua_State* L, struct OpenPanelInfo *aInfo)
   //---------------------------------------------------------------------------
   lua_getfield (L, -1, "KeyBar");
   if (lua_istable(L, -1)) {
-    int size, i;
+    size_t size;
+    int i;
     struct KeyBarTitles *kbt = (struct KeyBarTitles*)AddBufToCollector(L, cpos, sizeof(struct KeyBarTitles));
     Info->KeyBar = kbt;
     kbt->CountLabels = lua_objlen(L, -1);
@@ -548,9 +550,9 @@ void LF_GetOpenPanelInfo(lua_State* L, struct OpenPanelInfo *aInfo)
 
 static void PushParamsTable (lua_State* L, const struct OpenMacroInfo* om_info)
 {
-  size_t i;
-  lua_createtable(L, om_info->Count, 0);
-  for (i=0; i < om_info->Count; i++) {
+  int i;
+  lua_createtable(L, (int)om_info->Count, 0);
+  for (i=0; i < (int)om_info->Count; i++) {
     struct FarMacroValue* v = om_info->Values + i;
     lua_createtable(L, 0, 2);
     PutIntToTable(L, "Type", v->Type);
@@ -564,8 +566,7 @@ static void PushParamsTable (lua_State* L, const struct OpenMacroInfo* om_info)
 #ifdef FAR_LUA
 static void FL_PushParamsTable (lua_State* L, const struct OpenMacroInfo* om_info, int Offset)
 {
-  size_t i;
-  size_t Count = om_info->Count - Offset;
+  int i, Count = (int)om_info->Count - Offset;
   lua_createtable(L, Count, 0);
   for (i=0; i < Count; i++) {
     struct FarMacroValue* v = om_info->Values + Offset + i;
@@ -604,7 +605,7 @@ static HANDLE Open_Luamacro (lua_State* L, const struct OpenInfo *Info)
   if (pcall_msg(L, 3, 2) == 0) {
     if (calltype == MCT_MACROINIT || calltype == MCT_MACROFINAL) {
       if (lua_type(L,-2) == LUA_TNUMBER) {
-        INT_PTR ret = lua_tointeger(L,-2);
+        intptr_t ret = lua_tointeger(L,-2);
         lua_pop(L,2);
         return CAST(HANDLE, ret);
       }
@@ -616,7 +617,7 @@ static HANDLE Open_Luamacro (lua_State* L, const struct OpenInfo *Info)
       if (lua_type(L,-2) != LUA_TNUMBER || lua_type(L,-1) != LUA_TTABLE) {
         lua_pop(L,2); return NULL;
       }
-      switch((ReturnType=lua_tointeger(L,-2)))
+      switch((ReturnType=(int)lua_tointeger(L,-2)))
       {
         case MPRT_NORMALFINISH:
         {
@@ -649,7 +650,7 @@ static HANDLE Open_Luamacro (lua_State* L, const struct OpenInfo *Info)
           int nargs, type, idx;
           INT64 val64;
           lua_getfield(L,-1,"n");
-          nargs=lua_tointeger(L,-1);
+          nargs=(int)lua_tointeger(L,-1);
           if (nargs>64) nargs=64;
           lua_pop(L,1);
           mpr = CreateMPR(L,nargs,ReturnType);
@@ -726,9 +727,9 @@ HANDLE LF_Open (lua_State* L, const struct OpenInfo *Info)
   else if (Info->OpenFrom == OPEN_ANALYSE) {
     struct OpenAnalyseInfo* oai = CAST(struct OpenAnalyseInfo*, Info->Data);
     PushAnalyseInfo(L, oai->Info);
-    lua_rawgeti(L, LUA_REGISTRYINDEX, CAST(INT_PTR, oai->Handle));
+    lua_rawgeti(L, LUA_REGISTRYINDEX, (int)(intptr_t)oai->Handle);
     lua_setfield(L, -2, "Handle");
-    luaL_unref(L, LUA_REGISTRYINDEX, CAST(INT_PTR, oai->Handle));
+    luaL_unref(L, LUA_REGISTRYINDEX, (int)(intptr_t)oai->Handle);
   }
   else
     lua_pushinteger(L, Info->Data);
@@ -757,7 +758,7 @@ void LF_ClosePanel(lua_State* L, const struct ClosePanelInfo *Info)
 
 intptr_t LF_Compare(lua_State* L, const struct CompareInfo *Info)
 {
-  int res = -2; // default FAR compare function should be used
+  intptr_t res = -2; // default FAR compare function should be used
   if (GetExportFunction(L, "Compare")) { //+1: Func
     PushPluginPair(L, Info->hPanel);     //+3: Func,Pair
     PushPanelItem(L, Info->Item1);       //+4
@@ -804,7 +805,7 @@ intptr_t LF_DeleteFiles(lua_State* L, const struct DeleteFilesInfo *Info)
 //    b) new directory name (a string; optional)
 intptr_t LF_MakeDirectory (lua_State* L, struct MakeDirectoryInfo *Info)
 {
-  int res = 0;
+  intptr_t res = 0;
   if (GetExportFunction(L, "MakeDirectory")) { //+1: Func
     Info->StructSize = sizeof(*Info);
     PushPluginPair(L, Info->hPanel);           //+3: Func,Pair
@@ -843,7 +844,7 @@ intptr_t LF_ProcessPanelEvent(lua_State* L, const struct ProcessPanelEventInfo *
 intptr_t LF_ProcessHostFile(lua_State* L, const struct ProcessHostFileInfo *Info)
 {
   if (GetExportFunction(L, "ProcessHostFile")) {   //+1: Func
-    int ret;
+    intptr_t ret;
     PushPanelItems(L, Info->PanelItem, Info->ItemsNumber); //+2: Func,Item
     lua_insert(L,-2);                  //+2: Item,Func
     PushPluginPair(L, Info->hPanel);   //+4: Item,Func,Pair
@@ -867,7 +868,7 @@ intptr_t LF_ProcessPanelInput(lua_State* L, const struct ProcessPanelInputInfo *
     PushPluginPair(L, Info->hPanel);                 //+3: Func,Pair
     pushInputRecord(L, &Info->Rec);                  //+4
     if (pcall_msg(L, 3, 1) == 0)    {                //+1: Res
-      int ret = lua_toboolean(L,-1);
+      intptr_t ret = lua_toboolean(L,-1);
       return lua_pop(L,1), ret;
     }
   }
@@ -877,7 +878,7 @@ intptr_t LF_ProcessPanelInput(lua_State* L, const struct ProcessPanelInputInfo *
 intptr_t LF_PutFiles(lua_State* L, const struct PutFilesInfo *Info)
 {
   if (GetExportFunction(L, "PutFiles")) {    //+1: Func
-    int ret;
+    intptr_t ret;
     PushPanelItems(L, Info->PanelItem, Info->ItemsNumber); //+2: Func,Items
     lua_insert(L,-2);                        //+2: Items,Func
     PushPluginPair(L, Info->hPanel);         //+4: Items,Func,Pair
@@ -900,7 +901,7 @@ intptr_t LF_PutFiles(lua_State* L, const struct PutFilesInfo *Info)
 intptr_t LF_SetDirectory(lua_State* L, const struct SetDirectoryInfo *Info) //TODO: Info->UserData
 {
   if (GetExportFunction(L, "SetDirectory")) {   //+1: Func
-    int ret;
+    intptr_t ret;
     PushPluginPair(L, Info->hPanel);     //+3: Func,Pair
     push_utf8_string(L, Info->Dir, -1);  //+4: Func,Pair,Dir
     bit64_push(L, Info->OpMode);         //+5: Func,Pair,Dir,OpMode
@@ -916,7 +917,7 @@ intptr_t LF_SetDirectory(lua_State* L, const struct SetDirectoryInfo *Info) //TO
 intptr_t LF_SetFindList(lua_State* L, const struct SetFindListInfo *Info)
 {
   if (GetExportFunction(L, "SetFindList")) {               //+1: Func
-    int ret;
+    intptr_t ret;
     PushPluginPair(L, Info->hPanel);                       //+3: Func,Pair
     PushPanelItems(L, Info->PanelItem, Info->ItemsNumber); //+4: Func,Pair,Items
     ret = pcall_msg(L, 3, 1);                              //+1: Res
@@ -938,18 +939,17 @@ void LF_ExitFAR(lua_State* L, const struct ExitInfo *Info)
 void getPluginMenuItems(lua_State* L, struct PluginMenuItem *pmi, const char* namestrings,
                         const char* nameguids, int cpos)
 {
-  int count = 0, tmp;
-  pmi->Strings = CreateStringsArray (L, cpos, namestrings, &tmp);
-  pmi->Count = tmp;
+  size_t count=0;
+  pmi->Strings = CreateStringsArray (L, cpos, namestrings, &pmi->Count);
   lua_getfield(L, -1, nameguids);
   if (lua_type(L, -1) == LUA_TSTRING) {
     pmi->Guids = (GUID*)lua_tostring(L,-1);
     count = lua_objlen(L, -1) / sizeof(GUID);
-    lua_rawseti(L, cpos, lua_objlen(L, cpos) + 1);
+    lua_rawseti(L, cpos, (int)lua_objlen(L, cpos) + 1);
   }
   else
     lua_pop(L, 1);
-  if ((int)pmi->Count > count)
+  if (pmi->Count > count)
     pmi->Count = count;
 }
 
@@ -985,7 +985,7 @@ intptr_t LF_ProcessEditorInput (lua_State* L, const struct ProcessEditorInputInf
     return 0;
   pushInputRecord(L, &Info->Rec);
   if (pcall_msg(L, 1, 1) == 0) {     //+1: Res
-    int ret = lua_toboolean(L,-1);
+    intptr_t ret = lua_toboolean(L,-1);
     return lua_pop(L,1), ret;
   }
   return 0;
@@ -993,18 +993,18 @@ intptr_t LF_ProcessEditorInput (lua_State* L, const struct ProcessEditorInputInf
 
 intptr_t LF_ProcessEditorEvent (lua_State* L, const struct ProcessEditorEventInfo *Info)
 {
-  int ret = 0;
+  intptr_t ret = 0;
   if (GetExportFunction(L, "ProcessEditorEvent"))  { //+1: Func
     lua_pushinteger(L, Info->EditorID); //+2;
     lua_pushinteger(L, Info->Event);    //+3;
     switch(Info->Event) {
       case EE_REDRAW:
-        lua_pushinteger(L, (INT_PTR)Info->Param); break;
+        lua_pushinteger(L, (intptr_t)Info->Param); break;
       case EE_CHANGE: {
         const struct EditorChange *ec = (const struct EditorChange*) Info->Param;
         lua_createtable(L, 0, 2);
         PutNumToTable(L, "Type", ec->Type);
-        PutNumToTable(L, "StringNumber", ec->StringNumber);
+        PutNumToTable(L, "StringNumber", (double)ec->StringNumber);
         break;
       }
       default:
@@ -1020,7 +1020,7 @@ intptr_t LF_ProcessEditorEvent (lua_State* L, const struct ProcessEditorEventInf
 
 intptr_t LF_ProcessViewerEvent (lua_State* L, const struct ProcessViewerEventInfo *Info)
 {
-  int ret = 0;
+  intptr_t ret = 0;
   if (GetExportFunction(L, "ProcessViewerEvent"))  { //+1: Func
     lua_pushinteger(L, Info->ViewerID);
     lua_pushinteger(L, Info->Event);
@@ -1035,7 +1035,7 @@ intptr_t LF_ProcessViewerEvent (lua_State* L, const struct ProcessViewerEventInf
 
 intptr_t LF_ProcessDialogEvent (lua_State* L, const struct ProcessDialogEventInfo *Info)
 {
-  int ret = 0;
+  intptr_t ret = 0;
   if (GetExportFunction(L, "ProcessDialogEvent"))  { //+1: Func
     struct FarDialogEvent *fde = Info->Param;
     lua_pushinteger(L, Info->Event); //+2
@@ -1044,7 +1044,7 @@ intptr_t LF_ProcessDialogEvent (lua_State* L, const struct ProcessDialogEventInf
     lua_setfield(L, -2, "hDlg"); //+3
     PutIntToTable(L, "Msg", fde->Msg);
     PutIntToTable(L, "Param1", fde->Param1);
-    PutIntToTable(L, "Param2", (INT_PTR)fde->Param2);
+    PutIntToTable(L, "Param2", (intptr_t)fde->Param2);
     PutIntToTable(L, "Result", fde->Result);
     if (pcall_msg(L, 2, 2) == 0) {  //+2
       ret = lua_isnumber(L,-2) ? lua_tointeger(L,-2) : lua_toboolean(L,-2);
@@ -1058,7 +1058,7 @@ intptr_t LF_ProcessDialogEvent (lua_State* L, const struct ProcessDialogEventInf
 
 intptr_t LF_ProcessSynchroEvent (lua_State* L, const struct ProcessSynchroEventInfo *Info)
 {
-  int ret = 0;
+  intptr_t ret = 0;
   if (Info->Event == SE_COMMONSYNCHRO) {
     TSynchroData sd = *(TSynchroData*)Info->Param; // copy
     free(Info->Param);
@@ -1188,14 +1188,13 @@ int LF_GetGlobalInfo (lua_State* L, struct GlobalInfo *Info, const wchar_t *Plug
   return TRUE;
 }
 
-DLLFUNC	intptr_t LF_ProcessConsoleInput (lua_State* L, struct ProcessConsoleInputInfo *Info)
+intptr_t LF_ProcessConsoleInput (lua_State* L, struct ProcessConsoleInputInfo *Info)
 {
-  int ret = 0;
+  intptr_t ret = 0;
   if (GetExportFunction(L, "ProcessConsoleInput")) { //+1: Func
-    PushPluginPair(L, Info->hPanel);                 //+3: Func,Pair
-    pushInputRecord(L, &Info->Rec);                  //+4
-    bit64_push(L, Info->Flags);                      //+5
-    if (pcall_msg(L, 4, 1) == 0)    {                //+1: Res
+    pushInputRecord(L, &Info->Rec);                  //+2
+    bit64_push(L, Info->Flags);                      //+3
+    if (pcall_msg(L, 2, 1) == 0)    {                //+1: Res
       if (lua_istable(L,-1)) {
         FillInputRecord(L, -1, &Info->Rec);
         ret = 2;

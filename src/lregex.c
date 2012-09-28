@@ -90,7 +90,7 @@ int _regex_gmatch_closure(lua_State *L, int is_wide)
       pData->Position = pData->Match[0].end;
     else
       pData->Position++;
-    return pData->Count - skip;
+    return (int)pData->Count - skip;
   }
   return lua_pushnil(L), 1;
 }
@@ -173,7 +173,7 @@ int rx_find_match(lua_State *L, int op_find, int is_function, int is_wide)
       else
         lua_pushboolean(L, 0);
     }
-    return (op_find ? 2:0) + data.Count - skip;
+    return (op_find ? 2:0) + (int)data.Count - skip;
   }
   return lua_pushnil(L), 1;
 }
@@ -238,7 +238,7 @@ int rx_gsub (lua_State *L, int is_function, int is_wide)
 
   if (lua_isnoneornil(L, 4)) n = -1;
   else {
-    n = luaL_checkinteger(L, 4);
+    n = (int)luaL_checkinteger(L, 4);
     if (n < 0) n = 0;
   }
   lua_settop(L, 3);
@@ -255,8 +255,9 @@ int rx_gsub (lua_State *L, int is_function, int is_wide)
   luaL_buffinit(L, &out);
 
   while (n < 0 || reps < n) {
-    int rep, from, to;
-    int prev_end = data.Match[0].end;
+    int rep;
+    intptr_t from, to;
+    intptr_t prev_end = data.Match[0].end;
     if (!RegExpControl(fr->hnd, RECTL_SEARCHEX, 0, &data))
       break;
     if (data.Match[0].end == prev_end) {
@@ -331,8 +332,8 @@ int rx_gsub (lua_State *L, int is_function, int is_wide)
       }
     }
     else { // if (ftype == LUA_TFUNCTION)
-      int i, skip = data.Count==1 ? 0:1;
-      lua_checkstack(L, data.Count+1-skip);
+      intptr_t i, skip = data.Count==1 ? 0:1;
+      lua_checkstack(L, (int)(data.Count+1-skip));
       lua_pushvalue(L, 3);
       for (i=skip; i<data.Count; i++) {
         if (data.Match[i].start >= 0) {
@@ -344,7 +345,7 @@ int rx_gsub (lua_State *L, int is_function, int is_wide)
         else
           lua_pushboolean(L, 0);
       }
-      if (lua_pcall(L, data.Count-skip, 1, 0) == 0) {
+      if (lua_pcall(L, (int)(data.Count-skip), 1, 0) == 0) {
         if (lua_isstring(L, -1)) {
           if (!is_wide) {
             size_t len;

@@ -173,10 +173,10 @@ static int get_mode (lua_State *L)
 #if LUA_VERSION_NUM == 501
 	int mode;
 	lua_getfield(L, LUA_ENVIRONINDEX, "mode");
-	mode = lua_tointeger(L, -1);
+	mode = (int)lua_tointeger(L, -1);
 	lua_pop(L, 1);
 #elif LUA_VERSION_NUM == 502
-	int mode = lua_tointeger(L, lua_upvalueindex(1));
+	int mode = (int)lua_tointeger(L, lua_upvalueindex(1));
 #endif
 	return mode;
 }
@@ -318,10 +318,10 @@ static void utf8_graphext (const char **pp, const char *end)
 }	/* utf8_graphext */
 
 
-static int utf8_count (const char **pp, int bytes, int graph, int max)
+static size_t utf8_count (const char **pp, ptrdiff_t bytes, int graph, size_t max)
 {
 	const char *const end = *pp+bytes;
-	int count = 0;
+	size_t count = 0;
 	while (*pp < end && count != max) {
 		unsigned code = utf8_deco(pp, end);
 		count++;
@@ -339,7 +339,7 @@ static int unic_len (lua_State *L) {
 	size_t l;
 	const char *s = luaL_checklstring(L, 1, &l);
 	int mode = get_mode(L);
-	if (MODE_MBYTE(mode)) l = (size_t)utf8_count(&s, l, mode-2, -1);
+	if (MODE_MBYTE(mode)) l = utf8_count(&s, l, mode-2, -1);
 	lua_pushinteger(L, l);
 	return 1;
 }
@@ -358,7 +358,7 @@ static int unic_sub (lua_State *L) {
 	ptrdiff_t end = luaL_optinteger(L, 3, -1);
 	int mode = get_mode(L);
 
-	if (MODE_MBYTE(mode)) { p=s; l = (size_t)utf8_count(&p, l, mode-2, -1); }
+	if (MODE_MBYTE(mode)) { p=s; l = utf8_count(&p, l, mode-2, -1); }
 	start = posrelat(start, l);
 	end = posrelat(end, l);
 	if (start < 1) start = 1;
@@ -459,12 +459,12 @@ static int unic_byte (lua_State *L) {
 	const char *s = luaL_checklstring(L, 1, &l), *p, *e=s+l;
 	int n, mode = get_mode(L), mb = MODE_MBYTE(mode);
 
-	if (mb) { p=s; l = (size_t)utf8_count(&p, l, mode-2, -1); }
+	if (mb) { p=s; l = utf8_count(&p, l, mode-2, -1); }
 	posi = posrelat(luaL_optinteger(L, 2, 1), l);
 	pose = posrelat(luaL_optinteger(L, 3, posi), l);
 	if (posi <= 0) posi = 1;
 	if ((size_t)pose > l) pose = l;
-	if (0 >= (n = pose - --posi)) return 0;	/* empty interval */
+	if (0 >= (n = (int)(pose - --posi))) return 0;	/* empty interval */
 	if (!mb)
 		e = (s += posi) + n;
 	else {
